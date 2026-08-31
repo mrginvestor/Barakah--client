@@ -3,16 +3,17 @@ import { motion } from 'framer-motion';
 import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, HandCoins, Linkedin, MapPin, Mic2, Users, WalletCards } from 'lucide-react';
 import RegistrationModal from '../components/RegistrationModal';
 import IslamicPattern from '../components/IslamicPattern';
+import barakahLogo from '../assets/Barakah-logo.png';
+import summitBackground from '../assets/Basith image.png';
 
 const themes = [['Islamic Finance', WalletCards, 'A principled foundation for modern financial systems.'], ['Halal Investments', ArrowRight, 'Capital that creates lasting, positive impact.'], ['Wealth Management', HandCoins, 'Building resilient prosperity for generations.'], ['Sukuk & Capital Markets', CalendarDays, 'Exploring the future of ethical capital.'], ['Takaful', Users, 'Shared protection built on mutual responsibility.'], ['Ethical Entrepreneurship', Mic2, 'Ideas and enterprise with purpose at the centre.']];
 const speakers = [['Mohamed Riyaz', 'State President', 'Solidarity Youth Organisation'], ['Mohamed Hasan', 'Human Resources ', 'MRG Engineering'], ['Abdul Basith', 'Shariah Scholar', 'Islamic Finance Expert'], ['Mohamed Fayaz', 'Software Engineer ', 'MRG Engineering'], ['Kashif Khan', 'Managing Director', 'Islamic Finance Council UK']];
 const dayOne = [['08:00 AM', 'Registration & Networking'], ['09:30 AM', 'Opening Ceremony'], ['10:00 AM', 'Keynote Address'], ['11:30 AM', 'Panel Discussion'], ['01:00 PM', 'Lunch & Networking'], ['02:30 PM', 'Technical Sessions'], ['04:30 PM', 'Fireside Chat'], ['06:00 PM', 'Networking Session']];
-const dayTwo = [['08:30 AM', 'Morning Masterclass'], ['10:00 AM', 'Investment Roundtable'], ['11:30 AM', 'Founder Conversations'], ['01:00 PM', 'Lunch & Networking'], ['02:30 PM', 'Capital & Impact'], ['04:30 PM', 'Closing Ceremony']];
 const Reveal = ({ children, className = '' }) => <motion.div className={className} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.15 }} transition={{ duration: .65 }}>{children}</motion.div>;
 
 const Home = () => {
   const [isModalOpen, setModalOpen] = useState(false);
-  const [activeTheme, setActiveTheme] = useState(null); const [activeDay, setActiveDay] = useState(1); const [speakerIndex, setSpeakerIndex] = useState(0); const [time, setTime] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [activeTheme, setActiveTheme] = useState(null); const [speakerIndex, setSpeakerIndex] = useState(0); const [time, setTime] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   useEffect(() => { const target = new Date('2026-11-29T09:00:00+05:30'); const tick = () => { const diff = Math.max(0, target - new Date()); setTime({ days: Math.floor(diff / 86400000), hours: Math.floor(diff / 3600000) % 24, minutes: Math.floor(diff / 60000) % 60, seconds: Math.floor(diff / 1000) % 60 }); }; tick(); const timer = setInterval(tick, 1000); const openRegistration = () => setModalOpen(true); window.addEventListener('registration-open', openRegistration); return () => { clearInterval(timer); window.removeEventListener('registration-open', openRegistration); }; }, []);
   const visibleSpeakers = speakers.slice(speakerIndex, speakerIndex + (typeof window !== 'undefined' && window.innerWidth < 700 ? 1 : 5));
 
@@ -23,7 +24,7 @@ const Home = () => {
             <div className="hero-grid">
               <Reveal className="hero-copy">
                 <div className="hero-logo-wrap">
-                  <img src="/src/assets/barakah-logo.svg" alt="Barakah logo" className="hero-logo" />
+                  <img src={barakahLogo} alt="Barakah logo" className="hero-logo" />
                 </div>
                 <p className="eyebrow">CHENNAI <i>•</i>  29 NOVEMBER 2026</p>
                 <h1>HALAL<br /><em>WEALTH</em><br />SUMMIT <span>2026</span></h1>
@@ -39,7 +40,7 @@ const Home = () => {
                 </div>
               </Reveal>
               <div className="hero-visual">
-                <div className="arch-image" role="img" aria-label="Professionals networking at a premium finance conference" />
+                <div className="arch-image" role="img" aria-label="Professionals networking at a premium finance conference" style={{ backgroundImage: `linear-gradient(180deg, rgba(0, 42, 34, 0.25), rgba(0, 42, 34, 0.55)), url(${summitBackground})` }} />
                 <div className="countdown">
                   <p>THE SUMMIT BEGINS IN</p>
                   <div className="countdown-values">{Object.entries(time).map(([label, value]) => <span key={label}><b>{String(value).padStart(2, '0')}</b><small>{label.toUpperCase()}</small></span>)}</div>
@@ -51,7 +52,7 @@ const Home = () => {
               <div><Users /><b>400<span>+</span></b><small>EXPECTED PARTICIPANTS</small></div>
               <div><Mic2 /><b>20<span>+</span></b><small>EXPERT SPEAKERS</small></div>
               <div><CalendarDays /><b>10<span>+</span></b><small>INSIGHTFUL SESSIONS</small></div>
-              <div><HandCoins /><b>2</b><small>DAYS OF IMPACT</small></div>
+              <div><HandCoins /><b>1</b><small>DAY OF IMPACT</small></div>
             </section>
             <section id="about" className="about-section geometric">
               <Reveal className="about-copy">
@@ -76,14 +77,10 @@ const Home = () => {
             <section id="agenda" className="agenda-section geometric">
               <div className="section-head">
                 <div><p className="eyebrow">PLAN YOUR EXPERIENCE</p><h2>Agenda Overview</h2></div>
-                <div className="day-tabs">
-                  <button className={activeDay === 1 ? 'selected' : ''} onClick={() => setActiveDay(1)}>DAY 1 <small>NOV 29, 2026</small></button>
-                  {/* <button className={activeDay === 2 ? 'selected' : ''} onClick={() => setActiveDay(2)}>DAY 2 <small>NOV 29, 2026</small></button> */}
-                </div>
               </div>
               <div className="agenda-layout">
-                <div className="timeline">{(activeDay === 1 ? dayOne : dayTwo).map(([timeLabel, title]) => <div className="timeline-item" key={timeLabel}><time>{timeLabel}</time><span /><strong>{title}</strong></div>)}</div>
-                <aside className="agenda-note"><CalendarDays /><p>DETAILED AGENDA</p><strong>COMING SOON</strong><button className="gold-button">Notify me</button></aside>
+                <div className="timeline">{dayOne.map(([timeLabel, title]) => <div className="timeline-item" key={timeLabel}><time>{timeLabel}</time><span /><strong>{title}</strong></div>)}</div>
+                <aside className="agenda-note"><CalendarDays /><p>29 NOVEMBER 2026</p><strong>CHENNAI, INDIA</strong><button className="gold-button">Learn more</button></aside>
               </div>
             </section>
             <section className="cta geometric">
