@@ -22,6 +22,9 @@ const Home = () => {
             <IslamicPattern className="hero-pattern" />
             <div className="hero-grid">
               <Reveal className="hero-copy">
+                <div className="hero-logo-wrap">
+                  <img src="/src/assets/barakah-logo.svg" alt="Barakah logo" className="hero-logo" />
+                </div>
                 <p className="eyebrow">CHENNAI <i>•</i>  29 NOVEMBER 2026</p>
                 <h1>HALAL<br /><em>WEALTH</em><br />SUMMIT <span>2026</span></h1>
                 <p className="tagline">Shaping Ethical Wealth. Empowering the Future.</p>

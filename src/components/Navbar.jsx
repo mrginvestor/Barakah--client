@@ -11,7 +11,10 @@ const Navbar = ({ onRegister = () => window.dispatchEvent(new CustomEvent('regis
   return (
     <nav className={`site-nav ${scrolled ? 'site-nav--scrolled' : ''}`}>
       <div className="nav-inner">
-        <Link to="/" className="brand"><span className="brand-mark">✦</span><span>BARAKAH<small>SUMMIT 2026</small></span></Link>
+        <Link to="/" className="brand" aria-label="Barakah Summit Home">
+          <img src="/src/assets/barakah-logo.svg" alt="Barakah logo" className="brand-logo" />
+          <span className="brand-text">BARAKAH<small>SUMMIT 2026</small></span>
+        </Link>
         <div className="nav-links"><button className="nav-link active" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Home</button>{links.map((link) => <button className="nav-link" key={link} onClick={() => jump(link)}>{link}</button>)}</div>
         <button className="nav-register" onClick={onRegister}>Register now <ArrowUpRight size={16} /></button>
         <button className="menu-toggle" aria-label="Toggle menu" onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button>
