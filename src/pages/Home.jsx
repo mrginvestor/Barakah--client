@@ -8,7 +8,7 @@ import summitBackground from '../assets/Basith image.png';
 
 
 const themes = [['Islamic Finance', WalletCards, 'A principled foundation for modern financial systems.'], ['Halal Investments', ArrowRight, 'Capital that creates lasting, positive impact.'], ['Wealth Management', HandCoins, 'Building resilient prosperity for generations.'], ['Sukuk & Capital Markets', CalendarDays, 'Exploring the future of ethical capital.'], ['Takaful', Users, 'Shared protection built on mutual responsibility.'], ['Ethical Entrepreneurship', Mic2, 'Ideas and enterprise with purpose at the centre.']];
-const speakers = [['Mohamed Riyaz', 'State President', 'Solidarity Youth Organisation'], ['Mohamed Hasan', 'Human Resources ', 'MRG Engineering'], ['Abdul Basith', 'Shariah Scholar', 'Islamic Finance Expert'], ['Mohamed Fayaz', 'Software Engineer ', 'MRG Engineering'], ['Kashif Khan', 'Managing Director', 'Islamic Finance Council UK']];
+const speakers = [['Mohamed Riyaz', 'State President', 'Solidarity Youth Organisation'], ['Mohamed Hasan', 'Human Resources ', 'MRG Engineering'], ['Abdul Basith', 'Financial Consultant, Investment Advisor', 'Islamic Finance Advocate'], ['Mohamed Fayaz', 'Software Engineer ', 'MRG Engineering'], ['Kashif Khan', 'Managing Director', 'Islamic Finance Council UK']];
 const dayOne = [['08:00 AM', 'Registration & Networking'], ['09:30 AM', 'Opening Ceremony'], ['10:00 AM', 'Keynote Address'], ['11:30 AM', 'Panel Discussion'], ['01:00 PM', 'Lunch & Networking'], ['02:30 PM', 'Technical Sessions'], ['04:30 PM', 'Fireside Chat'], ['06:00 PM', 'Networking Session']];
 const Reveal = ({ children, className = '' }) => <motion.div className={className} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.15 }} transition={{ duration: .65 }}>{children}</motion.div>;
 
@@ -29,7 +29,7 @@ const Home = () => {
                 </div>
                 <p className="eyebrow">CHENNAI <i>•</i>  29 NOVEMBER 2026</p>
                 <h1>HALAL<br /><em>WEALTH</em><br />SUMMIT <span>2026</span></h1>
-                <p className="tagline">Shaping Ethical Wealth. Empowering the Future.</p>
+                <p className="tagline">Humanizing Finance. Empowering Communities.</p>
                 <div className="event-meta">
                   <span><CalendarDays /> NOVEMBER<br /><b>29, 2026</b></span>
                   <span><MapPin /> CHENNAI<br /><b>INDIA</b></span>
@@ -87,7 +87,7 @@ const Home = () => {
             <section className="cta geometric">
               <p className="eyebrow">THE NEXT CHAPTER STARTS HERE</p>
               <h2>Be Part of the Future of <em>Halal Wealth</em></h2>
-              <p>Learn. Connect. Invest. Grow.</p>
+              <p>Connect.  Learn.  Act. Grow.</p>
               <button className="gold-button" onClick={() => setModalOpen(true)}>Register now <ArrowRight size={17} /></button>
               <small>Limited Seats Available</small>
             </section>
