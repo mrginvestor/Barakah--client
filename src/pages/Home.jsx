@@ -6,6 +6,7 @@ import IslamicPattern from '../components/IslamicPattern';
 import barakahLogo from '../assets/Barakah-logo.png';
 import summitBackground from '../assets/Basith image.png';
 
+
 const themes = [['Islamic Finance', WalletCards, 'A principled foundation for modern financial systems.'], ['Halal Investments', ArrowRight, 'Capital that creates lasting, positive impact.'], ['Wealth Management', HandCoins, 'Building resilient prosperity for generations.'], ['Sukuk & Capital Markets', CalendarDays, 'Exploring the future of ethical capital.'], ['Takaful', Users, 'Shared protection built on mutual responsibility.'], ['Ethical Entrepreneurship', Mic2, 'Ideas and enterprise with purpose at the centre.']];
 const speakers = [['Mohamed Riyaz', 'State President', 'Solidarity Youth Organisation'], ['Mohamed Hasan', 'Human Resources ', 'MRG Engineering'], ['Abdul Basith', 'Shariah Scholar', 'Islamic Finance Expert'], ['Mohamed Fayaz', 'Software Engineer ', 'MRG Engineering'], ['Kashif Khan', 'Managing Director', 'Islamic Finance Council UK']];
 const dayOne = [['08:00 AM', 'Registration & Networking'], ['09:30 AM', 'Opening Ceremony'], ['10:00 AM', 'Keynote Address'], ['11:30 AM', 'Panel Discussion'], ['01:00 PM', 'Lunch & Networking'], ['02:30 PM', 'Technical Sessions'], ['04:30 PM', 'Fireside Chat'], ['06:00 PM', 'Networking Session']];
