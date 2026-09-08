@@ -21,3 +21,505 @@
 
 .admin-page { min-height:100vh; padding:120px 5% 50px; background:var(--cream); color:var(--ink); }.admin-heading { max-width:1440px; margin:0 auto 28px; display:flex; justify-content:space-between; align-items:end; }.admin-heading h1 { font:600 54px/.9 'Cormorant Garamond',serif; margin:0 0 12px; color:var(--green); }.admin-heading p:not(.eyebrow) { margin:0; color:#617069; }.admin-heading>strong { color:var(--gold); font-size:13px; }.admin-toolbar { max-width:1440px; margin:0 auto 18px; display:flex; flex-wrap:wrap; gap:8px; }.admin-toolbar input,.admin-toolbar select { border:1px solid #d4c8af; background:#fffdf8; padding:12px; color:var(--ink); font-size:11px; }.admin-toolbar input { min-width:260px; flex:1; }.admin-table-wrap { max-width:1440px; margin:auto; overflow:auto; background:#fffdf8; border:1px solid #ddd2bd; box-shadow:0 10px 28px #001b1412; }.admin-table { border-collapse:collapse; min-width:1300px; width:100%; font-size:11px; }.admin-table th { background:var(--green); color:var(--cream); text-align:left; padding:14px 11px; text-transform:uppercase; font-size:9px; letter-spacing:.5px; white-space:nowrap; }.admin-table td { padding:13px 11px; border-bottom:1px solid #e8dfcf; white-space:nowrap; }.admin-table tbody tr { cursor:pointer; }.admin-table tbody tr:hover { background:#f8edcf; }.admin-status { color:#a16a22; font-weight:700; }.admin-status.checked { color:#22704f; }.admin-empty { padding:30px; text-align:center; color:#718078; }.admin-detail { position:fixed; inset:0; z-index:30; background:#001b16aa; display:grid; place-items:center; padding:20px; }.admin-detail article { max-width:500px; width:100%; background:var(--cream); color:var(--ink); padding:35px; box-shadow:0 20px 60px #0005; }.admin-detail article>button { float:right; border:0; background:none; color:var(--green); text-transform:uppercase; font-size:10px; }.admin-detail h2 { font-size:42px; color:var(--green); margin:0 0 5px; }.admin-detail hr { border:0; border-top:1px solid #d8cbb3; margin:25px 0; }.admin-detail strong { font-size:10px; text-transform:uppercase; color:var(--gold); }.admin-detail p { font-size:12px; line-height:1.6; }
 .secure-note { color:#c8d7ce; font-size:10px; white-space:nowrap; }.reg-header-copy { display:grid; gap:5px; }.reg-header-copy b { color:var(--gold); font:700 12px Inter,sans-serif; text-transform:uppercase; letter-spacing:1px; }.reg-header-copy span { font:19px/1.15 'Cormorant Garamond',serif; }.privacy-card { display:flex; gap:14px; align-items:flex-start; background:#e8eee6; border-left:3px solid var(--gold); padding:16px; margin-top:3px; color:var(--ink); }.privacy-card svg { color:var(--green); flex:none; }.privacy-card strong { font-size:12px; }.privacy-card p { margin:5px 0 0; font-size:11px; line-height:1.5; color:#66756b; }.reg-choice:disabled { opacity:.38; cursor:not-allowed; }
+
+.webinar-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #dfe8df 0%, #edf4ee 100%);
+  padding: 36px 20px 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+}
+
+.webinar-shell {
+  width: min(1260px, 100%);
+  background: #f4f1eb;
+  border: 1px solid rgba(17, 44, 39, 0.08);
+  border-radius: 22px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  box-shadow: 0 28px 80px rgba(0, 30, 24, 0.12);
+}
+
+.webinar-aside {
+  position: relative;
+  background: linear-gradient(180deg, #003b31 0%, #002d26 100%);
+  color: var(--cream);
+  padding: 26px 26px 24px;
+  display: flex;
+  flex-direction: column;
+  isolation: isolate;
+}
+
+.webinar-aside::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 -60px 0;
+  height: 220px;
+  background: linear-gradient(180deg, rgba(216,168,78,0.05), rgba(216,168,78,0.22));
+  clip-path: polygon(0 100%, 100% 100%, 100% 35%, 58% 72%, 42% 40%, 0 82%);
+  z-index: -1;
+}
+
+.promo-badge {
+  align-self: flex-start;
+  display: inline-flex;
+  border: 1px solid rgba(217, 168, 62, 0.8);
+  background: rgba(217, 168, 62, 0.08);
+  color: var(--gold);
+  border-radius: 999px;
+  padding: 9px 12px;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.webinar-aside h1 {
+  margin: 30px 0 18px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(60px, 4.6vw, 96px);
+  line-height: 0.82;
+  letter-spacing: -0.05em;
+  font-weight: 700;
+  color: var(--cream);
+}
+
+.promo-copy {
+  margin: 0 0 26px;
+  max-width: 250px;
+  color: rgba(245, 240, 229, 0.78);
+  font-size: 16px;
+  line-height: 1.55;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.benefit-list {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.benefit-list li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #f7f1e7;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.benefit-icon {
+  width: 26px;
+  height: 26px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid rgba(217, 168, 62, 0.75);
+  background: rgba(217, 168, 62, 0.1);
+  color: var(--gold);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.promo-quote {
+  margin: auto 0 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(22px, 2vw, 32px);
+  line-height: 1.1;
+  color: #f2e7c8;
+  font-style: italic;
+  max-width: 240px;
+}
+
+.webinar-form-panel {
+  background: #f7f5f1;
+  padding: 22px 28px 26px;
+}
+
+.form-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 12px;
+}
+
+.eyebrow--panel {
+  margin: 0 0 10px;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  color: var(--green);
+}
+
+.form-panel-header h2 {
+  margin: 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(38px, 3.1vw, 59px);
+  line-height: 0.96;
+  color: #123b34;
+  letter-spacing: -0.04em;
+}
+
+.panel-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(17, 44, 39, 0.12);
+  background: rgba(255, 255, 255, 0.45);
+  color: var(--green);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 10px 12px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.panel-tag span {
+  color: var(--gold);
+}
+
+.panel-description {
+  margin: 0 0 18px;
+  color: #45665e;
+  font-size: 15px;
+  line-height: 1.7;
+  max-width: 720px;
+}
+
+.webinar-form {
+  display: grid;
+  gap: 20px;
+}
+
+.form-section {
+  border-top: 1px solid rgba(17, 44, 39, 0.12);
+  padding-top: 20px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.section-number {
+  width: 26px;
+  height: 26px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--forest);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.section-title h3 {
+  margin: 0;
+  font-size: 17px;
+  color: #123b34;
+  font-weight: 700;
+}
+
+.fields-grid {
+  display: grid;
+  gap: 18px 18px;
+}
+
+.two-col {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field.full-width {
+  grid-column: 1 / -1;
+}
+
+.field span,
+.checkbox-fieldset legend {
+  color: #203f39;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(17, 44, 39, 0.18);
+  border-radius: 10px;
+  padding: 12px 14px;
+  min-height: 46px;
+  color: #17362f;
+  font: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: #7d8d87;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: rgba(217, 168, 62, 0.85);
+  background: #fffefb;
+  box-shadow: 0 0 0 3px rgba(217, 168, 62, 0.14);
+}
+
+.field textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.field-error {
+  border-color: #b83a3a !important;
+  box-shadow: 0 0 0 3px rgba(184, 58, 58, 0.08) !important;
+}
+
+.error-text {
+  color: #a43f3d;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.checkbox-fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 12px;
+  margin-top: 12px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid rgba(17, 44, 39, 0.12);
+  border-radius: 10px;
+  padding: 10px 12px;
+  min-height: 42px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.checkbox-item:hover {
+  border-color: rgba(217, 168, 62, 0.68);
+}
+
+.checkbox-item input {
+  accent-color: var(--gold);
+  width: 15px;
+  height: 15px;
+  margin: 0;
+}
+
+.checkbox-item span {
+  color: #1c3c36;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.checkbox-item.selected {
+  background: rgba(217, 168, 62, 0.08);
+  border-color: rgba(217, 168, 62, 0.8);
+  box-shadow: inset 0 0 0 1px rgba(217, 168, 62, 0.06);
+}
+
+.consent-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.52);
+  border: 1px solid rgba(17, 44, 39, 0.12);
+  border-radius: 10px;
+  padding: 14px 12px;
+  color: #173b34;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.consent-box input {
+  width: 17px;
+  height: 17px;
+  accent-color: var(--gold);
+  margin-top: 2px;
+}
+
+.consent-box.checked {
+  border-color: rgba(217, 168, 62, 0.75);
+  background: rgba(217, 168, 62, 0.05);
+}
+
+.submit-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+.webinar-submit {
+  width: min(100%, 330px);
+  justify-content: center;
+  padding-block: 16px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.webinar-error-box {
+  background: #fff1f1;
+  border: 1px solid #e7b2b2;
+  color: #7d2828;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13px;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(17, 44, 39, 0.18);
+  border-top-color: var(--forest);
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.secure-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 11px;
+  color: #5d6f6b;
+  text-align: center;
+}
+
+.webinar-success-panel {
+  width: min(760px, calc(100% - 24px));
+  background: #fffdf9;
+  border: 1px solid rgba(217, 168, 62, 0.45);
+  border-radius: 22px;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.08);
+  padding: 40px 28px 32px;
+  text-align: center;
+}
+
+.success-badge {
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--gold), var(--light-gold));
+  color: var(--forest);
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.webinar-success-panel h1 {
+  margin: 0;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(42px, 4vw, 62px);
+  line-height: 0.9;
+  color: #113c35;
+}
+
+.webinar-success-panel p {
+  margin: 16px auto 0;
+  max-width: 520px;
+  color: #3d5d56;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.eyebrow--light {
+  color: var(--gold);
+}
+
+.webinar-success-button {
+  margin-top: 22px;
+}
+
+@media (max-width: 980px) {
+  .webinar-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .webinar-aside {
+    padding-bottom: 34px;
+  }
+}
+
+@media (max-width: 700px) {
+  .webinar-page {
+    padding: 18px 12px 36px;
+  }
+
+  .webinar-form-panel {
+    padding: 18px 16px 22px;
+  }
+
+  .form-panel-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .panel-tag {
+    align-self: flex-start;
+  }
+
+  .two-col,
+  .checkbox-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .webinar-aside {
+    padding: 18px 18px 26px;
+  }
+
+  .webinar-aside h1 {
+    margin-top: 18px;
+  }
+
+  .promo-copy {
+    max-width: none;
+  }
+
+  .submit-wrap {
+    display: block;
+  }
+
+  .webinar-submit {
+    width: 100%;
+  }
+}

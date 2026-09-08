@@ -17,10 +17,10 @@ const Navbar = ({ onRegister = () => window.dispatchEvent(new CustomEvent('regis
           <span className="brand-text"><strong>HALAL<br /><b>WEALTH</b><small>SUMMIT 2026</small></strong></span>
         </Link>
         <div className="nav-links"><button className="nav-link active" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Home</button>{links.map((link) => <button className="nav-link" key={link} onClick={() => jump(link)}>{link}</button>)}</div>
-        <button className="nav-register" onClick={onRegister}>Register now <ArrowUpRight size={16} /></button>
+        <Link to="/webinar-register" className="nav-register nav-register--webinar">Register for Webinar <ArrowUpRight size={16} /></Link>
         <button className="menu-toggle" aria-label="Toggle menu" onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button>
       </div>
-      {open && <div className="mobile-menu"><button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Home</button>{links.map((link) => <button key={link} onClick={() => jump(link)}>{link}</button>)}<button className="nav-register" onClick={() => { setOpen(false); onRegister(); }}>Register now <ArrowUpRight size={16} /></button></div>}
+      {open && <div className="mobile-menu"><button onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>Home</button>{links.map((link) => <button key={link} onClick={() => jump(link)}>{link}</button>)}<Link className="nav-register nav-register--webinar" to="/webinar-register" onClick={() => setOpen(false)}>Register for Webinar <ArrowUpRight size={16} /></Link></div>}
     </nav>
   );
 };
