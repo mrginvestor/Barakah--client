@@ -253,7 +253,7 @@ function WebinarRegisterPage() {
               <p className="eyebrow eyebrow--panel">Registration Form</p>
               <h2>Business Finance Webinar</h2>
             </div>
-            <span className="panel-tag">NOV 2024<span>•</span>Online Webinar</span>
+            <span className="panel-tag">20 Sep 2026<span>•</span>Online Webinar</span>
           </div>
 
           <p className="panel-description">
