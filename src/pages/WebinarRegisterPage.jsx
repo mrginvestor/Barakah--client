@@ -11,13 +11,14 @@ const initialForm = {
   businessName: '',
   businessWebsite: '',
   businessRole: '',
+  businessRoleOther: '',
   businessType: '',
-  businessAge: '',
-  employeeCount: '',
-  annualTurnover: '',
+  businessTypeOther: '',
   financialInterests: [],
+  financialInterestsOther: '',
   financialChallenge: '',
   referralSource: '',
+  referralSourceOther: '',
   consent: false,
 };
 
@@ -49,9 +50,6 @@ const businessTypes = [
   'Other',
 ];
 
-const businessAges = ['Less than 1 year', '1–3 years', '3–5 years', '5–10 years', 'More than 10 years'];
-const employeeCounts = ['1–5', '6–10', '11–25', '26–50', '51–100', '100+'];
-const turnoverOptions = ['Below ₹25 Lakhs', '₹25 Lakhs – ₹1 Crore', '₹1 – ₹5 Crores', '₹5 – ₹10 Crores', '₹10 – ₹50 Crores', 'Above ₹50 Crores', 'Prefer not to disclose'];
 const financialTopics = ['Business Financial Planning', 'Cash Flow Management', 'Working Capital Management', 'Business Loans & Financing', 'Investment Planning', 'Tax Planning', 'Profitability Improvement', 'Financial Risk Management', 'Business Valuation', 'Wealth Management for Business Owners', 'Investment Opportunities', 'Business Expansion & Funding', 'Other'];
 const referralSources = ['WhatsApp', 'Instagram', 'Facebook', 'LinkedIn', 'Friend / Business Network', 'Email', 'Website', 'Other'];
 const benefitItems = [
@@ -92,19 +90,48 @@ function WebinarRegisterPage() {
   }, []);
 
   const updateField = (field, value) => {
-    setForm((current) => ({ ...current, [field]: value }));
-    setErrors((current) => ({ ...current, [field]: undefined }));
+    setForm((current) => {
+      const next = { ...current, [field]: value };
+      if (field === 'businessRole' && value !== 'Other') {
+        next.businessRoleOther = '';
+      }
+      if (field === 'businessType' && value !== 'Other') {
+        next.businessTypeOther = '';
+      }
+      if (field === 'referralSource' && value !== 'Other') {
+        next.referralSourceOther = '';
+      }
+      return next;
+    });
+    setErrors((current) => {
+      const nextErrors = { ...current, [field]: undefined };
+      if (field === 'businessRole' && value !== 'Other') nextErrors.businessRoleOther = undefined;
+      if (field === 'businessType' && value !== 'Other') nextErrors.businessTypeOther = undefined;
+      if (field === 'referralSource' && value !== 'Other') nextErrors.referralSourceOther = undefined;
+      return nextErrors;
+    });
     setSubmitError('');
   };
 
   const toggleInterest = (topic) => {
     setForm((current) => {
-      const selected = current.financialInterests.includes(topic)
+      const isRemoving = current.financialInterests.includes(topic);
+      const selected = isRemoving
         ? current.financialInterests.filter((item) => item !== topic)
         : [...current.financialInterests, topic];
-      return { ...current, financialInterests: selected };
+      return {
+        ...current,
+        financialInterests: selected,
+        ...(isRemoving && topic === 'Other' ? { financialInterestsOther: '' } : {}),
+      };
     });
-    setErrors((current) => ({ ...current, financialInterests: undefined }));
+    setErrors((current) => {
+      const next = { ...current, financialInterests: undefined };
+      if (topic === 'Other') {
+        next.financialInterestsOther = undefined;
+      }
+      return next;
+    });
     setSubmitError('');
   };
 
@@ -148,26 +175,26 @@ function WebinarRegisterPage() {
 
     if (!String(form.businessRole || '').trim()) {
       nextErrors.businessRole = 'Please select your role.';
+    } else if (form.businessRole === 'Other' && !String(form.businessRoleOther || '').trim()) {
+      nextErrors.businessRoleOther = 'Please specify your role.';
     }
 
     if (!String(form.businessType || '').trim()) {
       nextErrors.businessType = 'Please select your business type.';
-    }
-
-    if (!String(form.businessAge || '').trim()) {
-      nextErrors.businessAge = 'Please tell us how long your business has been operating.';
-    }
-
-    if (!String(form.employeeCount || '').trim()) {
-      nextErrors.employeeCount = 'Please select the number of employees.';
+    } else if (form.businessType === 'Other' && !String(form.businessTypeOther || '').trim()) {
+      nextErrors.businessTypeOther = 'Please specify your business type.';
     }
 
     if (!Array.isArray(form.financialInterests) || form.financialInterests.length < 1) {
       nextErrors.financialInterests = 'Please select at least one topic.';
+    } else if (form.financialInterests.includes('Other') && !String(form.financialInterestsOther || '').trim()) {
+      nextErrors.financialInterestsOther = 'Please specify your financial topic.';
     }
 
     if (!String(form.referralSource || '').trim()) {
       nextErrors.referralSource = 'Please tell us how you heard about this webinar.';
+    } else if (form.referralSource === 'Other' && !String(form.referralSourceOther || '').trim()) {
+      nextErrors.referralSourceOther = 'Please specify how you heard about this webinar.';
     }
 
     if (!form.consent) {
@@ -186,12 +213,29 @@ function WebinarRegisterPage() {
     setSubmitError('');
 
     try {
+      const finalRole = form.businessRole === 'Other' ? String(form.businessRoleOther || '').trim() : form.businessRole;
+      const finalType = form.businessType === 'Other' ? String(form.businessTypeOther || '').trim() : form.businessType;
+      const finalInterests = form.financialInterests.map((item) =>
+        item === 'Other' ? String(form.financialInterestsOther || '').trim() : item
+      ).filter(Boolean);
+      const finalReferral = form.referralSource === 'Other' ? String(form.referralSourceOther || '').trim() : form.referralSource;
+
       const payload = {
-        ...form,
+        fullName: String(form.fullName).trim(),
+        city: String(form.city).trim(),
+        businessName: String(form.businessName).trim(),
+        businessRole: finalRole,
+        businessType: finalType,
+        financialInterests: finalInterests,
+        financialChallenge: String(form.financialChallenge || '').trim(),
+        referralSource: finalReferral,
         phone: String(form.phone).trim(),
         email: String(form.email).trim().toLowerCase(),
         businessWebsite: normalizeWebsite(form.businessWebsite),
-        financialInterests: form.financialInterests,
+        consent: form.consent,
+        businessAge: 'Not Specified',
+        employeeCount: 'Not Specified',
+        annualTurnover: '',
       };
 
       await axios.post(`${API_URL}/api/webinar/register`, payload);
@@ -362,7 +406,7 @@ function WebinarRegisterPage() {
                   {errors.businessWebsite && <small className="error-text">{errors.businessWebsite}</small>}
                 </label>
 
-                <label className="field">
+                <div className="field">
                   <span>Your Role in the Business *</span>
                   <select
                     className={errors.businessRole ? 'field-error' : ''}
@@ -376,9 +420,25 @@ function WebinarRegisterPage() {
                     ))}
                   </select>
                   {errors.businessRole && <small className="error-text">{errors.businessRole}</small>}
-                </label>
 
-                <label className="field">
+                  {form.businessRole === 'Other' && (
+                    <div className="other-specify-wrap">
+                      <span className="other-specify-label">Please specify your role *</span>
+                      <input
+                        type="text"
+                        className={errors.businessRoleOther ? 'field-error' : ''}
+                        value={form.businessRoleOther}
+                        onChange={(event) => updateField('businessRoleOther', event.target.value)}
+                        placeholder="Please enter your role"
+                        aria-invalid={Boolean(errors.businessRoleOther)}
+                        autoFocus
+                      />
+                      {errors.businessRoleOther && <small className="error-text">{errors.businessRoleOther}</small>}
+                    </div>
+                  )}
+                </div>
+
+                <div className="field">
                   <span>Business Type *</span>
                   <select
                     className={errors.businessType ? 'field-error' : ''}
@@ -392,67 +452,29 @@ function WebinarRegisterPage() {
                     ))}
                   </select>
                   {errors.businessType && <small className="error-text">{errors.businessType}</small>}
-                </label>
+
+                  {form.businessType === 'Other' && (
+                    <div className="other-specify-wrap">
+                      <span className="other-specify-label">Please specify your business type *</span>
+                      <input
+                        type="text"
+                        className={errors.businessTypeOther ? 'field-error' : ''}
+                        value={form.businessTypeOther}
+                        onChange={(event) => updateField('businessTypeOther', event.target.value)}
+                        placeholder="Please enter your business type"
+                        aria-invalid={Boolean(errors.businessTypeOther)}
+                        autoFocus
+                      />
+                      {errors.businessTypeOther && <small className="error-text">{errors.businessTypeOther}</small>}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
             <div className="form-section">
               <div className="section-title">
                 <span className="section-number">3</span>
-                <h3>Business Profile</h3>
-              </div>
-
-              <div className="fields-grid two-col">
-                <label className="field">
-                  <span>How long have you been operating your business? *</span>
-                  <select
-                    className={errors.businessAge ? 'field-error' : ''}
-                    value={form.businessAge}
-                    onChange={(event) => updateField('businessAge', event.target.value)}
-                    aria-invalid={Boolean(errors.businessAge)}
-                  >
-                    <option value="">Select duration</option>
-                    {businessAges.map((option) => (
-                      <option value={option} key={option}>{option}</option>
-                    ))}
-                  </select>
-                  {errors.businessAge && <small className="error-text">{errors.businessAge}</small>}
-                </label>
-
-                <label className="field">
-                  <span>Number of Employees *</span>
-                  <select
-                    className={errors.employeeCount ? 'field-error' : ''}
-                    value={form.employeeCount}
-                    onChange={(event) => updateField('employeeCount', event.target.value)}
-                    aria-invalid={Boolean(errors.employeeCount)}
-                  >
-                    <option value="">Select employees</option>
-                    {employeeCounts.map((option) => (
-                      <option value={option} key={option}>{option}</option>
-                    ))}
-                  </select>
-                  {errors.employeeCount && <small className="error-text">{errors.employeeCount}</small>}
-                </label>
-
-                <label className="field full-width">
-                  <span>Approximate Annual Business Turnover</span>
-                  <select
-                    value={form.annualTurnover}
-                    onChange={(event) => updateField('annualTurnover', event.target.value)}
-                  >
-                    <option value="">Select turnover</option>
-                    {turnoverOptions.map((option) => (
-                      <option value={option} key={option}>{option}</option>
-                    ))}
-                  </select>
-                </label>
-              </div>
-            </div>
-
-            <div className="form-section">
-              <div className="section-title">
-                <span className="section-number">4</span>
                 <h3>Financial Interests</h3>
               </div>
 
@@ -471,12 +493,28 @@ function WebinarRegisterPage() {
                   ))}
                 </div>
                 {errors.financialInterests && <small className="error-text">{errors.financialInterests}</small>}
+
+                {form.financialInterests.includes('Other') && (
+                  <div className="other-specify-wrap other-specify-wrap--checkbox">
+                    <span className="other-specify-label">Please specify your financial topic *</span>
+                    <input
+                      type="text"
+                      className={errors.financialInterestsOther ? 'field-error' : ''}
+                      value={form.financialInterestsOther}
+                      onChange={(event) => updateField('financialInterestsOther', event.target.value)}
+                      placeholder="Please enter your topic"
+                      aria-invalid={Boolean(errors.financialInterestsOther)}
+                      autoFocus
+                    />
+                    {errors.financialInterestsOther && <small className="error-text">{errors.financialInterestsOther}</small>}
+                  </div>
+                )}
               </fieldset>
             </div>
 
             <div className="form-section">
               <div className="section-title">
-                <span className="section-number">5</span>
+                <span className="section-number">4</span>
                 <h3>Additional Information</h3>
               </div>
 
@@ -491,7 +529,7 @@ function WebinarRegisterPage() {
                   />
                 </label>
 
-                <label className="field">
+                <div className="field full-width">
                   <span>How did you hear about this webinar? *</span>
                   <select
                     className={errors.referralSource ? 'field-error' : ''}
@@ -505,13 +543,29 @@ function WebinarRegisterPage() {
                     ))}
                   </select>
                   {errors.referralSource && <small className="error-text">{errors.referralSource}</small>}
-                </label>
+
+                  {form.referralSource === 'Other' && (
+                    <div className="other-specify-wrap">
+                      <span className="other-specify-label">Please specify how you heard about this webinar *</span>
+                      <input
+                        type="text"
+                        className={errors.referralSourceOther ? 'field-error' : ''}
+                        value={form.referralSourceOther}
+                        onChange={(event) => updateField('referralSourceOther', event.target.value)}
+                        placeholder="Please enter your answer"
+                        aria-invalid={Boolean(errors.referralSourceOther)}
+                        autoFocus
+                      />
+                      {errors.referralSourceOther && <small className="error-text">{errors.referralSourceOther}</small>}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
             <div className="form-section consent-section">
               <div className="section-title">
-                <span className="section-number">6</span>
+                <span className="section-number">5</span>
                 <h3>Consent</h3>
               </div>
 

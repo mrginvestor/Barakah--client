@@ -16,7 +16,7 @@ const Home = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [activeTheme, setActiveTheme] = useState(null); const [speakerIndex, setSpeakerIndex] = useState(0); const [time, setTime] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   useEffect(() => { const target = new Date('2026-11-29T09:00:00+05:30'); const tick = () => { const diff = Math.max(0, target - new Date()); setTime({ days: Math.floor(diff / 86400000), hours: Math.floor(diff / 3600000) % 24, minutes: Math.floor(diff / 60000) % 60, seconds: Math.floor(diff / 1000) % 60 }); }; tick(); const timer = setInterval(tick, 1000); const openRegistration = () => setModalOpen(true); window.addEventListener('registration-open', openRegistration); return () => { clearInterval(timer); window.removeEventListener('registration-open', openRegistration); }; }, []);
-  const visibleSpeakers = speakers.slice(speakerIndex, speakerIndex + (typeof window !== 'undefined' && window.innerWidth < 700 ? 1 : 5));
+  const displaySpeakers = Array.from({ length: Math.min(5, speakers.length) }, (_, i) => speakers[(speakerIndex + i) % speakers.length]);
 
   return (
         <main>
@@ -28,7 +28,7 @@ const Home = () => {
                   <img src={barakahLogo} alt="Barakah logo" className="hero-logo" />
                 </div>
                 <p className="eyebrow">CHENNAI <i>•</i>  29 NOVEMBER 2026</p>
-                <h1>HALAL<br /><em>WEALTH</em><br />SUMMIT <span>2026</span></h1>
+                <h1>HALAL<br /><em>WEALTH</em><br />SUMMIT <span>2026</span> </h1>
                 <p className="tagline">Humanizing Finance. Empowering Communities.</p>
                 <div className="event-meta">
                   <span><CalendarDays /> NOVEMBER<br /><b>29, 2026</b></span>
@@ -41,7 +41,7 @@ const Home = () => {
                 </div>
               </Reveal>
               <div className="hero-visual">
-                <div className="arch-image" role="img" aria-label="Professionals networking at a premium finance conference" style={{ backgroundImage: `linear-gradient(180deg, rgba(0, 42, 34, 0.25), rgba(0, 42, 34, 0.55)), url(${summitBackground})` }} />
+                <div className="arch-image" role="img" aria-label="Professionals networking at a premium finance conference" style={{ backgroundImage: `url(${summitBackground})` }} />
                 <div className="countdown">
                   <p>THE SUMMIT BEGINS IN</p>
                   <div className="countdown-values">{Object.entries(time).map(([label, value]) => <span key={label}><b>{String(value).padStart(2, '0')}</b><small>{label.toUpperCase()}</small></span>)}</div>
@@ -65,14 +65,30 @@ const Home = () => {
               <div className="theme-grid">{themes.map(([title, Icon, detail], index) => <motion.button whileHover={{ y: -5 }} key={title} className={`theme-card ${activeTheme === index ? 'selected' : ''}`} onClick={() => setActiveTheme(activeTheme === index ? null : index)}><Icon /><strong>{title}</strong>{activeTheme === index && <small>{detail}</small>}</motion.button>)}</div>
             </section>
             <section id="speakers" className="speakers-section">
-              <div className="section-head">
-                <div><p className="eyebrow">MEET THE MINDS</p><h2>Key Speakers</h2></div>
-                <button className="text-button">View all speakers <ArrowRight size={17} /></button>
-              </div>
-              <div className="speaker-row">
-                <button className="carousel-arrow" onClick={() => setSpeakerIndex(Math.max(0, speakerIndex - 1))}><ChevronLeft /></button>
-                {visibleSpeakers.map(([name, role, org], index) => <article className="speaker-card" key={name}><div className={`speaker-photo photo-${speakerIndex + index}`}><span>{name.split(' ').map(word => word[0]).join('').slice(0, 2)}</span></div><h3>{name}</h3><p>{role}</p><small>{org}</small><a href="#contact" aria-label={`${name} LinkedIn`}><Linkedin size={15} /></a></article>)}
-                <button className="carousel-arrow" onClick={() => setSpeakerIndex(Math.min(speakers.length - 1, speakerIndex + 1))}><ChevronRight /></button>
+              <div className="speakers-inner">
+                <div className="section-head">
+                  <div><p className="eyebrow">MEET THE MINDS</p><h2>Key Speakers</h2></div>
+                  <button className="text-button">View all speakers <ArrowRight size={17} /></button>
+                </div>
+                <div className="speakers-carousel-wrap">
+                  <button className="carousel-arrow carousel-arrow--prev" onClick={() => setSpeakerIndex(prev => (prev === 0 ? speakers.length - 1 : prev - 1))} aria-label="Previous speakers"><ChevronLeft size={20} /></button>
+                  <div className="speaker-cards-grid">
+                    {displaySpeakers.map(([name, role, org], index) => (
+                      <article className="speaker-card" key={name}>
+                        <div className="speaker-photo">
+                          <span>{name.split(' ').map(word => word[0]).join('').slice(0, 2)}</span>
+                        </div>
+                        <div className="speaker-info">
+                          <h3>{name}</h3>
+                          <p>{role}</p>
+                          <small>{org}</small>
+                          <a href="#contact" aria-label={`${name} LinkedIn`}><Linkedin size={15} /></a>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                  <button className="carousel-arrow carousel-arrow--next" onClick={() => setSpeakerIndex(prev => (prev + 1) % speakers.length)} aria-label="Next speakers"><ChevronRight size={20} /></button>
+                </div>
               </div>
             </section>
             <section id="agenda" className="agenda-section geometric">

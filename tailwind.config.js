@@ -7,15 +7,23 @@ export default {
   theme: {
     extend: {
       colors: {
-        emerald: {
-          900: '#022C22',
-          800: '#064E3B',
+        navy: {
+          DEFAULT: '#082B49',
+          dark: '#051C30',
         },
+        richBlue: '#0F4C75',
         gold: {
-          DEFAULT: '#D4AF37',
-          light: '#F3E5AB',
+          DEFAULT: '#D4AF5A',
+          light: '#E6C875',
         },
-        cream: '#FDFBF7',
+        lightBg: '#F8FAFC',
+        darkGreen: '#082B49',
+        lightGreen: '#0F4C75',
+        emerald: {
+          900: '#082B49',
+          800: '#082B49',
+        },
+        cream: '#FFFFFF',
       },
       fontFamily: {
         heading: ['"Cormorant Garamond"', 'serif'],
