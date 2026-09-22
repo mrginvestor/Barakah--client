@@ -4,6 +4,25 @@ import API_URL from '../config/api';
 
 const fields = [['profession', 'Profession', 'currentProfession'], ['ageGroup', 'Age Group', 'ageGroup'], ['gender', 'Gender', 'gender'], ['country', 'Country', 'country'], ['knowledge', 'Knowledge', 'islamicFinanceKnowledge'], ['participation', 'Participation', 'participationMode'], ['community', 'WhatsApp', 'whatsappCommunity'], ['status', 'Status', 'status']];
 const display = (registration, key) => key === 'whatsappCommunity' ? (registration[key] ? 'Yes' : 'No') : (registration[key] || '—');
+const webinarText = (value) => String(value || '').trim() || '—';
+const webinarInterests = (registration) => {
+  if (!Array.isArray(registration.financialInterests)) return '—';
+  const values = registration.financialInterests.map((interest) => {
+    if (typeof interest === 'string') return interest;
+    return interest?.label || interest?.name || interest?.value || '';
+  }).filter(Boolean);
+  return values.length ? values.join(', ') : '—';
+};
+const webinarOtherInterest = (registration) => {
+  const explicit = webinarText(registration.financialInterestsOther);
+  if (explicit !== '—') return explicit;
+  const knownTopics = new Set(['Business Financial Planning', 'Cash Flow Management', 'Working Capital Management', 'Business Loans & Financing', 'Investment Planning', 'Tax Planning', 'Profitability Improvement', 'Financial Risk Management', 'Business Valuation', 'Wealth Management for Business Owners', 'Investment Opportunities', 'Business Expansion & Funding', 'Other']);
+  if (Array.isArray(registration.financialInterests)) {
+    const legacyCustom = registration.financialInterests.find((interest) => typeof interest === 'string' && !knownTopics.has(interest));
+    return legacyCustom || '—';
+  }
+  return '—';
+};
 
 export default function AdminDashboard() {
   const [registrations, setRegistrations] = useState([]);
@@ -24,7 +43,7 @@ export default function AdminDashboard() {
   }), [registrations, query, filters]);
 
   const webinarFiltered = useMemo(() => webinarRegistrations.filter(registration => {
-    const haystack = [registration.fullName, registration.email, registration.phone, registration.businessName, registration.businessWebsite, registration.businessRole, registration.businessType, registration.financialInterests?.join(' ')].join(' ').toLowerCase();
+    const haystack = [registration.fullName, registration.email, registration.phone, registration.businessName, registration.businessWebsite, registration.businessRole, registration.businessType, registration.designation, registration.industry, registration.city, registration.state, registration.country, webinarInterests(registration), webinarOtherInterest(registration), registration.financialChallenge, registration.referralSource].join(' ').toLowerCase();
     return haystack.includes(query.toLowerCase());
   }), [webinarRegistrations, query]);
 
@@ -84,17 +103,23 @@ export default function AdminDashboard() {
         <div className="admin-table-wrap">
           <table className="admin-table">
             <thead>
-              <tr>{['Name', 'Business', 'Website', 'Role', 'Type', 'Topics', 'Registered'].map(label => <th key={label}>{label}</th>)}</tr>
+              <tr>{['Full Name', 'WhatsApp / Mobile', 'Email', 'City / Location', 'Business / Company', 'Business Website', 'Role in Business', 'Business Type', 'Financial Interests', 'Other Interest', 'Financial Challenge', 'Referral Source', 'Registered'].map(label => <th key={label}>{label}</th>)}</tr>
             </thead>
             <tbody>
               {webinarFiltered.map(registration => (
                 <tr key={registration._id}>
-                  <td>{registration.fullName}</td>
-                  <td>{registration.businessName}</td>
-                  <td><a href={registration.businessWebsite} target="_blank" rel="noreferrer">{registration.businessWebsite}</a></td>
-                  <td>{registration.businessRole}</td>
-                  <td>{registration.businessType}</td>
-                  <td>{registration.financialInterests?.join(', ') || '—'}</td>
+                  <td>{webinarText(registration.fullName)}</td>
+                  <td>{webinarText(registration.phone)}</td>
+                  <td>{webinarText(registration.email)}</td>
+                  <td>{[registration.city, registration.state, registration.country].filter(Boolean).join(', ') || '—'}</td>
+                  <td>{webinarText(registration.businessName)}</td>
+                  <td className="webinar-cell--wrap">{registration.businessWebsite ? <a href={registration.businessWebsite} target="_blank" rel="noreferrer">{registration.businessWebsite}</a> : '—'}</td>
+                  <td>{webinarText(registration.businessRole || registration.designation)}</td>
+                  <td>{webinarText(registration.businessType || registration.industry)}</td>
+                  <td className="webinar-cell--wide webinar-cell--wrap">{webinarInterests(registration)}</td>
+                  <td className="webinar-cell--wide webinar-cell--wrap">{webinarOtherInterest(registration)}</td>
+                  <td className="webinar-cell--challenge">{webinarText(registration.financialChallenge)}</td>
+                  <td>{webinarText(registration.referralSource)}</td>
                   <td>{registration.createdAt ? new Date(registration.createdAt).toLocaleDateString() : '—'}</td>
                 </tr>
               ))}

@@ -109,7 +109,7 @@ const Home = () => {
             </section>
             <footer id="contact" className="footer">
               <div><p className="eyebrow">VENUE</p><strong>Chennai, India</strong><small>Venue details coming soon</small></div>
-              <div><p className="eyebrow">EMAIL</p><strong>info@halalwealthsummit.com</strong></div>
+              <div><p className="eyebrow">EMAIL</p><strong>info@halalwealth.finance</strong></div>
               <div><p className="eyebrow">WHATSAPP / CALL</p><strong>+91 12345 67890</strong></div>
               <div><p className="eyebrow">FOLLOW US</p><div className="socials"><Linkedin /><span>𝕏</span><span>◎</span><span>◉</span></div></div>
               <div className="footer-bottom"><span>© 2026 Halal Wealth Summit. All Rights Reserved.</span><span>Privacy Policy &nbsp; | &nbsp; Terms & Conditions</span></div>

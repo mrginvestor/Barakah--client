@@ -278,6 +278,9 @@
 .admin-table td { padding:13px 11px; border-bottom:1px solid rgba(15,76,117,0.15); white-space:nowrap; }
 .admin-table tbody tr { cursor:pointer; }
 .admin-table tbody tr:hover { background:rgba(15,76,117,0.06); }
+.admin-table .webinar-cell--wrap { white-space:normal; overflow-wrap:anywhere; min-width:150px; max-width:260px; line-height:1.4; }
+.admin-table .webinar-cell--wide { min-width:220px; max-width:320px; }
+.admin-table .webinar-cell--challenge { white-space:normal; overflow-wrap:anywhere; min-width:240px; max-width:360px; line-height:1.4; }
 .admin-status { color:#0F4C75; font-weight:700; }
 .admin-status.checked { color:#082B49; }
 .admin-empty { padding:30px; text-align:center; color:#4A6572; opacity:.8; }

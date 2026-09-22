@@ -8,8 +8,12 @@ const initialForm = {
   phone: '',
   email: '',
   city: '',
+  state: '',
+  country: '',
   businessName: '',
   businessWebsite: '',
+  designation: '',
+  industry: '',
   businessRole: '',
   businessRoleOther: '',
   businessType: '',
@@ -51,7 +55,7 @@ const businessTypes = [
 ];
 
 const financialTopics = ['Business Financial Planning', 'Cash Flow Management', 'Working Capital Management', 'Business Loans & Financing', 'Investment Planning', 'Tax Planning', 'Profitability Improvement', 'Financial Risk Management', 'Business Valuation', 'Wealth Management for Business Owners', 'Investment Opportunities', 'Business Expansion & Funding', 'Other'];
-const referralSources = ['WhatsApp', 'Instagram', 'Facebook', 'LinkedIn', 'Friend / Business Network', 'Email', 'Website', 'Other'];
+const referralSources = ['WhatsApp', 'Instagram', 'Facebook', 'YouTube', 'Friend / Colleague', 'Website', 'Other'];
 const benefitItems = [
   'Practical Financial Insights',
   'Smarter Business Decisions',
@@ -66,6 +70,11 @@ function normalizeWebsite(value) {
   if (/^www\./i.test(trimmed)) return `https://${trimmed}`;
   if (!/\s/.test(trimmed) && !trimmed.includes('://')) return `https://${trimmed}`;
   return trimmed;
+}
+
+function normalizePhone(value) {
+  const digits = String(value || '').replace(/\D/g, '');
+  return digits.length === 12 && digits.startsWith('91') ? digits.slice(2) : digits.slice(0, 10);
 }
 
 function WebinarRegisterPage() {
@@ -92,12 +101,8 @@ function WebinarRegisterPage() {
   const updateField = (field, value) => {
     setForm((current) => {
       const next = { ...current, [field]: value };
-      if (field === 'businessRole' && value !== 'Other') {
-        next.businessRoleOther = '';
-      }
-      if (field === 'businessType' && value !== 'Other') {
-        next.businessTypeOther = '';
-      }
+      if (field === 'businessRole') next.designation = value;
+      if (field === 'businessType') next.industry = value;
       if (field === 'referralSource' && value !== 'Other') {
         next.referralSourceOther = '';
       }
@@ -105,8 +110,6 @@ function WebinarRegisterPage() {
     });
     setErrors((current) => {
       const nextErrors = { ...current, [field]: undefined };
-      if (field === 'businessRole' && value !== 'Other') nextErrors.businessRoleOther = undefined;
-      if (field === 'businessType' && value !== 'Other') nextErrors.businessTypeOther = undefined;
       if (field === 'referralSource' && value !== 'Other') nextErrors.referralSourceOther = undefined;
       return nextErrors;
     });
@@ -142,17 +145,13 @@ function WebinarRegisterPage() {
       nextErrors.fullName = 'Please enter your full name.';
     }
 
-    const normalizedPhone = String(form.phone || '').replace(/\s+/g, '');
-    if (!/^\+?[1-9]\d{7,14}$/.test(normalizedPhone)) {
-      nextErrors.phone = 'Please enter a valid mobile number with country code.';
+    const normalizedPhone = String(form.phone || '').trim();
+    if (!/^\d{10}$/.test(normalizedPhone)) {
+      nextErrors.phone = 'Please enter a valid 10-digit mobile number.';
     }
 
     if (!/^\S+@\S+\.\S+$/.test(String(form.email || '').trim())) {
       nextErrors.email = 'Please enter a valid email address.';
-    }
-
-    if (!String(form.city || '').trim()) {
-      nextErrors.city = 'Please enter your city or location.';
     }
 
     if (!String(form.businessName || '').trim()) {
@@ -215,18 +214,24 @@ function WebinarRegisterPage() {
     try {
       const finalRole = form.businessRole === 'Other' ? String(form.businessRoleOther || '').trim() : form.businessRole;
       const finalType = form.businessType === 'Other' ? String(form.businessTypeOther || '').trim() : form.businessType;
-      const finalInterests = form.financialInterests.map((item) =>
-        item === 'Other' ? String(form.financialInterestsOther || '').trim() : item
-      ).filter(Boolean);
+      const finalInterests = form.financialInterests.filter(Boolean);
+      const finalOtherInterest = form.financialInterests.includes('Other')
+        ? String(form.financialInterestsOther || '').trim()
+        : '';
       const finalReferral = form.referralSource === 'Other' ? String(form.referralSourceOther || '').trim() : form.referralSource;
 
       const payload = {
         fullName: String(form.fullName).trim(),
         city: String(form.city).trim(),
+        state: String(form.state || '').trim(),
+        country: String(form.country || '').trim(),
         businessName: String(form.businessName).trim(),
         businessRole: finalRole,
         businessType: finalType,
+        designation: String(form.designation || finalRole).trim(),
+        industry: String(form.industry || finalType).trim(),
         financialInterests: finalInterests,
+        financialInterestsOther: finalOtherInterest,
         financialChallenge: String(form.financialChallenge || '').trim(),
         referralSource: finalReferral,
         phone: String(form.phone).trim(),
@@ -297,7 +302,7 @@ function WebinarRegisterPage() {
               <p className="eyebrow eyebrow--panel">Registration Form</p>
               <h2>Business Finance Webinar</h2>
             </div>
-            <span className="panel-tag">20 Sep 2026<span>•</span>Online Webinar</span>
+            <span className="panel-tag">04 Oct 2026<span>•</span>Online Webinar</span>
           </div>
 
           <p className="panel-description">
@@ -332,9 +337,11 @@ function WebinarRegisterPage() {
                     type="tel"
                     className={errors.phone ? 'field-error' : ''}
                     value={form.phone}
-                    onChange={(event) => updateField('phone', event.target.value)}
-                    placeholder="+91 98765 43210"
+                    onChange={(event) => updateField('phone', normalizePhone(event.target.value))}
+                    placeholder="9876543210"
                     inputMode="tel"
+                    maxLength={10}
+                    pattern="[0-9]{10}"
                     autoComplete="tel"
                     aria-invalid={Boolean(errors.phone)}
                   />
@@ -356,7 +363,7 @@ function WebinarRegisterPage() {
                 </label>
 
                 <label className="field">
-                  <span>City / Location *</span>
+                  <span>City / Location</span>
                   <input
                     type="text"
                     className={errors.city ? 'field-error' : ''}
@@ -367,6 +374,16 @@ function WebinarRegisterPage() {
                     aria-invalid={Boolean(errors.city)}
                   />
                   {errors.city && <small className="error-text">{errors.city}</small>}
+                </label>
+
+                <label className="field">
+                  <span>State</span>
+                  <input type="text" value={form.state} onChange={(event) => updateField('state', event.target.value)} placeholder="Enter your state" autoComplete="address-level1" />
+                </label>
+
+                <label className="field">
+                  <span>Country</span>
+                  <input type="text" value={form.country} onChange={(event) => updateField('country', event.target.value)} placeholder="Enter your country" autoComplete="country-name" />
                 </label>
               </div>
             </div>
@@ -407,7 +424,7 @@ function WebinarRegisterPage() {
                 </label>
 
                 <div className="field">
-                  <span>Your Role in the Business *</span>
+                  <span>Designation / Occupation *</span>
                   <select
                     className={errors.businessRole ? 'field-error' : ''}
                     value={form.businessRole}
@@ -439,7 +456,7 @@ function WebinarRegisterPage() {
                 </div>
 
                 <div className="field">
-                  <span>Business Type *</span>
+                  <span>Industry *</span>
                   <select
                     className={errors.businessType ? 'field-error' : ''}
                     value={form.businessType}
@@ -520,7 +537,7 @@ function WebinarRegisterPage() {
 
               <div className="fields-grid two-col">
                 <label className="field full-width">
-                  <span>What is the biggest financial challenge your business currently faces?</span>
+                  <span>What is the biggest financial challenge you are currently facing?</span>
                   <textarea
                     value={form.financialChallenge}
                     onChange={(event) => updateField('financialChallenge', event.target.value)}
