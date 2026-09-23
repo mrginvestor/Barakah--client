@@ -291,6 +291,11 @@
 .admin-detail hr { border:0; border-top:1px solid rgba(15,76,117,0.15); margin:25px 0; }
 .admin-detail strong { font-size:10px; text-transform:uppercase; color:#082B49; }
 .admin-detail p { font-size:12px; line-height:1.6; }
+.admin-detail-section { border-top:1px solid rgba(15,76,117,0.15); margin-top:18px; padding-top:14px; }
+.admin-detail-section h3 { margin:0 0 8px; color:#0F4C75; font-size:11px; text-transform:uppercase; letter-spacing:.08em; }
+.admin-detail-section p { display:grid; grid-template-columns:180px 1fr; gap:12px; margin:6px 0; }
+.admin-detail-section p strong { font-size:10px; }
+.admin-detail-section p span { overflow-wrap:anywhere; }
 .secure-note { color:#D4AF5A; font-size:10px; white-space:nowrap; }
 .privacy-card { display:flex; gap:14px; align-items:flex-start; background:#FFFFFF; border:1px solid rgba(15,76,117,0.2); border-left:4px solid #082B49; padding:16px; margin-top:4px; color:#082B49; border-radius:4px; }
 .privacy-card svg { color:#082B49; flex:none; }

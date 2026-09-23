@@ -11,25 +11,16 @@ const webinarInterests = (registration) => {
     if (typeof interest === 'string') return interest;
     return interest?.label || interest?.name || interest?.value || '';
   }).filter(Boolean);
+  if (registration.otherFinancialInterest) values.push(`Others: ${registration.otherFinancialInterest}`);
   return values.length ? values.join(', ') : '—';
 };
-const webinarOtherInterest = (registration) => {
-  const explicit = webinarText(registration.financialInterestsOther);
-  if (explicit !== '—') return explicit;
-  const knownTopics = new Set(['Business Financial Planning', 'Cash Flow Management', 'Working Capital Management', 'Business Loans & Financing', 'Investment Planning', 'Tax Planning', 'Profitability Improvement', 'Financial Risk Management', 'Business Valuation', 'Wealth Management for Business Owners', 'Investment Opportunities', 'Business Expansion & Funding', 'Other']);
-  if (Array.isArray(registration.financialInterests)) {
-    const legacyCustom = registration.financialInterests.find((interest) => typeof interest === 'string' && !knownTopics.has(interest));
-    return legacyCustom || '—';
-  }
-  return '—';
-};
-
 export default function AdminDashboard() {
   const [registrations, setRegistrations] = useState([]);
   const [webinarRegistrations, setWebinarRegistrations] = useState([]);
   const [query, setQuery] = useState('');
   const [filters, setFilters] = useState({});
   const [selected, setSelected] = useState(null);
+  const [selectedWebinar, setSelectedWebinar] = useState(null);
 
   useEffect(() => {
     axios.get(`${API_URL}/api/registrations`).then(response => setRegistrations(response.data)).catch(error => console.error(error));
@@ -43,7 +34,7 @@ export default function AdminDashboard() {
   }), [registrations, query, filters]);
 
   const webinarFiltered = useMemo(() => webinarRegistrations.filter(registration => {
-    const haystack = [registration.fullName, registration.email, registration.phone, registration.businessName, registration.businessWebsite, registration.businessRole, registration.businessType, registration.designation, registration.industry, registration.city, registration.state, registration.country, webinarInterests(registration), webinarOtherInterest(registration), registration.financialChallenge, registration.referralSource].join(' ').toLowerCase();
+    const haystack = [registration.fullName, registration.email, registration.whatsapp, registration.location, registration.designation, registration.industry, webinarInterests(registration), registration.financialChallenge, registration.webinarSource].join(' ').toLowerCase();
     return haystack.includes(query.toLowerCase());
   }), [webinarRegistrations, query]);
 
@@ -103,23 +94,21 @@ export default function AdminDashboard() {
         <div className="admin-table-wrap">
           <table className="admin-table">
             <thead>
-              <tr>{['Full Name', 'WhatsApp / Mobile', 'Email', 'City / Location', 'Business / Company', 'Business Website', 'Role in Business', 'Business Type', 'Financial Interests', 'Other Interest', 'Financial Challenge', 'Referral Source', 'Registered'].map(label => <th key={label}>{label}</th>)}</tr>
+              <tr>{['Full Name', 'WhatsApp / Mobile', 'Email', 'Location', 'Designation / Occupation', 'Industry', 'Financial Interests', 'Financial Challenge', 'Webinar Source', 'Consent', 'Registered'].map(label => <th key={label}>{label}</th>)}</tr>
             </thead>
             <tbody>
               {webinarFiltered.map(registration => (
-                <tr key={registration._id}>
+                <tr key={registration._id} onClick={() => setSelectedWebinar(registration)}>
                   <td>{webinarText(registration.fullName)}</td>
-                  <td>{webinarText(registration.phone)}</td>
+                  <td>{webinarText(registration.whatsapp)}</td>
                   <td>{webinarText(registration.email)}</td>
-                  <td>{[registration.city, registration.state, registration.country].filter(Boolean).join(', ') || '—'}</td>
-                  <td>{webinarText(registration.businessName)}</td>
-                  <td className="webinar-cell--wrap">{registration.businessWebsite ? <a href={registration.businessWebsite} target="_blank" rel="noreferrer">{registration.businessWebsite}</a> : '—'}</td>
-                  <td>{webinarText(registration.businessRole || registration.designation)}</td>
-                  <td>{webinarText(registration.businessType || registration.industry)}</td>
+                  <td>{webinarText(registration.location)}</td>
+                  <td>{webinarText(registration.designation)}</td>
+                  <td>{webinarText(registration.industry)}</td>
                   <td className="webinar-cell--wide webinar-cell--wrap">{webinarInterests(registration)}</td>
-                  <td className="webinar-cell--wide webinar-cell--wrap">{webinarOtherInterest(registration)}</td>
                   <td className="webinar-cell--challenge">{webinarText(registration.financialChallenge)}</td>
-                  <td>{webinarText(registration.referralSource)}</td>
+                  <td>{webinarText(registration.webinarSource || registration.referralSource)}</td>
+                  <td>{registration.consent === true ? 'Yes' : registration.consent === false ? 'No' : '—'}</td>
                   <td>{registration.createdAt ? new Date(registration.createdAt).toLocaleDateString() : '—'}</td>
                 </tr>
               ))}
@@ -128,6 +117,47 @@ export default function AdminDashboard() {
           {!webinarFiltered.length && <p className="admin-empty">No webinar registrations yet.</p>}
         </div>
       </div>
+
+      {selectedWebinar && (
+        <div className="admin-detail" role="dialog" aria-modal="true" aria-label="Webinar registration details">
+          <article>
+            <button type="button" onClick={() => setSelectedWebinar(null)}>Close</button>
+            <p className="eyebrow">WEBINAR REGISTRATION</p>
+            <h2>{webinarText(selectedWebinar.fullName)}</h2>
+            <AdminDetailSection title="Personal Information" rows={[
+              ['WhatsApp / Mobile Number', selectedWebinar.whatsapp || selectedWebinar.phone],
+              ['Email', selectedWebinar.email],
+              ['Location', selectedWebinar.location],
+            ]} />
+            <AdminDetailSection title="Business Information" rows={[
+              ['Designation / Occupation', selectedWebinar.designation],
+              ['Industry', selectedWebinar.industry],
+            ]} />
+            <AdminDetailSection title="Financial Interests" rows={[
+              ['Selected Interests', webinarInterests(selectedWebinar)],
+              ['Other Financial Interest', selectedWebinar.otherFinancialInterest],
+            ]} />
+            <AdminDetailSection title="Additional Information" rows={[
+              ['Financial Challenge', selectedWebinar.financialChallenge],
+            ]} />
+            <AdminDetailSection title="Webinar Information" rows={[
+              ['How they heard about the webinar', selectedWebinar.webinarSource],
+            ]} />
+            <AdminDetailSection title="Consent" rows={[
+              ['Consent', selectedWebinar.consent === true ? 'Yes' : selectedWebinar.consent === false ? 'No' : '—'],
+            ]} />
+          </article>
+        </div>
+      )}
     </div>
+  );
+}
+
+function AdminDetailSection({ title, rows }) {
+  return (
+    <section className="admin-detail-section">
+      <h3>{title}</h3>
+      {rows.map(([label, value]) => <p key={label}><strong>{label}</strong><span>{webinarText(value)}</span></p>)}
+    </section>
   );
 }

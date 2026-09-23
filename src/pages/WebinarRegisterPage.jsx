@@ -5,24 +5,15 @@ import API_URL from '../config/api';
 
 const initialForm = {
   fullName: '',
-  phone: '',
+  whatsapp: '',
   email: '',
-  city: '',
-  state: '',
-  country: '',
-  businessName: '',
-  businessWebsite: '',
+  location: '',
   designation: '',
   industry: '',
-  businessRole: '',
-  businessRoleOther: '',
-  businessType: '',
-  businessTypeOther: '',
   financialInterests: [],
-  financialInterestsOther: '',
+  otherFinancialInterest: '',
   financialChallenge: '',
-  referralSource: '',
-  referralSourceOther: '',
+  webinarSource: '',
   consent: false,
 };
 
@@ -34,7 +25,6 @@ const businessRoles = [
   'Partner',
   'Finance Head / CFO',
   'Manager',
-  'Other',
 ];
 
 const businessTypes = [
@@ -51,10 +41,9 @@ const businessTypes = [
   'Real Estate',
   'Healthcare',
   'Food & Hospitality',
-  'Other',
 ];
 
-const financialTopics = ['Business Financial Planning', 'Cash Flow Management', 'Working Capital Management', 'Business Loans & Financing', 'Investment Planning', 'Tax Planning', 'Profitability Improvement', 'Financial Risk Management', 'Business Valuation', 'Wealth Management for Business Owners', 'Investment Opportunities', 'Business Expansion & Funding', 'Other'];
+const financialTopics = ['Financial Planning', 'Loans and Financing', 'Investments and Wealth Management', 'Business Ethics', 'Others'];
 const referralSources = ['WhatsApp', 'Instagram', 'Facebook', 'YouTube', 'Friend / Colleague', 'Website', 'Other'];
 const benefitItems = [
   'Practical Financial Insights',
@@ -63,18 +52,15 @@ const benefitItems = [
   'Sustainable Wealth Planning',
 ];
 
-function normalizeWebsite(value) {
-  const trimmed = String(value || '').trim();
-  if (!trimmed) return '';
-  if (/^https?:\/\//i.test(trimmed)) return trimmed;
-  if (/^www\./i.test(trimmed)) return `https://${trimmed}`;
-  if (!/\s/.test(trimmed) && !trimmed.includes('://')) return `https://${trimmed}`;
-  return trimmed;
-}
-
 function normalizePhone(value) {
   const digits = String(value || '').replace(/\D/g, '');
-  return digits.length === 12 && digits.startsWith('91') ? digits.slice(2) : digits.slice(0, 10);
+  if (digits.length === 12 && digits.startsWith('91')) {
+    return digits.slice(2);
+  }
+  if (digits.length === 11 && digits.startsWith('0')) {
+    return digits.slice(1);
+  }
+  return digits.slice(0, 10);
 }
 
 function WebinarRegisterPage() {
@@ -101,16 +87,10 @@ function WebinarRegisterPage() {
   const updateField = (field, value) => {
     setForm((current) => {
       const next = { ...current, [field]: value };
-      if (field === 'businessRole') next.designation = value;
-      if (field === 'businessType') next.industry = value;
-      if (field === 'referralSource' && value !== 'Other') {
-        next.referralSourceOther = '';
-      }
       return next;
     });
     setErrors((current) => {
       const nextErrors = { ...current, [field]: undefined };
-      if (field === 'referralSource' && value !== 'Other') nextErrors.referralSourceOther = undefined;
       return nextErrors;
     });
     setSubmitError('');
@@ -125,14 +105,12 @@ function WebinarRegisterPage() {
       return {
         ...current,
         financialInterests: selected,
-        ...(isRemoving && topic === 'Other' ? { financialInterestsOther: '' } : {}),
+        ...(isRemoving && topic === 'Others' ? { otherFinancialInterest: '' } : {}),
       };
     });
     setErrors((current) => {
       const next = { ...current, financialInterests: undefined };
-      if (topic === 'Other') {
-        next.financialInterestsOther = undefined;
-      }
+      if (topic === 'Others') next.otherFinancialInterest = undefined;
       return next;
     });
     setSubmitError('');
@@ -145,55 +123,26 @@ function WebinarRegisterPage() {
       nextErrors.fullName = 'Please enter your full name.';
     }
 
-    const normalizedPhone = String(form.phone || '').trim();
+    const normalizedPhone = String(form.whatsapp || '').trim();
     if (!/^\d{10}$/.test(normalizedPhone)) {
-      nextErrors.phone = 'Please enter a valid 10-digit mobile number.';
+      nextErrors.whatsapp = 'Please enter a valid 10-digit mobile number.';
     }
 
     if (!/^\S+@\S+\.\S+$/.test(String(form.email || '').trim())) {
       nextErrors.email = 'Please enter a valid email address.';
     }
 
-    if (!String(form.businessName || '').trim()) {
-      nextErrors.businessName = 'Please enter your business name.';
-    }
-
-    const normalizedWebsite = normalizeWebsite(form.businessWebsite);
-    if (!normalizedWebsite) {
-      nextErrors.businessWebsite = 'Please enter your business website.';
-    } else {
-      try {
-        const website = new URL(normalizedWebsite);
-        if (!['http:', 'https:'].includes(website.protocol) || !website.hostname) {
-          throw new Error('invalid');
-        }
-      } catch {
-        nextErrors.businessWebsite = 'Please enter a valid business website URL.';
-      }
-    }
-
-    if (!String(form.businessRole || '').trim()) {
-      nextErrors.businessRole = 'Please select your role.';
-    } else if (form.businessRole === 'Other' && !String(form.businessRoleOther || '').trim()) {
-      nextErrors.businessRoleOther = 'Please specify your role.';
-    }
-
-    if (!String(form.businessType || '').trim()) {
-      nextErrors.businessType = 'Please select your business type.';
-    } else if (form.businessType === 'Other' && !String(form.businessTypeOther || '').trim()) {
-      nextErrors.businessTypeOther = 'Please specify your business type.';
-    }
+    if (!String(form.designation || '').trim()) nextErrors.designation = 'Please select your designation or occupation.';
+    if (!String(form.industry || '').trim()) nextErrors.industry = 'Please select your industry.';
 
     if (!Array.isArray(form.financialInterests) || form.financialInterests.length < 1) {
       nextErrors.financialInterests = 'Please select at least one topic.';
-    } else if (form.financialInterests.includes('Other') && !String(form.financialInterestsOther || '').trim()) {
-      nextErrors.financialInterestsOther = 'Please specify your financial topic.';
+    } else if (form.financialInterests.includes('Others') && !String(form.otherFinancialInterest || '').trim()) {
+      nextErrors.otherFinancialInterest = 'Please specify your financial interest.';
     }
 
-    if (!String(form.referralSource || '').trim()) {
-      nextErrors.referralSource = 'Please tell us how you heard about this webinar.';
-    } else if (form.referralSource === 'Other' && !String(form.referralSourceOther || '').trim()) {
-      nextErrors.referralSourceOther = 'Please specify how you heard about this webinar.';
+    if (!String(form.webinarSource || '').trim()) {
+      nextErrors.webinarSource = 'Please tell us how you heard about this webinar.';
     }
 
     if (!form.consent) {
@@ -212,32 +161,45 @@ function WebinarRegisterPage() {
     setSubmitError('');
 
     try {
-      const finalRole = form.businessRole === 'Other' ? String(form.businessRoleOther || '').trim() : form.businessRole;
-      const finalType = form.businessType === 'Other' ? String(form.businessTypeOther || '').trim() : form.businessType;
       const finalInterests = form.financialInterests.filter(Boolean);
-      const finalOtherInterest = form.financialInterests.includes('Other')
-        ? String(form.financialInterestsOther || '').trim()
-        : '';
-      const finalReferral = form.referralSource === 'Other' ? String(form.referralSourceOther || '').trim() : form.referralSource;
+      const cleanPhone = String(form.whatsapp || '').replace(/\D/g, '');
+      const normalizedPhone = cleanPhone.length === 12 && cleanPhone.startsWith('91')
+        ? cleanPhone.slice(2)
+        : (cleanPhone.length === 11 && cleanPhone.startsWith('0') ? cleanPhone.slice(1) : cleanPhone.slice(-10));
+
+      const locParts = (form.location || '').split(',').map((s) => s.trim());
+      const city = locParts[0] || 'Not Specified';
+      const state = locParts[1] || '';
+      const country = locParts[2] || (locParts.length === 2 ? locParts[1] : 'India');
+
+      const businessName = form.fullName ? `${form.fullName}'s Business` : 'Business';
+      const businessRole = form.designation || 'Founder / Owner';
+      const businessType = form.industry || 'Technology / IT';
+      const referralSource = form.webinarSource || 'Website';
+      const otherInterest = String(form.otherFinancialInterest || '').trim();
 
       const payload = {
         fullName: String(form.fullName).trim(),
-        city: String(form.city).trim(),
-        state: String(form.state || '').trim(),
-        country: String(form.country || '').trim(),
-        businessName: String(form.businessName).trim(),
-        businessRole: finalRole,
-        businessType: finalType,
-        designation: String(form.designation || finalRole).trim(),
-        industry: String(form.industry || finalType).trim(),
-        financialInterests: finalInterests,
-        financialInterestsOther: finalOtherInterest,
-        financialChallenge: String(form.financialChallenge || '').trim(),
-        referralSource: finalReferral,
-        phone: String(form.phone).trim(),
+        location: String(form.location || '').trim(),
+        whatsapp: normalizedPhone,
+        phone: normalizedPhone,
         email: String(form.email).trim().toLowerCase(),
-        businessWebsite: normalizeWebsite(form.businessWebsite),
+        designation: String(form.designation).trim(),
+        industry: String(form.industry).trim(),
+        financialInterests: finalInterests,
+        otherFinancialInterest: otherInterest,
+        financialInterestsOther: otherInterest,
+        financialChallenge: String(form.financialChallenge || '').trim(),
+        webinarSource: String(form.webinarSource).trim(),
+        referralSource,
         consent: form.consent,
+        city,
+        state,
+        country,
+        businessName,
+        businessWebsite: 'https://www.halalwealth.finance',
+        businessRole,
+        businessType,
         businessAge: 'Not Specified',
         employeeCount: 'Not Specified',
         annualTurnover: '',
@@ -335,17 +297,17 @@ function WebinarRegisterPage() {
                   <span>WhatsApp / Mobile Number *</span>
                   <input
                     type="tel"
-                    className={errors.phone ? 'field-error' : ''}
-                    value={form.phone}
-                    onChange={(event) => updateField('phone', normalizePhone(event.target.value))}
+                    className={errors.whatsapp ? 'field-error' : ''}
+                    value={form.whatsapp}
+                    onChange={(event) => updateField('whatsapp', normalizePhone(event.target.value))}
                     placeholder="9876543210"
                     inputMode="tel"
                     maxLength={10}
                     pattern="[0-9]{10}"
                     autoComplete="tel"
-                    aria-invalid={Boolean(errors.phone)}
+                    aria-invalid={Boolean(errors.whatsapp)}
                   />
-                  {errors.phone && <small className="error-text">{errors.phone}</small>}
+                  {errors.whatsapp && <small className="error-text">{errors.whatsapp}</small>}
                 </label>
 
                 <label className="field">
@@ -363,28 +325,17 @@ function WebinarRegisterPage() {
                 </label>
 
                 <label className="field">
-                  <span>City / Location</span>
+                  <span>Location</span>
                   <input
                     type="text"
-                    className={errors.city ? 'field-error' : ''}
-                    value={form.city}
-                    onChange={(event) => updateField('city', event.target.value)}
-                    placeholder="Enter your city or location"
-                    autoComplete="address-level2"
-                    aria-invalid={Boolean(errors.city)}
+                    name="location"
+                    value={form.location}
+                    onChange={(event) => updateField('location', event.target.value)}
+                    placeholder="City, State, Country"
+                    autoComplete="street-address"
                   />
-                  {errors.city && <small className="error-text">{errors.city}</small>}
                 </label>
 
-                <label className="field">
-                  <span>State</span>
-                  <input type="text" value={form.state} onChange={(event) => updateField('state', event.target.value)} placeholder="Enter your state" autoComplete="address-level1" />
-                </label>
-
-                <label className="field">
-                  <span>Country</span>
-                  <input type="text" value={form.country} onChange={(event) => updateField('country', event.target.value)} placeholder="Enter your country" autoComplete="country-name" />
-                </label>
               </div>
             </div>
 
@@ -395,96 +346,36 @@ function WebinarRegisterPage() {
               </div>
 
               <div className="fields-grid two-col">
-                <label className="field">
-                  <span>Business / Company Name *</span>
-                  <input
-                    type="text"
-                    className={errors.businessName ? 'field-error' : ''}
-                    value={form.businessName}
-                    onChange={(event) => updateField('businessName', event.target.value)}
-                    placeholder="Your company name"
-                    autoComplete="organization"
-                    aria-invalid={Boolean(errors.businessName)}
-                  />
-                  {errors.businessName && <small className="error-text">{errors.businessName}</small>}
-                </label>
-
-                <label className="field">
-                  <span>Business Website *</span>
-                  <input
-                    type="url"
-                    className={errors.businessWebsite ? 'field-error' : ''}
-                    value={form.businessWebsite}
-                    onChange={(event) => updateField('businessWebsite', event.target.value)}
-                    placeholder="https://www.yourbusiness.com"
-                    autoComplete="url"
-                    aria-invalid={Boolean(errors.businessWebsite)}
-                  />
-                  {errors.businessWebsite && <small className="error-text">{errors.businessWebsite}</small>}
-                </label>
-
                 <div className="field">
                   <span>Designation / Occupation *</span>
                   <select
-                    className={errors.businessRole ? 'field-error' : ''}
-                    value={form.businessRole}
-                    onChange={(event) => updateField('businessRole', event.target.value)}
-                    aria-invalid={Boolean(errors.businessRole)}
+                    className={errors.designation ? 'field-error' : ''}
+                    value={form.designation}
+                    onChange={(event) => updateField('designation', event.target.value)}
+                    aria-invalid={Boolean(errors.designation)}
                   >
                     <option value="">Select role</option>
                     {businessRoles.map((role) => (
                       <option value={role} key={role}>{role}</option>
                     ))}
                   </select>
-                  {errors.businessRole && <small className="error-text">{errors.businessRole}</small>}
-
-                  {form.businessRole === 'Other' && (
-                    <div className="other-specify-wrap">
-                      <span className="other-specify-label">Please specify your role *</span>
-                      <input
-                        type="text"
-                        className={errors.businessRoleOther ? 'field-error' : ''}
-                        value={form.businessRoleOther}
-                        onChange={(event) => updateField('businessRoleOther', event.target.value)}
-                        placeholder="Please enter your role"
-                        aria-invalid={Boolean(errors.businessRoleOther)}
-                        autoFocus
-                      />
-                      {errors.businessRoleOther && <small className="error-text">{errors.businessRoleOther}</small>}
-                    </div>
-                  )}
+                  {errors.designation && <small className="error-text">{errors.designation}</small>}
                 </div>
 
                 <div className="field">
                   <span>Industry *</span>
                   <select
-                    className={errors.businessType ? 'field-error' : ''}
-                    value={form.businessType}
-                    onChange={(event) => updateField('businessType', event.target.value)}
-                    aria-invalid={Boolean(errors.businessType)}
+                    className={errors.industry ? 'field-error' : ''}
+                    value={form.industry}
+                    onChange={(event) => updateField('industry', event.target.value)}
+                    aria-invalid={Boolean(errors.industry)}
                   >
                     <option value="">Select business type</option>
                     {businessTypes.map((type) => (
                       <option value={type} key={type}>{type}</option>
                     ))}
                   </select>
-                  {errors.businessType && <small className="error-text">{errors.businessType}</small>}
-
-                  {form.businessType === 'Other' && (
-                    <div className="other-specify-wrap">
-                      <span className="other-specify-label">Please specify your business type *</span>
-                      <input
-                        type="text"
-                        className={errors.businessTypeOther ? 'field-error' : ''}
-                        value={form.businessTypeOther}
-                        onChange={(event) => updateField('businessTypeOther', event.target.value)}
-                        placeholder="Please enter your business type"
-                        aria-invalid={Boolean(errors.businessTypeOther)}
-                        autoFocus
-                      />
-                      {errors.businessTypeOther && <small className="error-text">{errors.businessTypeOther}</small>}
-                    </div>
-                  )}
+                  {errors.industry && <small className="error-text">{errors.industry}</small>}
                 </div>
               </div>
             </div>
@@ -511,21 +402,22 @@ function WebinarRegisterPage() {
                 </div>
                 {errors.financialInterests && <small className="error-text">{errors.financialInterests}</small>}
 
-                {form.financialInterests.includes('Other') && (
+                {form.financialInterests.includes('Others') && (
                   <div className="other-specify-wrap other-specify-wrap--checkbox">
-                    <span className="other-specify-label">Please specify your financial topic *</span>
+                    <span className="other-specify-label">Please specify your financial interest *</span>
                     <input
                       type="text"
-                      className={errors.financialInterestsOther ? 'field-error' : ''}
-                      value={form.financialInterestsOther}
-                      onChange={(event) => updateField('financialInterestsOther', event.target.value)}
-                      placeholder="Please enter your topic"
-                      aria-invalid={Boolean(errors.financialInterestsOther)}
+                      className={errors.otherFinancialInterest ? 'field-error' : ''}
+                      value={form.otherFinancialInterest}
+                      onChange={(event) => updateField('otherFinancialInterest', event.target.value)}
+                      placeholder="Please enter your financial interest"
+                      aria-invalid={Boolean(errors.otherFinancialInterest)}
                       autoFocus
                     />
-                    {errors.financialInterestsOther && <small className="error-text">{errors.financialInterestsOther}</small>}
+                    {errors.otherFinancialInterest && <small className="error-text">{errors.otherFinancialInterest}</small>}
                   </div>
                 )}
+
               </fieldset>
             </div>
 
@@ -546,43 +438,37 @@ function WebinarRegisterPage() {
                   />
                 </label>
 
-                <div className="field full-width">
+              </div>
+            </div>
+
+            <div className="form-section">
+              <div className="section-title">
+                <span className="section-number">5</span>
+                <h3>Webinar Source</h3>
+              </div>
+
+              <div className="fields-grid two-col">
+                <label className="field full-width">
                   <span>How did you hear about this webinar? *</span>
                   <select
-                    className={errors.referralSource ? 'field-error' : ''}
-                    value={form.referralSource}
-                    onChange={(event) => updateField('referralSource', event.target.value)}
-                    aria-invalid={Boolean(errors.referralSource)}
+                    className={errors.webinarSource ? 'field-error' : ''}
+                    value={form.webinarSource}
+                    onChange={(event) => updateField('webinarSource', event.target.value)}
+                    aria-invalid={Boolean(errors.webinarSource)}
                   >
                     <option value="">Select</option>
                     {referralSources.map((source) => (
                       <option value={source} key={source}>{source}</option>
                     ))}
                   </select>
-                  {errors.referralSource && <small className="error-text">{errors.referralSource}</small>}
-
-                  {form.referralSource === 'Other' && (
-                    <div className="other-specify-wrap">
-                      <span className="other-specify-label">Please specify how you heard about this webinar *</span>
-                      <input
-                        type="text"
-                        className={errors.referralSourceOther ? 'field-error' : ''}
-                        value={form.referralSourceOther}
-                        onChange={(event) => updateField('referralSourceOther', event.target.value)}
-                        placeholder="Please enter your answer"
-                        aria-invalid={Boolean(errors.referralSourceOther)}
-                        autoFocus
-                      />
-                      {errors.referralSourceOther && <small className="error-text">{errors.referralSourceOther}</small>}
-                    </div>
-                  )}
-                </div>
+                  {errors.webinarSource && <small className="error-text">{errors.webinarSource}</small>}
+                </label>
               </div>
             </div>
 
             <div className="form-section consent-section">
               <div className="section-title">
-                <span className="section-number">5</span>
+                <span className="section-number">6</span>
                 <h3>Consent</h3>
               </div>
 
