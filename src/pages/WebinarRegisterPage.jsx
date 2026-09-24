@@ -236,13 +236,12 @@ function WebinarRegisterPage() {
       <div className="webinar-shell" aria-label="Business Finance Webinar registration form">
         <aside className="webinar-aside">
           <div className="promo-badge">Business Finance Webinar</div>
-          <h1>
-            Grow<br />
-            Stronger<br />
-            Build<br />
-            Smarter
-          </h1>
-          <p className="promo-copy">Practical financial insights for business owners, entrepreneurs, and professionals.</p>
+          <h1 className="webinar-sidebar-title">Halal Trade, Investments &amp; Generational Wealth</h1>
+          <p className="promo-copy webinar-sidebar-description">
+            A truly successful Muslim enterprise is one that not only generates profit today but secures a legacy of Barakah for generations to come through honest dealings, trade ethics, and productive growth.
+            <br /><br />
+            The webinar also addresses the critical second half of wealth management: once profit is earned, where should it go? Learn how to structure financial planning, purify earnings, and navigate productive Halal investment avenues designed for business owners, corporate leaders, and startup founders.
+          </p>
 
           <ul className="benefit-list">
             {benefitItems.map((item) => (

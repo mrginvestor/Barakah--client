@@ -69,6 +69,23 @@
   line-height: 1.65;
 }
 
+.webinar-sidebar-title,
+.webinar-sidebar-description {
+  height: auto;
+  max-height: none;
+  overflow: visible;
+  overflow-wrap: break-word;
+}
+
+.webinar-sidebar-title {
+  word-break: normal;
+}
+
+.webinar-sidebar-description {
+  white-space: normal;
+  word-break: normal;
+}
+
 .benefit-list {
   display: grid;
   gap: 14px;
@@ -556,6 +573,20 @@
 
   .promo-copy {
     margin-top: 22px;
+  }
+
+  .webinar-sidebar-title,
+  .webinar-sidebar-description {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .webinar-sidebar-description {
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: normal;
+    margin-bottom: 0;
   }
 
   .benefit-list {
