@@ -1,10 +1,16 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
 import axios from 'axios';
+import { parsePhoneNumberFromString } from 'libphonenumber-js/max';
 import API_URL from '../config/api';
 
 const fields = [['profession', 'Profession', 'currentProfession'], ['ageGroup', 'Age Group', 'ageGroup'], ['gender', 'Gender', 'gender'], ['country', 'Country', 'country'], ['knowledge', 'Knowledge', 'islamicFinanceKnowledge'], ['participation', 'Participation', 'participationMode'], ['community', 'WhatsApp', 'whatsappCommunity'], ['status', 'Status', 'status']];
 const display = (registration, key) => key === 'whatsappCommunity' ? (registration[key] ? 'Yes' : 'No') : (registration[key] || '—');
 const webinarText = (value) => String(value || '').trim() || '—';
+const webinarPhone = (value) => {
+  const phone = String(value || '').trim();
+  const parsedPhone = phone ? parsePhoneNumberFromString(phone) : undefined;
+  return parsedPhone?.isValid() ? parsedPhone.formatInternational() : webinarText(phone);
+};
 const webinarInterests = (registration) => {
   if (!Array.isArray(registration.financialInterests)) return '—';
   const values = registration.financialInterests.map((interest) => {
@@ -100,7 +106,7 @@ export default function AdminDashboard() {
               {webinarFiltered.map(registration => (
                 <tr key={registration._id} onClick={() => setSelectedWebinar(registration)}>
                   <td>{webinarText(registration.fullName)}</td>
-                  <td>{webinarText(registration.whatsapp)}</td>
+                  <td>{webinarPhone(registration.whatsapp || registration.phone)}</td>
                   <td>{webinarText(registration.email)}</td>
                   <td>{webinarText(registration.location)}</td>
                   <td>{webinarText(registration.designation)}</td>
@@ -125,7 +131,7 @@ export default function AdminDashboard() {
             <p className="eyebrow">WEBINAR REGISTRATION</p>
             <h2>{webinarText(selectedWebinar.fullName)}</h2>
             <AdminDetailSection title="Personal Information" rows={[
-              ['WhatsApp / Mobile Number', selectedWebinar.whatsapp || selectedWebinar.phone],
+              ['WhatsApp / Mobile Number', webinarPhone(selectedWebinar.whatsapp || selectedWebinar.phone)],
               ['Email', selectedWebinar.email],
               ['Location', selectedWebinar.location],
             ]} />

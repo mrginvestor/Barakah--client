@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import PhoneInput from 'react-phone-number-input/max';
+import { parsePhoneNumberFromString } from 'libphonenumber-js/max';
+import phoneMetadata from 'libphonenumber-js/metadata.max.json';
+import 'react-phone-number-input/style.css';
 import API_URL from '../config/api';
 
 const initialForm = {
@@ -9,6 +13,7 @@ const initialForm = {
   email: '',
   location: '',
   designation: '',
+  otherDesignation: '',
   industry: '',
   financialInterests: [],
   otherFinancialInterest: '',
@@ -25,6 +30,7 @@ const businessRoles = [
   'Partner',
   'Finance Head / CFO',
   'Manager',
+  'Other',
 ];
 
 const businessTypes = [
@@ -52,15 +58,17 @@ const benefitItems = [
   'Sustainable Wealth Planning',
 ];
 
-function normalizePhone(value) {
-  const digits = String(value || '').replace(/\D/g, '');
-  if (digits.length === 12 && digits.startsWith('91')) {
-    return digits.slice(2);
-  }
-  if (digits.length === 11 && digits.startsWith('0')) {
-    return digits.slice(1);
-  }
-  return digits.slice(0, 10);
+function getMaximumMobileLength(country) {
+  const metadata = phoneMetadata.countries[country];
+  const mobileLengths = metadata?.[11]?.[1]?.[1];
+  const possibleLengths = Array.isArray(mobileLengths) && mobileLengths.length
+    ? mobileLengths
+    : metadata?.[3];
+  return Array.isArray(possibleLengths) ? Math.max(...possibleLengths) : 15;
+}
+
+function getCountryName(country) {
+  return country ? new Intl.DisplayNames(['en'], { type: 'region' }).of(country) : 'selected country';
 }
 
 function WebinarRegisterPage() {
@@ -70,16 +78,17 @@ function WebinarRegisterPage() {
   const [submitState, setSubmitState] = useState('idle');
   const [submitError, setSubmitError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [phoneCountry, setPhoneCountry] = useState('IN');
 
   useEffect(() => {
-    document.title = 'Business Finance Webinar Registration | Halal Wealth Finance';
+    document.title = 'Halal Wealth Webinar – Registration Confirmed';
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Register for the Business Finance Webinar by Halal Wealth Finance and gain practical insights into business finance, cash flow, funding, planning, and growth.');
+      metaDescription.setAttribute('content', 'Halal Wealth Webinar – Registration Confirmed');
     } else {
       const meta = document.createElement('meta');
       meta.name = 'description';
-      meta.content = 'Register for the Business Finance Webinar by Halal Wealth Finance and gain practical insights into business finance, cash flow, funding, planning, and growth.';
+      meta.content = 'Halal Wealth Webinar – Registration Confirmed';
       document.head.appendChild(meta);
     }
   }, []);
@@ -116,6 +125,55 @@ function WebinarRegisterPage() {
     setSubmitError('');
   };
 
+  const validatePhoneNumber = (value) => {
+    const submittedPhone = String(value || '').trim();
+    if (!submittedPhone) return null;
+
+    const parsedPhone = parsePhoneNumberFromString(submittedPhone, phoneCountry);
+    if (!parsedPhone || !parsedPhone.isValid() || parsedPhone.country !== phoneCountry) return null;
+
+    return parsedPhone;
+  };
+
+  const handlePhoneChange = (value) => {
+    if (!value) {
+      updateField('whatsapp', '');
+      return;
+    }
+
+    const parsedPhone = parsePhoneNumberFromString(value, phoneCountry);
+    if (parsedPhone && parsedPhone.nationalNumber.length > getMaximumMobileLength(phoneCountry)) {
+      const maximumLength = getMaximumMobileLength(phoneCountry);
+      updateField('whatsapp', `+${parsedPhone.countryCallingCode}${parsedPhone.nationalNumber.slice(0, maximumLength)}`);
+      return;
+    }
+    updateField('whatsapp', value);
+  };
+
+  const preventPhoneOverflowKeydown = (event) => {
+    if (!/^\d$/.test(event.key) || event.currentTarget.selectionStart !== event.currentTarget.selectionEnd) return;
+    const parsedPhone = parsePhoneNumberFromString(event.currentTarget.value, phoneCountry);
+    if (parsedPhone && parsedPhone.nationalNumber.length >= getMaximumMobileLength(phoneCountry)) {
+      event.preventDefault();
+    }
+  };
+
+  const preventPhoneOverflowPaste = (event) => {
+    const pastedValue = event.clipboardData.getData('text');
+    const pastedDigits = pastedValue.replace(/\D/g, '');
+    if (!pastedDigits) return;
+
+    const parsedPhone = parsePhoneNumberFromString(event.currentTarget.value, phoneCountry);
+    const currentLength = parsedPhone?.nationalNumber.length || 0;
+    const selectedDigits = event.currentTarget.value
+      .slice(event.currentTarget.selectionStart, event.currentTarget.selectionEnd)
+      .replace(/\D/g, '').length;
+    const remainingLength = Math.max(0, currentLength - Math.min(currentLength, selectedDigits));
+    if (remainingLength + pastedDigits.length > getMaximumMobileLength(phoneCountry)) {
+      event.preventDefault();
+    }
+  };
+
   const validate = () => {
     const nextErrors = {};
 
@@ -123,16 +181,23 @@ function WebinarRegisterPage() {
       nextErrors.fullName = 'Please enter your full name.';
     }
 
-    const normalizedPhone = String(form.whatsapp || '').trim();
-    if (!/^\d{10}$/.test(normalizedPhone)) {
-      nextErrors.whatsapp = 'Please enter a valid 10-digit mobile number.';
+    const submittedPhone = String(form.whatsapp || '').trim();
+    const parsedPhone = validatePhoneNumber(submittedPhone);
+    if (!submittedPhone) {
+      nextErrors.whatsapp = 'Please enter your WhatsApp / mobile number.';
+    } else if (!parsedPhone) {
+      nextErrors.whatsapp = `Please enter a valid mobile number for ${getCountryName(phoneCountry)}.`;
     }
 
     if (!/^\S+@\S+\.\S+$/.test(String(form.email || '').trim())) {
       nextErrors.email = 'Please enter a valid email address.';
     }
 
-    if (!String(form.designation || '').trim()) nextErrors.designation = 'Please select your designation or occupation.';
+    if (!String(form.designation || '').trim()) {
+      nextErrors.designation = 'Please select your designation or occupation.';
+    } else if (form.designation === 'Other' && !String(form.otherDesignation || '').trim()) {
+      nextErrors.otherDesignation = 'Please specify your role.';
+    }
     if (!String(form.industry || '').trim()) nextErrors.industry = 'Please select your industry.';
 
     if (!Array.isArray(form.financialInterests) || form.financialInterests.length < 1) {
@@ -161,19 +226,19 @@ function WebinarRegisterPage() {
     setSubmitError('');
 
     try {
+      const parsedPhone = validatePhoneNumber(form.whatsapp);
+      const normalizedPhone = parsedPhone?.number || '';
       const finalInterests = form.financialInterests.filter(Boolean);
-      const cleanPhone = String(form.whatsapp || '').replace(/\D/g, '');
-      const normalizedPhone = cleanPhone.length === 12 && cleanPhone.startsWith('91')
-        ? cleanPhone.slice(2)
-        : (cleanPhone.length === 11 && cleanPhone.startsWith('0') ? cleanPhone.slice(1) : cleanPhone.slice(-10));
-
       const locParts = (form.location || '').split(',').map((s) => s.trim());
       const city = locParts[0] || 'Not Specified';
       const state = locParts[1] || '';
       const country = locParts[2] || (locParts.length === 2 ? locParts[1] : 'India');
 
       const businessName = form.fullName ? `${form.fullName}'s Business` : 'Business';
-      const businessRole = form.designation || 'Founder / Owner';
+      const designation = form.designation === 'Other'
+        ? String(form.otherDesignation || '').trim()
+        : String(form.designation || '').trim();
+      const businessRole = designation || 'Founder / Owner';
       const businessType = form.industry || 'Technology / IT';
       const referralSource = form.webinarSource || 'Website';
       const otherInterest = String(form.otherFinancialInterest || '').trim();
@@ -182,9 +247,9 @@ function WebinarRegisterPage() {
         fullName: String(form.fullName).trim(),
         location: String(form.location || '').trim(),
         whatsapp: normalizedPhone,
-        phone: normalizedPhone,
+        phoneCountry,
         email: String(form.email).trim().toLowerCase(),
-        designation: String(form.designation).trim(),
+        designation,
         industry: String(form.industry).trim(),
         financialInterests: finalInterests,
         otherFinancialInterest: otherInterest,
@@ -219,12 +284,34 @@ function WebinarRegisterPage() {
     return (
       <main className="webinar-page">
         <section className="webinar-success-panel" aria-live="polite">
-          <div className="success-badge">✓</div>
-          <p className="eyebrow eyebrow--light">Business Finance Webinar</p>
-          <h1>Registration Successful!</h1>
-          <p>Thank you for registering for our Business Finance Webinar. We have received your registration details successfully.</p>
+          <div className="success-badge" aria-hidden="true">
+            <span className="success-check">✓</span>
+          </div>
+          <p className="eyebrow eyebrow--light">HALAL WEALTH WEBINAR</p>
+          <h1>Registration Confirmed!</h1>
+          <p className="success-intro">Thank you for registering for “Halal Trade, Investments &amp; Generational Wealth”. Your registration has been successfully received. We look forward to having you join us for this insightful session.</p>
+          <p className="success-support">Your webinar details will be shared with you on your registered WhatsApp number and email address.</p>
+
+          <div className="webinar-confirmation-card">
+            <strong>HALAL TRADE, INVESTMENTS &amp; GENERATIONAL WEALTH</strong>
+            <div className="webinar-confirmation-meta">
+              <span>ONLINE WEBINAR</span>
+              <span aria-hidden="true">•</span>
+              <span>11 OCT 2026</span>
+            </div>
+          </div>
+
+          <div className="success-next-steps">
+            <h2>What’s Next?</h2>
+            <ul>
+              <li>Check your WhatsApp for webinar updates</li>
+              <li>Check your email for registration details</li>
+              <li>Save the webinar date to your calendar</li>
+            </ul>
+          </div>
+
           <button type="button" className="gold-button webinar-success-button" onClick={() => navigate('/')}>
-            Back to Website
+            BACK TO HOME
           </button>
         </section>
       </main>
@@ -233,15 +320,26 @@ function WebinarRegisterPage() {
 
   return (
     <main className="webinar-page">
-      <div className="webinar-shell" aria-label="Business Finance Webinar registration form">
+      <div className="webinar-shell" aria-label="Halal Wealth Webinar registration form">
         <aside className="webinar-aside">
-          <div className="promo-badge">Business Finance Webinar</div>
+          <div className="promo-badge">Halal Wealth Webinar</div>
           <h1 className="webinar-sidebar-title">Halal Trade, Investments &amp; Generational Wealth</h1>
           <p className="promo-copy webinar-sidebar-description">
             A truly successful Muslim enterprise is one that not only generates profit today but secures a legacy of Barakah for generations to come through honest dealings, trade ethics, and productive growth.
             <br /><br />
             The webinar also addresses the critical second half of wealth management: once profit is earned, where should it go? Learn how to structure financial planning, purify earnings, and navigate productive Halal investment avenues designed for business owners, corporate leaders, and startup founders.
           </p>
+
+          <div className="webinar-info-grid">
+            <section className="webinar-info-card">
+              <h2>Who is it for?</h2>
+              <p>Business Owners • Entrepreneurs • Investors</p>
+            </section>
+            <section className="webinar-info-card">
+              <h2>You’ll Learn</h2>
+              <p>Halal Investing • Trade Ethics • Productive Growth</p>
+            </section>
+          </div>
 
           <ul className="benefit-list">
             {benefitItems.map((item) => (
@@ -261,14 +359,9 @@ function WebinarRegisterPage() {
           <div className="form-panel-header">
             <div>
               <p className="eyebrow eyebrow--panel">Registration Form</p>
-              <h2>Business Finance Webinar</h2>
             </div>
-            <span className="panel-tag">04 Oct 2026<span>•</span>Online Webinar</span>
+            <span className="panel-tag">11 Oct 2026<span>•</span>Online Webinar</span>
           </div>
-
-          <p className="panel-description">
-            Join our exclusive business finance webinar designed for business owners, entrepreneurs, and professionals. Gain practical insights into business finance, financial planning, cash flow, funding, investment, and business growth.
-          </p>
 
           <form className="webinar-form" onSubmit={handleSubmit} noValidate>
             <div className="form-section">
@@ -294,15 +387,23 @@ function WebinarRegisterPage() {
 
                 <label className="field">
                   <span>WhatsApp / Mobile Number *</span>
-                  <input
-                    type="tel"
-                    className={errors.whatsapp ? 'field-error' : ''}
+                  <PhoneInput
+                    className={`international-phone-input ${errors.whatsapp ? 'field-error' : ''}`}
+                    international
+                    withCountryCallingCode
+                    defaultCountry={phoneCountry}
+                    countrySelectProps={{ 'aria-label': 'Select country' }}
+                    countryCallingCodeEditable={false}
                     value={form.whatsapp}
-                    onChange={(event) => updateField('whatsapp', normalizePhone(event.target.value))}
-                    placeholder="9876543210"
-                    inputMode="tel"
-                    maxLength={10}
-                    pattern="[0-9]{10}"
+                    onChange={handlePhoneChange}
+                    onKeyDown={preventPhoneOverflowKeydown}
+                    onPaste={preventPhoneOverflowPaste}
+                    onCountryChange={(country) => {
+                      const nextCountry = country || 'IN';
+                      setPhoneCountry(nextCountry);
+                      updateField('whatsapp', '');
+                    }}
+                    placeholder="Enter your mobile number"
                     autoComplete="tel"
                     aria-invalid={Boolean(errors.whatsapp)}
                   />
@@ -350,7 +451,13 @@ function WebinarRegisterPage() {
                   <select
                     className={errors.designation ? 'field-error' : ''}
                     value={form.designation}
-                    onChange={(event) => updateField('designation', event.target.value)}
+                    onChange={(event) => {
+                      const designation = event.target.value;
+                      updateField('designation', designation);
+                      if (designation !== 'Other') {
+                        updateField('otherDesignation', '');
+                      }
+                    }}
                     aria-invalid={Boolean(errors.designation)}
                   >
                     <option value="">Select role</option>
@@ -359,17 +466,31 @@ function WebinarRegisterPage() {
                     ))}
                   </select>
                   {errors.designation && <small className="error-text">{errors.designation}</small>}
+                  {form.designation === 'Other' && (
+                    <div className="other-specify-wrap">
+                      <span className="other-specify-label">Please specify your role *</span>
+                      <input
+                        type="text"
+                        className={errors.otherDesignation ? 'field-error' : ''}
+                        value={form.otherDesignation}
+                        onChange={(event) => updateField('otherDesignation', event.target.value)}
+                        placeholder="Enter your designation / occupation"
+                        aria-invalid={Boolean(errors.otherDesignation)}
+                      />
+                      {errors.otherDesignation && <small className="error-text">{errors.otherDesignation}</small>}
+                    </div>
+                  )}
                 </div>
 
                 <div className="field">
-                  <span>Industry *</span>
+                  <span>Industry Type *</span>
                   <select
                     className={errors.industry ? 'field-error' : ''}
                     value={form.industry}
                     onChange={(event) => updateField('industry', event.target.value)}
                     aria-invalid={Boolean(errors.industry)}
                   >
-                    <option value="">Select business type</option>
+                    <option value="">Select industry type</option>
                     {businessTypes.map((type) => (
                       <option value={type} key={type}>{type}</option>
                     ))}
