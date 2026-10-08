@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import axios from 'axios';
-import API_URL from '../config/api';
+import adminApi from '../config/adminApi';
 
 const CheckIn = () => {
   const [regId, setRegId] = useState('');
@@ -9,7 +8,7 @@ const CheckIn = () => {
   const handleCheckIn = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post(`${API_URL}/api/check-in`, { registrationId: regId });
+      const res = await adminApi.post('/api/check-in', { registrationId: regId });
       setMessage({ type: 'success', text: res.data.message });
       setRegId('');
     } catch (err) {

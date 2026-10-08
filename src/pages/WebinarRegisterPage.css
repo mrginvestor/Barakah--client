@@ -30,6 +30,7 @@
 
 .webinar-aside {
   display: flex;
+  min-width: 0;
   flex-direction: column;
   justify-content: flex-start;
   padding: 56px 48px;
@@ -52,7 +53,7 @@
   max-width: 440px;
   margin: 0;
   color: #FFFFFF;
-  font-size: clamp(48px, 5vw, 72px);
+  font-size: clamp(40px, 4vw, 56px);
   font-weight: 600;
   letter-spacing: 0;
   line-height: 0.9;
@@ -126,14 +127,15 @@
 .benefit-list {
   display: grid;
   gap: 14px;
-  margin: 12px 0 0;
-  padding: 0 0 0 18px;
+  margin: 16px 0 0;
+  padding: 0;
   list-style: none;
 }
 
 .benefit-list li {
-  display: flex;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: 14px minmax(0, 1fr);
+  align-items: start;
   min-width: 0;
   gap: 12px;
   color: rgba(255, 255, 255, 0.92);
@@ -141,15 +143,21 @@
   line-height: 1.45;
 }
 
-.benefit-list li::before {
-  content: none;
+.benefit-list li > span:last-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.45;
 }
 
 .benefit-icon {
-  flex: 0 0 auto;
+  display: flex;
+  width: 14px;
+  height: 1.45em;
+  align-items: center;
+  justify-content: center;
   color: var(--webinar-accent);
   font-size: 18px;
-  line-height: 1.45;
+  line-height: 1;
 }
 
 .promo-quote {
@@ -782,7 +790,7 @@
 
   .webinar-shell {
     min-height: auto;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .webinar-aside {
@@ -819,7 +827,7 @@
   }
 
   .webinar-aside h1 {
-    font-size: 52px;
+    font-size: 44px;
   }
 
   .promo-copy {
@@ -838,10 +846,6 @@
     overflow-wrap: break-word;
     word-break: normal;
     margin-bottom: 0;
-  }
-
-  .benefit-list {
-    margin-top: 12px;
   }
 
   .promo-quote {
