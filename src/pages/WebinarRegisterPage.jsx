@@ -297,7 +297,7 @@ function WebinarRegisterPage() {
             <div className="webinar-confirmation-meta">
               <span>ONLINE WEBINAR</span>
               <span aria-hidden="true">•</span>
-              <span>11 OCT 2026</span>
+              <span>18 OCT 2026</span>
             </div>
           </div>
 
@@ -360,7 +360,7 @@ function WebinarRegisterPage() {
             <div>
               <p className="eyebrow eyebrow--panel">Registration Form</p>
             </div>
-            <span className="panel-tag">11 Oct 2026<span>•</span>Online Webinar</span>
+            <span className="panel-tag">18 Oct 2026<span>•</span>Online Webinar</span>
           </div>
 
           <form className="webinar-form" onSubmit={handleSubmit} noValidate>
