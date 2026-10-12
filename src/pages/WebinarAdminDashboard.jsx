@@ -8,10 +8,38 @@ import './WebinarAdminDashboard.css';
 const EMPTY_SUMMARY = { total: 0, today: 0, verified: 0, pending: 0 };
 const STATUS_OPTIONS = ['Registered', 'Confirmed', 'Attended', 'Cancelled'];
 
+function extractRecordId(record) {
+  if (!record) return '';
+  if (typeof record === 'string') {
+    return record === '[object Object]' ? '' : record;
+  }
+  const raw = record._id || record.id;
+  if (!raw) return '';
+  if (typeof raw === 'string') {
+    return raw === '[object Object]' ? '' : raw;
+  }
+  if (typeof raw === 'object') {
+    if (raw.$oid) return String(raw.$oid);
+    if (typeof raw.toString === 'function') {
+      const str = raw.toString();
+      if (str && str !== '[object Object]') return str;
+    }
+  }
+  return '';
+}
+
 function text(value) {
   if (value === null || value === undefined || value === '') return '—';
   if (Array.isArray(value)) return value.map(item => typeof item === 'object' ? JSON.stringify(item) : String(item)).join(', ');
   if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+  if (typeof value === 'object') {
+    if (value.$oid) return String(value.$oid);
+    if (typeof value.toString === 'function') {
+      const str = value.toString();
+      if (str && str !== '[object Object]') return str;
+    }
+    return JSON.stringify(value);
+  }
   return String(value);
 }
 
@@ -54,7 +82,10 @@ export default function WebinarAdminDashboard() {
   const [updatingId, setUpdatingId] = useState('');
   const [sendingBulkPending, setSendingBulkPending] = useState(false);
   const [sendingBulkResend, setSendingBulkResend] = useState(false);
+  const [sendingBulkPostponement, setSendingBulkPostponement] = useState(false);
+  const [retryingBulkPostponement, setRetryingBulkPostponement] = useState(false);
   const [sendingConfirmationIds, setSendingConfirmationIds] = useState({});
+  const [sendingPostponementIds, setSendingPostponementIds] = useState({});
   const [selected, setSelected] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -96,7 +127,12 @@ export default function WebinarAdminDashboard() {
     navigate('/admin/login', { replace: true });
   }
 
-  async function openDetails(id) {
+  async function openDetails(recordOrId) {
+    const id = extractRecordId(recordOrId);
+    if (!id) {
+      setSelected({ error: 'Invalid registration identifier.' });
+      return;
+    }
     setSelected({ loading: true });
     try {
       const response = await adminApi.get(`/api/admin/registrations/${id}`);
@@ -106,14 +142,19 @@ export default function WebinarAdminDashboard() {
     }
   }
 
-  async function updateStatus(id, nextStatus) {
+  async function updateStatus(recordOrId, nextStatus) {
+    const id = extractRecordId(recordOrId);
+    if (!id) {
+      setError('Invalid registration identifier.');
+      return;
+    }
     setUpdatingId(id);
     setNotice('');
     try {
       await adminApi.put(`/api/admin/registrations/${id}/status`, { status: nextStatus });
       setNotice('Registration status updated.');
       setRefreshKey(value => value + 1);
-      if (selected?._id === id) setSelected(value => ({ ...value, status: nextStatus }));
+      if (extractRecordId(selected) === id) setSelected(value => ({ ...value, status: nextStatus }));
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'Status could not be updated. Try again.');
     } finally {
@@ -161,8 +202,19 @@ export default function WebinarAdminDashboard() {
     return 'Not Sent';
   }
 
+  function announcementStatusFor(record) {
+    if (record.announcementEmailSent === true) return 'Sent';
+    if (record.announcementEmailLastError) return 'Failed';
+    return 'Not Sent';
+  }
+
   async function sendSingleConfirmation(record, resend = false) {
-    const targetEmail = record.email || 'this participant';
+    const recordId = extractRecordId(record);
+    if (!recordId) {
+      setError('Cannot send confirmation: registration ID is missing or invalid.');
+      return;
+    }
+    const targetEmail = record?.email || 'this participant';
     const confirmed = window.confirm(resend
       ? `Are you sure you want to resend the confirmation email to ${targetEmail}?`
       : `Send the confirmation email to ${targetEmail}?`);
@@ -170,18 +222,47 @@ export default function WebinarAdminDashboard() {
 
     setError('');
     setNotice('');
-    setSendingConfirmationIds(current => ({ ...current, [record._id]: true }));
+    setSendingConfirmationIds(current => ({ ...current, [recordId]: true }));
 
     try {
-      const response = await adminApi.post(`/api/admin/registrations/${record._id}/send-confirmation`);
+      const response = await adminApi.post(`/api/admin/registrations/${recordId}/send-confirmation`);
       const updatedRecord = response.data?.data || {};
-      setRecords(current => current.map(item => item._id === record._id ? { ...item, ...updatedRecord } : item));
-      if (selected?._id === record._id) setSelected(current => ({ ...current, ...updatedRecord }));
+      setRecords(current => current.map(item => extractRecordId(item) === recordId ? { ...item, ...updatedRecord } : item));
+      if (extractRecordId(selected) === recordId) setSelected(current => ({ ...current, ...updatedRecord }));
       setNotice(resend ? `Confirmation email resent to ${targetEmail}.` : `Confirmation email sent to ${targetEmail}.`);
     } catch (requestError) {
       setError(requestError.response?.data?.message || 'The confirmation email could not be sent.');
     } finally {
-      setSendingConfirmationIds(current => ({ ...current, [record._id]: false }));
+      setSendingConfirmationIds(current => ({ ...current, [recordId]: false }));
+    }
+  }
+
+  async function sendSinglePostponement(record, resend = false) {
+    const recordId = extractRecordId(record);
+    if (!recordId) {
+      setError('Cannot send postponement notice: registration ID is missing or invalid.');
+      return;
+    }
+    const targetEmail = record?.email || 'this participant';
+    const confirmed = window.confirm(resend
+      ? `Are you sure you want to resend the postponement notice to ${targetEmail}?`
+      : `Send the postponement notice to ${targetEmail}?`);
+    if (!confirmed) return;
+
+    setError('');
+    setNotice('');
+    setSendingPostponementIds(current => ({ ...current, [recordId]: true }));
+
+    try {
+      const response = await adminApi.post(`/api/admin/registrations/${recordId}/send-postponement`);
+      const updatedRecord = response.data?.data || {};
+      setRecords(current => current.map(item => extractRecordId(item) === recordId ? { ...item, ...updatedRecord } : item));
+      if (extractRecordId(selected) === recordId) setSelected(current => ({ ...current, ...updatedRecord }));
+      setNotice(resend ? `Postponement notice resent to ${targetEmail}.` : `Postponement notice sent to ${targetEmail}.`);
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'The postponement notice could not be sent.');
+    } finally {
+      setSendingPostponementIds(current => ({ ...current, [recordId]: false }));
     }
   }
 
@@ -233,6 +314,54 @@ export default function WebinarAdminDashboard() {
     }
   }
 
+  async function sendPostponementToAllRegistrants() {
+    const confirmed = window.confirm('This will send the postponement notice to all existing webinar registrants who have not already received it. Continue?');
+    if (!confirmed) return;
+
+    setSendingBulkPostponement(true);
+    setError('');
+    setNotice('');
+
+    try {
+      const response = await adminApi.post('/api/admin/registrations/send-postponement', { confirmed: true, delayMs: 250 });
+      const summary = response.data?.summary || {};
+      const failedCount = Number(summary.failed || 0);
+      setNotice(`Postponement email sending completed. Total: ${summary.total || 0}. Successfully sent: ${summary.sent || 0}. Failed: ${failedCount}. Skipped: ${summary.skipped || 0}.`);
+      setRefreshKey(value => value + 1);
+      if (failedCount > 0 && Array.isArray(response.data?.failedEmails) && response.data.failedEmails.length > 0) {
+        setError(`Failed recipients: ${response.data.failedEmails.join(', ')}`);
+      }
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'The postponement announcement could not be sent.');
+    } finally {
+      setSendingBulkPostponement(false);
+    }
+  }
+
+  async function retryFailedPostponements() {
+    const confirmed = window.confirm('Are you sure you want to retry sending the postponement notice to all failed recipients?');
+    if (!confirmed) return;
+
+    setRetryingBulkPostponement(true);
+    setError('');
+    setNotice('');
+
+    try {
+      const response = await adminApi.post('/api/admin/registrations/resend-postponement', { confirmed: true, retryFailed: true, delayMs: 250 });
+      const summary = response.data?.summary || {};
+      const failedCount = Number(summary.failed || 0);
+      setNotice(`Postponement retry completed. Total: ${summary.total || 0}. Successfully sent: ${summary.sent || 0}. Failed: ${failedCount}. Skipped: ${summary.skipped || 0}.`);
+      setRefreshKey(value => value + 1);
+      if (failedCount > 0 && Array.isArray(response.data?.failedEmails) && response.data.failedEmails.length > 0) {
+        setError(`Failed recipients: ${response.data.failedEmails.join(', ')}`);
+      }
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'The postponement retry could not be completed.');
+    } finally {
+      setRetryingBulkPostponement(false);
+    }
+  }
+
   return (
     <main className="webinar-admin-page">
       <header className="webinar-admin-header">
@@ -258,11 +387,14 @@ export default function WebinarAdminDashboard() {
             <button className="webinar-admin-export" type="button" onClick={exportRegistrations} disabled={exporting}>
               <Download size={16} /> {exporting ? 'Preparing…' : 'Export CSV'}
             </button>
-            <button className="webinar-admin-bulk-action" type="button" onClick={sendPendingRegistrants} disabled={sendingBulkPending || sendingBulkResend}>
+            <button className="webinar-admin-bulk-action" type="button" onClick={sendPendingRegistrants} disabled={sendingBulkPending || sendingBulkResend || sendingBulkPostponement || retryingBulkPostponement}>
               {sendingBulkPending ? 'Sending…' : 'Send to All Pending'}
             </button>
-            <button className="webinar-admin-bulk-action webinar-admin-bulk-action-secondary" type="button" onClick={resendAllRegistrants} disabled={sendingBulkPending || sendingBulkResend}>
-              {sendingBulkResend ? 'Resending…' : 'Resend to All'}
+            <button className="webinar-admin-bulk-action webinar-admin-bulk-action-secondary" type="button" onClick={sendPostponementToAllRegistrants} disabled={sendingBulkPending || sendingBulkResend || sendingBulkPostponement || retryingBulkPostponement}>
+              {sendingBulkPostponement ? 'Sending…' : 'Send Postponement Notice'}
+            </button>
+            <button className="webinar-admin-bulk-action webinar-admin-bulk-action-secondary" type="button" onClick={retryFailedPostponements} disabled={sendingBulkPending || sendingBulkResend || sendingBulkPostponement || retryingBulkPostponement}>
+              {retryingBulkPostponement ? 'Retrying…' : 'Retry Failed Postponement'}
             </button>
           </div>
         </div>
@@ -297,25 +429,55 @@ export default function WebinarAdminDashboard() {
 
           <div className="webinar-admin-table-wrap" aria-busy={loading}>
             <table className="webinar-admin-table">
-              <thead><tr><th>Record ID</th><th>Name</th><th>Email</th><th>Mobile</th><th>Location</th><th>Occupation</th><th>Industry</th><th>Registered</th><th>Status</th><th>Email Status</th><th>Action</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Record ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Mobile</th>
+                  <th>Location</th>
+                  <th>Occupation</th>
+                  <th>Industry</th>
+                  <th>Registered</th>
+                  <th>Status</th>
+                  <th>Confirmation</th>
+                  <th>Postponement</th>
+                </tr>
+              </thead>
               <tbody>
                 {records.map(record => {
-                  const status = emailStatusFor(record);
-                  const isSending = Boolean(sendingConfirmationIds[record._id]);
-                  const actionLabel = status === 'Sent' ? 'Resend' : 'Send Email';
+                  const recordId = extractRecordId(record);
+                  const confStatus = emailStatusFor(record);
+                  const isSendingConf = Boolean(sendingConfirmationIds[recordId]);
+                  const confActionLabel = confStatus === 'Sent' ? 'Resend' : 'Send';
+
+                  const postStatus = announcementStatusFor(record);
+                  const isSendingPost = Boolean(sendingPostponementIds[recordId]);
+                  const postActionLabel = postStatus === 'Sent' ? 'Resend' : 'Send';
+
                   return (
-                    <tr key={record._id}>
-                      <td className="webinar-admin-id">{String(record._id).slice(-8).toUpperCase()}</td>
-                      <td><button className="webinar-admin-name" type="button" onClick={() => openDetails(record._id)}>{text(record.fullName)}</button></td>
+                    <tr key={recordId || record.email}>
+                      <td className="webinar-admin-id">{recordId ? recordId.slice(-8).toUpperCase() : '—'}</td>
+                      <td><button className="webinar-admin-name" type="button" onClick={() => openDetails(record)}>{text(record.fullName)}</button></td>
                       <td>{text(record.email)}</td>
                       <td>{formatPhone(record.whatsapp)}</td>
                       <td>{text(record.location)}</td>
                       <td>{text(record.designation)}</td>
                       <td>{text(record.industry)}</td>
                       <td>{formatDate(record.createdAt)}</td>
-                      <td><select className={`webinar-admin-status status-${String(record.status || 'Registered').toLowerCase()}`} aria-label={`Status for ${record.fullName || record.email}`} value={record.status || 'Registered'} disabled={updatingId === record._id} onChange={event => updateStatus(record._id, event.target.value)}>{STATUS_OPTIONS.map(option => <option key={option}>{option}</option>)}</select></td>
-                      <td><span className={`webinar-admin-email-pill webinar-admin-email-pill-${status.toLowerCase().replace(/\s+/g, '-')}`}>{status}</span></td>
-                      <td><button className="webinar-admin-email-action" type="button" onClick={() => sendSingleConfirmation(record, status === 'Sent')} disabled={isSending}>{isSending ? 'Sending…' : actionLabel}</button></td>
+                      <td><select className={`webinar-admin-status status-${String(record.status || 'Registered').toLowerCase()}`} aria-label={`Status for ${record.fullName || record.email}`} value={record.status || 'Registered'} disabled={updatingId === recordId} onChange={event => updateStatus(record, event.target.value)}>{STATUS_OPTIONS.map(option => <option key={option}>{option}</option>)}</select></td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span className={`webinar-admin-email-pill webinar-admin-email-pill-${confStatus.toLowerCase().replace(/\s+/g, '-')}`}>{confStatus}</span>
+                          <button className="webinar-admin-email-action" type="button" onClick={() => sendSingleConfirmation(record, confStatus === 'Sent')} disabled={isSendingConf}>{isSendingConf ? '…' : confActionLabel}</button>
+                        </div>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span className={`webinar-admin-email-pill webinar-admin-email-pill-${postStatus.toLowerCase().replace(/\s+/g, '-')}`}>{postStatus}</span>
+                          <button className="webinar-admin-email-action" type="button" onClick={() => sendSinglePostponement(record, postStatus === 'Sent')} disabled={isSendingPost}>{isSendingPost ? '…' : postActionLabel}</button>
+                        </div>
+                      </td>
                     </tr>
                   );
                 })}
@@ -335,7 +497,16 @@ export default function WebinarAdminDashboard() {
         </section>
       </div>
 
-      {selected && <RegistrationDetails registration={selected} onClose={() => setSelected(null)} />}
+      {selected && (
+        <RegistrationDetails
+          registration={selected}
+          onClose={() => setSelected(null)}
+          onSendConfirmation={sendSingleConfirmation}
+          onSendPostponement={sendSinglePostponement}
+          isSendingConf={Boolean(sendingConfirmationIds[extractRecordId(selected)])}
+          isSendingPost={Boolean(sendingPostponementIds[extractRecordId(selected)])}
+        />
+      )}
     </main>
   );
 }
@@ -344,19 +515,52 @@ function SummaryCard({ label, value, detail }) {
   return <article className="webinar-admin-summary-card"><span>{label}</span><strong>{Number(value || 0).toLocaleString()}</strong><small>{detail}</small></article>;
 }
 
-function RegistrationDetails({ registration, onClose }) {
+function RegistrationDetails({ registration, onClose, onSendConfirmation, onSendPostponement, isSendingConf, isSendingPost }) {
   useEffect(() => {
     function closeOnEscape(event) { if (event.key === 'Escape') onClose(); }
     window.addEventListener('keydown', closeOnEscape);
     return () => window.removeEventListener('keydown', closeOnEscape);
   }, [onClose]);
 
+  const hasData = !registration.loading && !registration.error;
+
   return (
     <div className="webinar-admin-modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
       <section className="webinar-admin-modal" role="dialog" aria-modal="true" aria-labelledby="webinar-detail-title">
         <header><div><p className="webinar-admin-eyebrow">PARTICIPANT RECORD</p><h2 id="webinar-detail-title">{registration.loading ? 'Loading details…' : registration.error ? 'Details unavailable' : text(registration.fullName)}</h2></div><button type="button" onClick={onClose} aria-label="Close details"><X size={19} /></button></header>
         {registration.error && <p className="webinar-admin-alert" role="alert">{registration.error}</p>}
-        {!registration.loading && !registration.error && <dl className="webinar-admin-detail-grid">{Object.entries(registration).filter(([key]) => key !== '__v').map(([key, value]) => <div key={key}><dt>{labelFor(key)}</dt><dd>{key === 'createdAt' || key === 'updatedAt' ? formatDate(value, true) : key === 'whatsapp' ? formatPhone(value) : text(value)}</dd></div>)}</dl>}
+        {hasData && (
+          <>
+            <dl className="webinar-admin-detail-grid">
+              {Object.entries(registration).filter(([key]) => !['_id', '__v', '$__', '_doc', '$locals', '$op', 'isNew', 'errors'].includes(key)).map(([key, value]) => (
+                <div key={key}>
+                  <dt>{labelFor(key)}</dt>
+                  <dd>{key === 'createdAt' || key === 'updatedAt' || key === 'confirmationEmailSentAt' || key === 'announcementEmailSentAt' ? formatDate(value, true) : key === 'whatsapp' ? formatPhone(value) : text(value)}</dd>
+                </div>
+              ))}
+            </dl>
+            <div style={{ display: 'flex', gap: '10px', marginTop: '20px', paddingTop: '16px', borderTop: '1px solid rgba(15, 76, 117, 0.15)' }}>
+              <button
+                type="button"
+                className="webinar-admin-email-action"
+                style={{ padding: '8px 14px' }}
+                onClick={() => onSendConfirmation(registration, registration.confirmationEmailSent === true)}
+                disabled={isSendingConf}
+              >
+                {isSendingConf ? 'Sending…' : registration.confirmationEmailSent ? 'Resend Confirmation Email' : 'Send Confirmation Email'}
+              </button>
+              <button
+                type="button"
+                className="webinar-admin-email-action"
+                style={{ padding: '8px 14px' }}
+                onClick={() => onSendPostponement(registration, registration.announcementEmailSent === true)}
+                disabled={isSendingPost}
+              >
+                {isSendingPost ? 'Sending…' : registration.announcementEmailSent ? 'Resend Postponement Notice' : 'Send Postponement Notice'}
+              </button>
+            </div>
+          </>
+        )}
       </section>
     </div>
   );
