@@ -12,12 +12,17 @@ export default function AdminLogin() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [coldStartNotice, setColdStartNotice] = useState(false);
   const [error, setError] = useState('');
 
   async function handleSubmit(event) {
     event.preventDefault();
+    if (loading) return;
     setError('');
-    if (!/^\S+@\S+\.\S+$/.test(email.trim())) {
+    setColdStartNotice(false);
+
+    const trimmedEmail = email.trim();
+    if (!/^\S+@\S+\.\S+$/.test(trimmedEmail)) {
       setError('Enter a valid admin email address.');
       return;
     }
@@ -27,13 +32,29 @@ export default function AdminLogin() {
     }
 
     setLoading(true);
+    const slowTimer = setTimeout(() => {
+      setColdStartNotice(true);
+    }, 2500);
+
     try {
-      const response = await axios.post(`${API_URL}/api/admin/login`, { email: email.trim(), password });
+      const response = await axios.post(
+        `${API_URL}/api/admin/login`,
+        { email: trimmedEmail, password },
+        { timeout: 45000 },
+      );
+      clearTimeout(slowTimer);
       window.sessionStorage.setItem(ADMIN_TOKEN_KEY, response.data.token);
       navigate('/admin/dashboard', { replace: true });
     } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Unable to sign in right now. Check your connection and try again.');
+      clearTimeout(slowTimer);
+      setColdStartNotice(false);
+      if (requestError.code === 'ECONNABORTED' || requestError.message?.includes('timeout')) {
+        setError('Server response timed out. The server may be waking up from sleep. Please try signing in again.');
+      } else {
+        setError(requestError.response?.data?.message || 'Unable to sign in right now. Check your connection and try again.');
+      }
     } finally {
+      clearTimeout(slowTimer);
       setLoading(false);
     }
   }
@@ -82,6 +103,12 @@ export default function AdminLogin() {
             </span>
           </label>
           {error && <p className="admin-login-error" role="alert">{error}</p>}
+          {coldStartNotice && loading && (
+            <div className="admin-login-notice" role="status">
+              <span className="admin-login-notice-spinner" aria-hidden="true" />
+              <span>Connecting to secure server… If the server was idle, it may take a few moments to spin up.</span>
+            </div>
+          )}
           <button className="admin-login-submit" type="submit" disabled={loading}>
             {loading ? 'Signing in…' : 'Sign in'}
           </button>

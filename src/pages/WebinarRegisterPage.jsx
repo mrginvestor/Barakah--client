@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { LockKeyhole } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input/max';
 import { parsePhoneNumberFromString } from 'libphonenumber-js/max';
 import phoneMetadata from 'libphonenumber-js/metadata.max.json';
@@ -73,6 +74,9 @@ function getCountryName(country) {
 
 function WebinarRegisterPage() {
   const navigate = useNavigate();
+  const [isRegistrationClosed, setIsRegistrationClosed] = useState(
+    import.meta.env.VITE_WEBINAR_REGISTRATION_CLOSED !== 'false'
+  );
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [submitState, setSubmitState] = useState('idle');
@@ -81,17 +85,38 @@ function WebinarRegisterPage() {
   const [phoneCountry, setPhoneCountry] = useState('IN');
 
   useEffect(() => {
-    document.title = 'Halal Wealth Webinar – Registration Confirmed';
+    let isMounted = true;
+    axios.get(`${API_URL}/api/webinar/status`)
+      .then((response) => {
+        if (isMounted && typeof response.data?.closed === 'boolean') {
+          setIsRegistrationClosed(response.data.closed);
+        }
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
+
+  useEffect(() => {
+    if (success) {
+      document.title = 'Halal Wealth Webinar – Registration Confirmed';
+      return;
+    }
+    document.title = isRegistrationClosed
+      ? 'Registration Closed – Halal Wealth Webinar'
+      : 'Halal Wealth Webinar – Registration';
     const metaDescription = document.querySelector('meta[name="description"]');
+    const content = isRegistrationClosed
+      ? 'Registration for the Halal Wealth Webinar has now closed.'
+      : 'Register for the Halal Wealth Webinar: Halal Trade, Investments & Generational Wealth.';
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Halal Wealth Webinar – Registration Confirmed');
+      metaDescription.setAttribute('content', content);
     } else {
       const meta = document.createElement('meta');
       meta.name = 'description';
-      meta.content = 'Halal Wealth Webinar – Registration Confirmed';
+      meta.content = content;
       document.head.appendChild(meta);
     }
-  }, []);
+  }, [isRegistrationClosed, success]);
 
   const updateField = (field, value) => {
     setForm((current) => {
@@ -220,6 +245,7 @@ function WebinarRegisterPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (isRegistrationClosed) return;
     if (!validate()) return;
 
     setSubmitState('loading');
@@ -358,12 +384,53 @@ function WebinarRegisterPage() {
         <section className="webinar-form-panel">
           <div className="form-panel-header">
             <div>
-              <p className="eyebrow eyebrow--panel">Registration Form</p>
+              <p className="eyebrow eyebrow--panel">{isRegistrationClosed ? 'Registration Status' : 'Registration Form'}</p>
             </div>
             <span className="panel-tag">18 Oct 2026<span>•</span>Online Webinar</span>
           </div>
 
-          <form className="webinar-form" onSubmit={handleSubmit} noValidate>
+          {isRegistrationClosed ? (
+            <div className="webinar-closed-content" role="region" aria-label="Webinar registration closed notice">
+              <div className="webinar-closed-badge" aria-hidden="true">
+                <LockKeyhole size={28} />
+              </div>
+
+              <h2 className="webinar-closed-title">Registration Closed</h2>
+
+              <p className="webinar-closed-lead">
+                Thank you for your interest in the Halal Wealth Webinar: &ldquo;Halal Trade, Investments &amp; Generational Wealth.&rdquo;
+              </p>
+
+              <p className="webinar-closed-message">
+                Registration for this webinar has now closed. We appreciate your interest and support.
+              </p>
+
+              <div className="webinar-closed-card">
+                <span className="webinar-closed-card-tag">SESSION DETAILS</span>
+                <strong>HALAL TRADE, INVESTMENTS &amp; GENERATIONAL WEALTH</strong>
+                <div className="webinar-closed-card-meta">
+                  <span>ONLINE WEBINAR</span>
+                  <span aria-hidden="true">•</span>
+                  <span>18 OCT 2026</span>
+                </div>
+              </div>
+
+              <div className="webinar-closed-note">
+                <strong>Already registered?</strong> If you have already registered, your registration remains valid. Official Zoom joining details and passcode have been dispatched to your registered email address.
+              </div>
+
+              <div className="webinar-closed-actions">
+                <button
+                  type="button"
+                  className="gold-button webinar-closed-home-btn"
+                  onClick={() => navigate('/')}
+                >
+                  BACK TO HOME
+                </button>
+              </div>
+            </div>
+          ) : (
+            <form className="webinar-form" onSubmit={handleSubmit} noValidate>
             <div className="form-section">
               <div className="section-title">
                 <span className="section-number">1</span>
@@ -618,6 +685,7 @@ function WebinarRegisterPage() {
               <span>Your information is secure and will only be used for webinar-related communication.</span>
             </div>
           </form>
+          )}
         </section>
       </div>
     </main>
