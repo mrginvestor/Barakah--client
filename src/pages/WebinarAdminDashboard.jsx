@@ -306,6 +306,7 @@ export default function WebinarAdminDashboard() {
 
   async function handleSendEmail(e) {
     if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    if (isSendingEmail) return;
     if (!emailTargetRecord) return;
 
     const recordId = extractRecordId(emailTargetRecord);
