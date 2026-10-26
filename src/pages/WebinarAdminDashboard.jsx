@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, Clock, Download, LogOut, Search, ShieldCheck, Video, X } from 'lucide-react';
+import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, Download, LogOut, Mail, Search, ShieldCheck, X } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import parsePhoneNumberFromString from 'libphonenumber-js';
 import adminApi, { ADMIN_TOKEN_KEY } from '../config/adminApi';
@@ -55,6 +55,16 @@ function formatPhone(value) {
 
 function labelFor(key) {
   if (key === '_id') return 'Record ID';
+  if (key === 'companyName') return 'Company Name';
+  if (key === 'businessWebsite') return 'Business Website';
+  if (key === 'additionalInfo') return 'Additional Information';
+  if (key === 'webinarVersion') return 'Webinar Edition';
+  if (key === 'ageGroup') return 'Age Group';
+  if (key === 'otherAgeGroup') return 'Other Age Group';
+  if (key === 'otherOccupation') return 'Other Occupation';
+  if (key === 'otherWebinarSource') return 'Other Webinar Source';
+  if (key === 'otherFinancialInterest') return 'Other Financial Interest';
+  if (key === 'questionsOrTopics') return 'Questions / Topics';
   return key.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/^./, character => character.toUpperCase());
 }
 
@@ -70,6 +80,49 @@ function formatDate(value, includeTime = false) {
     : { dateStyle: 'medium' }).format(date);
 }
 
+const EMAIL_TEMPLATES = {
+  custom: {
+    label: 'Custom Email',
+    getSubject: () => 'Halal Wealth Webinar Update',
+    getMessage: (record) => {
+      const name = String(record?.fullName || '').trim() || 'Participant';
+      return `Assalamu Alaikum ${name},\n\nWe hope this message finds you well.\n\n\n\nJazakAllah Khair,\nHalal Wealth Webinar Team`;
+    },
+  },
+  feedback: {
+    label: 'Feedback Request',
+    getSubject: () => 'Thank You for Attending | Feedback & Future Halal Investing Programs',
+    getMessage: (record) => {
+      const name = String(record?.fullName || '').trim() || 'Participant';
+      return `Assalamu Alaikum Wr Wb ${name},\n\nHope you have joined our webinar yesterday and benefited from the knowledge shared.\n\nWe would like to hear your feedback and suggestions to help us better plan our future programs.\n\nKindly submit this feedback form:\nhttps://forms.gle/ysMqbTQ37BSnrbGT9\n\nWe look forward to having you join our Halal Investing webinar planned for November 2026. Do stay connected with us.\n\nWhatsApp Community: https://chat.whatsapp.com/I9d41QdjbOGA43kYph2noq\nYouTube: https://youtube.com/@ethicalfinancebasithtamil\nInstagram: https://instagram.com/ethicalfinancebasith.tamil\n\nJazakAllah Khair,\nHalal Wealth Webinar Team`;
+    },
+  },
+  reminder: {
+    label: 'Webinar Reminder',
+    getSubject: () => 'Webinar Starting in One Hour | Halal Trade, Investments & Generational Wealth',
+    getMessage: (record) => {
+      const name = String(record?.fullName || '').trim() || 'Participant';
+      return `Assalamu Alaikum Wr Wb ${name},\n\nWe are commencing our Tamil webinar on Halal Trade, Investments & Generational Wealth in an hour.\n\n🗓️ Sunday, 18 October 2026\n🕐 11:00 am IST (1:30 pm SG | 9:30 am UAE | 8:30 am KSA)\n\nLink to join:\nhttps://us06web.zoom.us/j/81487983324?pwd=iiWszjuBKKDHZ7SNibjY9aUkfFVEvS.1\n\nMeeting ID: 814 8798 3324\nPasscode: 666991\n\nSee you in a while, Insha'Allah!\n\nJazakAllahu Khairan,\nBarakah Team\nHalal Wealth Webinar`;
+    },
+  },
+  zoom: {
+    label: 'Zoom Joining Link',
+    getSubject: () => 'Your Zoom Joining Link – Halal Wealth Webinar | 18 October 2026',
+    getMessage: (record) => {
+      const name = String(record?.fullName || '').trim() || 'Participant';
+      return `Assalamu Alaikum Wa Rahmatullahi Wa Barakatuh ${name},\n\nWe are pleased to welcome you to our upcoming Halal Wealth Webinar.\n\nTopic: Halal Trade, Investments & Generational Wealth\nDate: Sunday, 18 October 2026\nTime:\n- India: 11:00 AM IST\n- Singapore: 1:30 PM SGT\n- UAE: 9:30 AM GST\n- Saudi Arabia (KSA): 8:30 AM AST\n\nJoin the webinar using the Zoom link below:\nhttps://us06web.zoom.us/j/81487983324?pwd=iiWszjuBKKDHZ7SNibjY9aUkfFVEvS.1\n\nMeeting ID: 814 8798 3324\nPasscode: 666991\n\nWe encourage you to join a few minutes before the session begins.\n\nWe look forward to welcoming you to an insightful session on Halal trade, ethical investments, financial planning, and generational wealth.\n\nJazakAllahu Khairan,\nBarakah Team\nHalal Wealth Webinar`;
+    },
+  },
+  postponement: {
+    label: 'Postponement Notice',
+    getSubject: () => 'Important Update: Halal Wealth Webinar Postponed to 18 October 2026',
+    getMessage: (record) => {
+      const name = String(record?.fullName || '').trim() || 'Participant';
+      return `Assalamu Alaikum warahmatullahi wabarakatuh ${name},\n\nIMPORTANT UPDATE: NEW WEBINAR DATE\n\nDue to unforeseen circumstances, our live Halal Wealth Webinar, originally scheduled for Sunday, 11 October 2026, has been postponed.\n\nPlease note the revised date and time:\n\nDate: Sunday, 18 October 2026\nTime:\n- 11:00 AM IST\n- 1:30 PM Singapore\n- 9:30 AM UAE\n- 8:30 AM KSA\n\nWe sincerely apologize for any inconvenience this sudden change may cause to your weekend schedule. We truly appreciate your understanding and patience.\n\nNO NEED TO REGISTER AGAIN!\nYour existing registration remains valid. We will share the webinar joining link as we get closer to next Sunday. Please keep an eye on your email and WhatsApp messages for further updates.\n\nIn the meantime, stay connected with us to learn more about Islamic finance and Halal investments:\n- YouTube: https://youtube.com/@ethicalfinancebasithtamil\n- Instagram: https://instagram.com/ethicalfinancebasith.tamil\n- WhatsApp Community: https://chat.whatsapp.com/InfThev3br60wmCUWRt3tq\n\nJazakAllah Khair for your understanding and continued support.\n\nJazakAllah,\nHalal Wealth Webinar Team`;
+    },
+  },
+};
+
 export default function WebinarAdminDashboard() {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
@@ -77,6 +130,8 @@ export default function WebinarAdminDashboard() {
   const [status, setStatus] = useState('');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
+  const [edition, setEdition] = useState('');
+  const [selectedWebinarId, setSelectedWebinarId] = useState('halal-wealth-nov-2026');
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [records, setRecords] = useState([]);
@@ -87,22 +142,18 @@ export default function WebinarAdminDashboard() {
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
   const [updatingId, setUpdatingId] = useState('');
-  const [sendingBulkPending, setSendingBulkPending] = useState(false);
-  const [sendingBulkResend, setSendingBulkResend] = useState(false);
-  const [sendingBulkPostponement, setSendingBulkPostponement] = useState(false);
-  const [retryingBulkPostponement, setRetryingBulkPostponement] = useState(false);
-  const [sendingConfirmationIds, setSendingConfirmationIds] = useState({});
-  const [sendingPostponementIds, setSendingPostponementIds] = useState({});
-  const [sendingZoomIds, setSendingZoomIds] = useState({});
-  const [sendingBulkZoom, setSendingBulkZoom] = useState(false);
-  const [retryingBulkZoom, setRetryingBulkZoom] = useState(false);
-  const [resendingBulkZoom, setResendingBulkZoom] = useState(false);
-  const [sendingReminder, setSendingReminder] = useState(false);
-  const [campaignModalOpen, setCampaignModalOpen] = useState(false);
-  const [campaignLoading, setCampaignLoading] = useState(false);
-  const [campaignData, setCampaignData] = useState(null);
   const [selected, setSelected] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Individual Email Modal state
+  const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [emailTargetRecord, setEmailTargetRecord] = useState(null);
+  const [selectedTemplate, setSelectedTemplate] = useState('custom');
+  const [emailSubject, setEmailSubject] = useState('');
+  const [emailMessage, setEmailMessage] = useState('');
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailModalError, setEmailModalError] = useState('');
+  const [emailModalNotice, setEmailModalNotice] = useState('');
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -117,8 +168,10 @@ export default function WebinarAdminDashboard() {
     const params = { page, limit };
     if (searchTerm) params.q = searchTerm;
     if (status) params.status = status;
+    if (edition) params.edition = edition;
     if (from) params.from = from;
     if (to) params.to = to;
+    if (selectedWebinarId && selectedWebinarId !== 'all') params.webinarId = selectedWebinarId;
 
     setLoading(true);
     setError('');
@@ -134,7 +187,7 @@ export default function WebinarAdminDashboard() {
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
 
     return () => controller.abort();
-  }, [page, limit, searchTerm, status, from, to, refreshKey]);
+  }, [page, limit, searchTerm, status, edition, from, to, refreshKey, selectedWebinarId]);
 
   function logout() {
     window.sessionStorage.removeItem(ADMIN_TOKEN_KEY);
@@ -183,8 +236,10 @@ export default function WebinarAdminDashboard() {
     const params = {};
     if (searchTerm) params.q = searchTerm;
     if (status) params.status = status;
+    if (edition) params.edition = edition;
     if (from) params.from = from;
     if (to) params.to = to;
+    if (selectedWebinarId && selectedWebinarId !== 'all') params.webinarId = selectedWebinarId;
     try {
       const response = await adminApi.get('/api/admin/registrations/export', { params, responseType: 'blob' });
       const url = URL.createObjectURL(response.data);
@@ -208,331 +263,88 @@ export default function WebinarAdminDashboard() {
     setStatus('');
     setFrom('');
     setTo('');
+    setEdition('');
     setPage(1);
   }
 
-  function emailStatusFor(record) {
-    if (record.confirmationEmailSent === true) return 'Sent';
-    if (record.confirmationEmailLastError) return 'Failed';
-    return 'Not Sent';
-  }
-
-  function announcementStatusFor(record) {
-    if (record.announcementEmailSent === true) return 'Sent';
-    if (record.announcementEmailLastError) return 'Failed';
-    return 'Not Sent';
-  }
-
-  function zoomStatusFor(record) {
-    if (record?.joiningEmailSent === true) return 'Sent';
-    if (record?.joiningEmailLastError) return 'Failed';
-    return 'Not Sent';
-  }
-
-  async function sendSingleConfirmation(record, resend = false) {
-    const recordId = extractRecordId(record);
-    if (!recordId) {
-      setError('Cannot send confirmation: registration ID is missing or invalid.');
+  function openEmailModal(record) {
+    if (!record) return;
+    const targetEmail = record.email;
+    if (!targetEmail) {
+      setError('Cannot send email: this participant does not have an email address.');
       return;
     }
-    const targetEmail = record?.email || 'this participant';
-    const confirmed = window.confirm(resend
-      ? `Are you sure you want to resend the confirmation email to ${targetEmail}?`
-      : `Send the confirmation email to ${targetEmail}?`);
-    if (!confirmed) return;
+    const templateKey = 'custom';
+    setEmailTargetRecord(record);
+    setSelectedTemplate(templateKey);
+    setEmailSubject(EMAIL_TEMPLATES[templateKey].getSubject(record));
+    setEmailMessage(EMAIL_TEMPLATES[templateKey].getMessage(record));
+    setEmailModalError('');
+    setEmailModalNotice('');
+    setIsSendingEmail(false);
+    setEmailModalOpen(true);
+  }
 
-    setError('');
-    setNotice('');
-    setSendingConfirmationIds(current => ({ ...current, [recordId]: true }));
-
-    try {
-      const response = await adminApi.post(`/api/admin/registrations/${recordId}/send-confirmation`);
-      const updatedRecord = response.data?.data || {};
-      setRecords(current => current.map(item => extractRecordId(item) === recordId ? { ...item, ...updatedRecord } : item));
-      if (extractRecordId(selected) === recordId) setSelected(current => ({ ...current, ...updatedRecord }));
-      setNotice(resend ? `Confirmation email resent to ${targetEmail}.` : `Confirmation email sent to ${targetEmail}.`);
-    } catch (requestError) {
-      setError(requestError.response?.data?.message || 'The confirmation email could not be sent.');
-    } finally {
-      setSendingConfirmationIds(current => ({ ...current, [recordId]: false }));
+  function handleTemplateChange(templateKey) {
+    setSelectedTemplate(templateKey);
+    setEmailModalError('');
+    setEmailModalNotice('');
+    const tmpl = EMAIL_TEMPLATES[templateKey];
+    if (tmpl) {
+      setEmailSubject(tmpl.getSubject(emailTargetRecord));
+      setEmailMessage(tmpl.getMessage(emailTargetRecord));
     }
   }
 
-  async function sendSinglePostponement(record, resend = false) {
-    const recordId = extractRecordId(record);
+  function closeEmailModal() {
+    if (isSendingEmail) return;
+    setEmailModalOpen(false);
+    setEmailTargetRecord(null);
+    setEmailModalError('');
+    setEmailModalNotice('');
+  }
+
+  async function handleSendEmail(e) {
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    if (!emailTargetRecord) return;
+
+    const recordId = extractRecordId(emailTargetRecord);
     if (!recordId) {
-      setError('Cannot send postponement notice: registration ID is missing or invalid.');
+      setEmailModalError('Cannot send email: registration ID is missing or invalid.');
       return;
     }
-    const targetEmail = record?.email || 'this participant';
-    const confirmed = window.confirm(resend
-      ? `Are you sure you want to resend the postponement notice to ${targetEmail}?`
-      : `Send the postponement notice to ${targetEmail}?`);
-    if (!confirmed) return;
 
-    setError('');
-    setNotice('');
-    setSendingPostponementIds(current => ({ ...current, [recordId]: true }));
+    const cleanSubject = String(emailSubject || '').trim();
+    const cleanMessage = String(emailMessage || '').trim();
 
-    try {
-      const response = await adminApi.post(`/api/admin/registrations/${recordId}/send-postponement`);
-      const updatedRecord = response.data?.data || {};
-      setRecords(current => current.map(item => extractRecordId(item) === recordId ? { ...item, ...updatedRecord } : item));
-      if (extractRecordId(selected) === recordId) setSelected(current => ({ ...current, ...updatedRecord }));
-      setNotice(resend ? `Postponement notice resent to ${targetEmail}.` : `Postponement notice sent to ${targetEmail}.`);
-    } catch (requestError) {
-      setError(requestError.response?.data?.message || 'The postponement notice could not be sent.');
-    } finally {
-      setSendingPostponementIds(current => ({ ...current, [recordId]: false }));
-    }
-  }
-
-  async function sendSingleZoomLink(record, resend = false) {
-    const recordId = extractRecordId(record);
-    if (!recordId) {
-      setError('Cannot send Zoom link: registration ID is missing or invalid.');
+    if (!cleanSubject) {
+      setEmailModalError('Please enter an email subject.');
       return;
     }
-    const targetEmail = record?.email || 'this participant';
-    const confirmed = window.confirm(resend
-      ? `Are you sure you want to resend the official Zoom webinar joining details to ${targetEmail}?`
-      : `Send the official Zoom webinar joining details to ${targetEmail}?`);
-    if (!confirmed) return;
-
-    setError('');
-    setNotice('');
-    setSendingZoomIds(current => ({ ...current, [recordId]: true }));
-
-    try {
-      const response = await adminApi.post(`/api/admin/registrations/${recordId}/send-joining-link`);
-      const updatedRecord = response.data?.data || {};
-      setRecords(current => current.map(item => extractRecordId(item) === recordId ? { ...item, ...updatedRecord } : item));
-      if (extractRecordId(selected) === recordId) setSelected(current => ({ ...current, ...updatedRecord }));
-      setNotice(resend ? `Zoom joining link resent to ${targetEmail}.` : `Zoom joining link sent to ${targetEmail}.`);
-    } catch (requestError) {
-      setError(requestError.response?.data?.message || 'The Zoom joining link could not be sent.');
-    } finally {
-      setSendingZoomIds(current => ({ ...current, [recordId]: false }));
+    if (!cleanMessage) {
+      setEmailModalError('Please enter an email message.');
+      return;
     }
-  }
 
-  async function sendPendingRegistrants() {
-    const confirmed = window.confirm('Are you sure you want to send the webinar confirmation email to all registered participants who have not received it?');
-    if (!confirmed) return;
-
-    setSendingBulkPending(true);
-    setError('');
-    setNotice('');
+    setIsSendingEmail(true);
+    setEmailModalError('');
+    setEmailModalNotice('');
 
     try {
-      const response = await adminApi.post('/api/admin/registrations/send-confirmations');
-      const summary = response.data?.summary || {};
-      const failedCount = Number(summary.failed || 0);
-      setNotice(`Email sending completed. Total: ${summary.total || 0}. Successfully sent: ${summary.sent || 0}. Failed: ${failedCount}. Skipped: ${summary.skipped || 0}.`);
+      const response = await adminApi.post(`/api/admin/registrations/${recordId}/send-email`, {
+        subject: cleanSubject,
+        message: cleanMessage,
+        template: selectedTemplate,
+      });
+
+      const successMsg = response.data?.message || `Email sent successfully to ${emailTargetRecord.email}.`;
+      setEmailModalNotice(successMsg);
+      setNotice(successMsg);
       setRefreshKey(value => value + 1);
-      if (failedCount > 0 && Array.isArray(response.data?.failedEmails) && response.data.failedEmails.length > 0) {
-        setError(`Failed recipients: ${response.data.failedEmails.join(', ')}`);
-      }
-    } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Pending confirmation emails could not be sent.');
+    } catch (err) {
+      setEmailModalError(err.response?.data?.message || 'Failed to send email. Please check SMTP configuration and try again.');
     } finally {
-      setSendingBulkPending(false);
-    }
-  }
-
-  async function resendAllRegistrants() {
-    const confirmed = window.confirm('WARNING: This will send an email to every registered participant, including people who have already received it. Continue?');
-    if (!confirmed) return;
-
-    setSendingBulkResend(true);
-    setError('');
-    setNotice('');
-
-    try {
-      const response = await adminApi.post('/api/admin/registrations/resend-confirmations');
-      const summary = response.data?.summary || {};
-      const failedCount = Number(summary.failed || 0);
-      setNotice(`Resend completed. Total: ${summary.total || 0}. Successfully sent: ${summary.sent || 0}. Failed: ${failedCount}. Skipped: ${summary.skipped || 0}.`);
-      setRefreshKey(value => value + 1);
-      if (failedCount > 0 && Array.isArray(response.data?.failedEmails) && response.data.failedEmails.length > 0) {
-        setError(`Failed recipients: ${response.data.failedEmails.join(', ')}`);
-      }
-    } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Resend could not be completed.');
-    } finally {
-      setSendingBulkResend(false);
-    }
-  }
-
-  async function sendPostponementToAllRegistrants() {
-    const confirmed = window.confirm('This will send the postponement notice to all existing webinar registrants who have not already received it. Continue?');
-    if (!confirmed) return;
-
-    setSendingBulkPostponement(true);
-    setError('');
-    setNotice('');
-
-    try {
-      const response = await adminApi.post('/api/admin/registrations/send-postponement', { confirmed: true, delayMs: 250 });
-      const summary = response.data?.summary || {};
-      const failedCount = Number(summary.failed || 0);
-      setNotice(`Postponement email sending completed. Total: ${summary.total || 0}. Successfully sent: ${summary.sent || 0}. Failed: ${failedCount}. Skipped: ${summary.skipped || 0}.`);
-      setRefreshKey(value => value + 1);
-      if (failedCount > 0 && Array.isArray(response.data?.failedEmails) && response.data.failedEmails.length > 0) {
-        setError(`Failed recipients: ${response.data.failedEmails.join(', ')}`);
-      }
-    } catch (requestError) {
-      setError(requestError.response?.data?.message || 'The postponement announcement could not be sent.');
-    } finally {
-      setSendingBulkPostponement(false);
-    }
-  }
-
-  async function retryFailedPostponements() {
-    const confirmed = window.confirm('Are you sure you want to retry sending the postponement notice to all failed recipients?');
-    if (!confirmed) return;
-
-    setRetryingBulkPostponement(true);
-    setError('');
-    setNotice('');
-
-    try {
-      const response = await adminApi.post('/api/admin/registrations/resend-postponement', { confirmed: true, retryFailed: true, delayMs: 250 });
-      const summary = response.data?.summary || {};
-      const failedCount = Number(summary.failed || 0);
-      setNotice(`Postponement retry completed. Total: ${summary.total || 0}. Successfully sent: ${summary.sent || 0}. Failed: ${failedCount}. Skipped: ${summary.skipped || 0}.`);
-      setRefreshKey(value => value + 1);
-      if (failedCount > 0 && Array.isArray(response.data?.failedEmails) && response.data.failedEmails.length > 0) {
-        setError(`Failed recipients: ${response.data.failedEmails.join(', ')}`);
-      }
-    } catch (requestError) {
-      setError(requestError.response?.data?.message || 'The postponement retry could not be completed.');
-    } finally {
-      setRetryingBulkPostponement(false);
-    }
-  }
-
-  async function openCampaignPreview() {
-    setCampaignLoading(true);
-    setCampaignModalOpen(true);
-    setError('');
-    try {
-      const response = await adminApi.get('/api/admin/registrations/joining-campaign');
-      setCampaignData(response.data);
-    } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Campaign preview could not be loaded.');
-      setCampaignModalOpen(false);
-    } finally {
-      setCampaignLoading(false);
-    }
-  }
-
-  async function sendZoomToPendingRegistrants() {
-    const pendingCount = campaignData?.summary?.pending ?? summary?.joiningPending ?? 'all pending';
-    const confirmed = window.confirm(`Are you sure you want to send the official Zoom joining details to ${pendingCount} pending participants?`);
-    if (!confirmed) return;
-
-    setSendingBulkZoom(true);
-    setError('');
-    setNotice('');
-
-    try {
-      const response = await adminApi.post('/api/admin/registrations/send-joining-link', { confirmed: true, delayMs: 250 });
-      const respSummary = response.data?.summary || {};
-      const failedCount = Number(respSummary.failed || 0);
-      setNotice(`Zoom joining email campaign completed. Total: ${respSummary.total || 0}. Successfully sent: ${respSummary.sent || 0}. Failed: ${failedCount}. Skipped: ${respSummary.skipped || 0}.`);
-      setRefreshKey(value => value + 1);
-      if (failedCount > 0 && Array.isArray(response.data?.failedEmails) && response.data.failedEmails.length > 0) {
-        setError(`Failed recipients: ${response.data.failedEmails.join(', ')}`);
-      }
-      setCampaignModalOpen(false);
-    } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Zoom joining link campaign could not be completed.');
-    } finally {
-      setSendingBulkZoom(false);
-    }
-  }
-
-  async function retryFailedZoomRegistrants() {
-    const failedCount = campaignData?.summary?.failed ?? summary?.joiningFailed ?? 'failed';
-    const confirmed = window.confirm(`Are you sure you want to retry sending the Zoom joining link to ${failedCount} failed participants?`);
-    if (!confirmed) return;
-
-    setRetryingBulkZoom(true);
-    setError('');
-    setNotice('');
-
-    try {
-      const response = await adminApi.post('/api/admin/registrations/send-joining-link', { confirmed: true, retryFailed: true, delayMs: 250 });
-      const respSummary = response.data?.summary || {};
-      const failedCount = Number(respSummary.failed || 0);
-      setNotice(`Retry completed. Total: ${respSummary.total || 0}. Successfully sent: ${respSummary.sent || 0}. Failed: ${failedCount}. Skipped: ${respSummary.skipped || 0}.`);
-      setRefreshKey(value => value + 1);
-      if (failedCount > 0 && Array.isArray(response.data?.failedEmails) && response.data.failedEmails.length > 0) {
-        setError(`Failed recipients: ${response.data.failedEmails.join(', ')}`);
-      }
-      setCampaignModalOpen(false);
-    } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Retry could not be completed.');
-    } finally {
-      setRetryingBulkZoom(false);
-    }
-  }
-
-  async function resendAllZoomRegistrants() {
-    const confirmed = window.confirm('WARNING: This will re-send the Zoom joining link to EVERY registered participant, including those who already received it. Are you sure you want to continue?');
-    if (!confirmed) return;
-
-    setResendingBulkZoom(true);
-    setError('');
-    setNotice('');
-
-    try {
-      const response = await adminApi.post('/api/admin/registrations/resend-joining-link', { confirmed: true, delayMs: 250 });
-      const respSummary = response.data?.summary || {};
-      const failedCount = Number(respSummary.failed || 0);
-      setNotice(`Resend completed. Total: ${respSummary.total || 0}. Successfully sent: ${respSummary.sent || 0}. Failed: ${failedCount}. Skipped: ${respSummary.skipped || 0}.`);
-      setRefreshKey(value => value + 1);
-      if (failedCount > 0 && Array.isArray(response.data?.failedEmails) && response.data.failedEmails.length > 0) {
-        setError(`Failed recipients: ${response.data.failedEmails.join(', ')}`);
-      }
-      setCampaignModalOpen(false);
-    } catch (requestError) {
-      setError(requestError.response?.data?.message || 'Resend could not be completed.');
-    } finally {
-      setResendingBulkZoom(false);
-    }
-  }
-
-  async function handleSendStartingReminder() {
-    const confirmed = window.confirm(
-      'Are you ready to send the one-hour webinar starting reminder to all registered participants?\n\n' +
-      'Subject: Webinar Starting in One Hour | Halal Trade, Investments & Generational Wealth\n\n' +
-      'Click OK only when you are ready to send.'
-    );
-    if (!confirmed) return;
-
-    setError('');
-    setNotice('');
-    setSendingReminder(true);
-
-    try {
-      const response = await adminApi.post('/api/admin/registrations/send-starting-reminder', { confirmed: true });
-      const summary = response.data?.summary || {};
-      const sent = summary.sent || 0;
-      const failed = summary.failed || 0;
-      const skipped = summary.skipped || 0;
-
-      if (failed > 0) {
-        setError(`Webinar starting reminder completed with failures: ${sent} sent, ${failed} failed, ${skipped} skipped.`);
-      } else {
-        setNotice(`Webinar starting reminder sent successfully to all eligible participants (${sent} sent, ${skipped} skipped, ${failed} failed).`);
-      }
-      setRefreshKey(value => value + 1);
-    } catch (requestError) {
-      setError(requestError.response?.data?.message || 'The webinar starting reminder could not be sent.');
-    } finally {
-      setSendingReminder(false);
+      setIsSendingEmail(false);
     }
   }
 
@@ -561,37 +373,6 @@ export default function WebinarAdminDashboard() {
             <button className="webinar-admin-export" type="button" onClick={exportRegistrations} disabled={exporting}>
               <Download size={16} /> {exporting ? 'Preparing…' : 'Export CSV'}
             </button>
-            <div className="webinar-admin-reminder-wrapper">
-              <button
-                className="webinar-admin-bulk-action webinar-admin-bulk-action-reminder"
-                type="button"
-                onClick={handleSendStartingReminder}
-                disabled={sendingReminder || sendingBulkPending || sendingBulkResend || sendingBulkPostponement || retryingBulkPostponement || sendingBulkZoom || retryingBulkZoom || resendingBulkZoom}
-              >
-                <Clock size={16} style={{ marginRight: '6px' }} />
-                {sendingReminder ? 'Sending Reminder…' : 'Send Webinar Starting Reminder'}
-              </button>
-              <p className="webinar-admin-reminder-helper">
-                Send the one-hour webinar reminder to all registered participants. Click only when you are ready to send.
-              </p>
-            </div>
-            <button
-              className="webinar-admin-bulk-action webinar-admin-bulk-action-primary"
-              type="button"
-              onClick={openCampaignPreview}
-              disabled={sendingReminder || sendingBulkPending || sendingBulkResend || sendingBulkPostponement || retryingBulkPostponement || sendingBulkZoom || retryingBulkZoom || resendingBulkZoom}
-            >
-              <Video size={16} style={{ marginRight: '6px' }} /> Zoom Link Campaign
-            </button>
-            <button className="webinar-admin-bulk-action webinar-admin-bulk-action-secondary" type="button" onClick={sendPendingRegistrants} disabled={sendingReminder || sendingBulkPending || sendingBulkResend || sendingBulkPostponement || retryingBulkPostponement || sendingBulkZoom || retryingBulkZoom || resendingBulkZoom}>
-              {sendingBulkPending ? 'Sending…' : 'Send Confirmations'}
-            </button>
-            <button className="webinar-admin-bulk-action webinar-admin-bulk-action-secondary" type="button" onClick={sendPostponementToAllRegistrants} disabled={sendingReminder || sendingBulkPending || sendingBulkResend || sendingBulkPostponement || retryingBulkPostponement || sendingBulkZoom || retryingBulkZoom || resendingBulkZoom}>
-              {sendingBulkPostponement ? 'Sending…' : 'Send Postponement'}
-            </button>
-            <button className="webinar-admin-bulk-action webinar-admin-bulk-action-secondary" type="button" onClick={retryFailedPostponements} disabled={sendingReminder || sendingBulkPending || sendingBulkResend || sendingBulkPostponement || retryingBulkPostponement || sendingBulkZoom || retryingBulkZoom || resendingBulkZoom}>
-              {retryingBulkPostponement ? 'Retrying…' : 'Retry Postponement'}
-            </button>
           </div>
         </div>
 
@@ -614,6 +395,7 @@ export default function WebinarAdminDashboard() {
 
           <div className="webinar-admin-filters">
             <label className="webinar-admin-search"><Search size={17} aria-hidden="true" /><input value={query} onChange={event => setQuery(event.target.value)} placeholder="Search name, email or mobile" aria-label="Search webinar registrations" /></label>
+            <label className="webinar-admin-filter-field"><span>Edition</span><select value={edition} onChange={event => { setEdition(event.target.value); setPage(1); }}><option value="">All webinars</option><option value="november">November 1, 2026 Webinar</option><option value="business">Business Webinar 2026</option><option value="october">October 2026 Webinar</option></select></label>
             <label className="webinar-admin-filter-field"><span>Status</span><select value={status} onChange={event => { setStatus(event.target.value); setPage(1); }}><option value="">All statuses</option>{STATUS_OPTIONS.map(option => <option key={option}>{option}</option>)}</select></label>
             <label className="webinar-admin-filter-field"><span>From</span><span className="webinar-admin-date"><CalendarDays size={15} /><input type="date" value={from} onChange={event => { setFrom(event.target.value); setPage(1); }} /></span></label>
             <label className="webinar-admin-filter-field"><span>To</span><span className="webinar-admin-date"><CalendarDays size={15} /><input type="date" value={to} onChange={event => { setTo(event.target.value); setPage(1); }} /></span></label>
@@ -636,6 +418,7 @@ export default function WebinarAdminDashboard() {
                   <th>Industry</th>
                   <th>Registered</th>
                   <th>Status</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -645,14 +428,42 @@ export default function WebinarAdminDashboard() {
                   return (
                     <tr key={recordId || record.email}>
                       <td className="webinar-admin-id">{recordId ? recordId.slice(-8).toUpperCase() : '—'}</td>
-                      <td><button className="webinar-admin-name" type="button" onClick={() => openDetails(record)}>{text(record.fullName)}</button></td>
+                      <td>
+                        <button className="webinar-admin-name" type="button" onClick={() => openDetails(record)}>
+                          {text(record.fullName)}
+                        </button>
+                        {record.webinarVersion === 'November 1, 2026 Webinar' && <span className="webinar-admin-tag-november" title="November 1, 2026 Webinar">Nov 1</span>}
+                        {record.webinarVersion === 'Business Webinar 2026' && <span className="webinar-admin-tag-business" title="Business Webinar 2026">Business</span>}
+                      </td>
                       <td>{text(record.email)}</td>
                       <td>{formatPhone(record.whatsapp)}</td>
                       <td>{text(record.location)}</td>
                       <td>{text(record.designation)}</td>
                       <td>{text(record.industry)}</td>
                       <td>{formatDate(record.createdAt)}</td>
-                      <td><select className={`webinar-admin-status status-${String(record.status || 'Registered').toLowerCase()}`} aria-label={`Status for ${record.fullName || record.email}`} value={record.status || 'Registered'} disabled={updatingId === recordId} onChange={event => updateStatus(record, event.target.value)}>{STATUS_OPTIONS.map(option => <option key={option}>{option}</option>)}</select></td>
+                      <td>
+                        <select
+                          className={`webinar-admin-status status-${String(record.status || 'Registered').toLowerCase()}`}
+                          aria-label={`Status for ${record.fullName || record.email}`}
+                          value={record.status || 'Registered'}
+                          disabled={updatingId === recordId}
+                          onChange={event => updateStatus(record, event.target.value)}
+                        >
+                          {STATUS_OPTIONS.map(option => <option key={option}>{option}</option>)}
+                        </select>
+                      </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="webinar-admin-row-email-btn"
+                          onClick={() => openEmailModal(record)}
+                          title={`Send email to ${record.fullName || record.email}`}
+                          aria-label={`Send email to ${record.fullName || record.email}`}
+                        >
+                          <Mail size={13} />
+                          <span>Send Email</span>
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}
@@ -676,27 +487,25 @@ export default function WebinarAdminDashboard() {
         <RegistrationDetails
           registration={selected}
           onClose={() => setSelected(null)}
-          onSendConfirmation={sendSingleConfirmation}
-          onSendPostponement={sendSinglePostponement}
-          onSendZoomLink={sendSingleZoomLink}
-          isSendingConf={Boolean(sendingConfirmationIds[extractRecordId(selected)])}
-          isSendingPost={Boolean(sendingPostponementIds[extractRecordId(selected)])}
-          isSendingZoom={Boolean(sendingZoomIds[extractRecordId(selected)])}
+          onOpenEmailModal={openEmailModal}
         />
       )}
 
-      {campaignModalOpen && (
-        <ZoomCampaignModal
-          isOpen={campaignModalOpen}
-          onClose={() => setCampaignModalOpen(false)}
-          loading={campaignLoading}
-          data={campaignData}
-          onSendPending={sendZoomToPendingRegistrants}
-          onRetryFailed={retryFailedZoomRegistrants}
-          onResendAll={resendAllZoomRegistrants}
-          isSendingPending={sendingBulkZoom}
-          isRetryingFailed={retryingBulkZoom}
-          isResendingAll={resendingBulkZoom}
+      {emailModalOpen && emailTargetRecord && (
+        <IndividualEmailModal
+          isOpen={emailModalOpen}
+          onClose={closeEmailModal}
+          participant={emailTargetRecord}
+          selectedTemplate={selectedTemplate}
+          onTemplateChange={handleTemplateChange}
+          subject={emailSubject}
+          onSubjectChange={setEmailSubject}
+          message={emailMessage}
+          onMessageChange={setEmailMessage}
+          onSend={handleSendEmail}
+          isSending={isSendingEmail}
+          error={emailModalError}
+          notice={emailModalNotice}
         />
       )}
     </main>
@@ -710,12 +519,7 @@ function SummaryCard({ label, value, detail }) {
 function RegistrationDetails({
   registration,
   onClose,
-  onSendConfirmation,
-  onSendPostponement,
-  onSendZoomLink,
-  isSendingConf,
-  isSendingPost,
-  isSendingZoom,
+  onOpenEmailModal,
 }) {
   useEffect(() => {
     function closeOnEscape(event) { if (event.key === 'Escape') onClose(); }
@@ -728,7 +532,13 @@ function RegistrationDetails({
   return (
     <div className="webinar-admin-modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
       <section className="webinar-admin-modal" role="dialog" aria-modal="true" aria-labelledby="webinar-detail-title">
-        <header><div><p className="webinar-admin-eyebrow">PARTICIPANT RECORD</p><h2 id="webinar-detail-title">{registration.loading ? 'Loading details…' : registration.error ? 'Details unavailable' : text(registration.fullName)}</h2></div><button type="button" onClick={onClose} aria-label="Close details"><X size={19} /></button></header>
+        <header>
+          <div>
+            <p className="webinar-admin-eyebrow">PARTICIPANT RECORD</p>
+            <h2 id="webinar-detail-title">{registration.loading ? 'Loading details…' : registration.error ? 'Details unavailable' : text(registration.fullName)}</h2>
+          </div>
+          <button type="button" onClick={onClose} aria-label="Close details"><X size={19} /></button>
+        </header>
         {registration.error && <p className="webinar-admin-alert" role="alert">{registration.error}</p>}
         {hasData && (
           <>
@@ -736,7 +546,7 @@ function RegistrationDetails({
               {Object.entries(registration).filter(([key]) => !['_id', '__v', '$__', '_doc', '$locals', '$op', 'isNew', 'errors'].includes(key)).map(([key, value]) => (
                 <div key={key}>
                   <dt>{labelFor(key)}</dt>
-                  <dd>{key === 'createdAt' || key === 'updatedAt' || key === 'confirmationEmailSentAt' || key === 'announcementEmailSentAt' || key === 'joiningEmailSentAt' || key === 'reminderEmailSentAt' ? formatDate(value, true) : key === 'whatsapp' ? formatPhone(value) : text(value)}</dd>
+                  <dd>{key === 'createdAt' || key === 'updatedAt' || key === 'confirmationEmailSentAt' || key === 'announcementEmailSentAt' || key === 'joiningEmailSentAt' || key === 'reminderEmailSentAt' || key === 'feedbackEmailSentAt' ? formatDate(value, true) : key === 'whatsapp' ? formatPhone(value) : text(value)}</dd>
                 </div>
               ))}
             </dl>
@@ -745,28 +555,13 @@ function RegistrationDetails({
                 type="button"
                 className="webinar-admin-email-action"
                 style={{ padding: '8px 14px', background: '#082b49', color: '#fff', borderColor: '#d4af5a' }}
-                onClick={() => onSendZoomLink(registration, registration.joiningEmailSent === true)}
-                disabled={isSendingZoom}
+                onClick={() => {
+                  onClose();
+                  onOpenEmailModal(registration);
+                }}
               >
-                {isSendingZoom ? 'Sending…' : registration.joiningEmailSent ? 'Resend Zoom Joining Link' : 'Send Zoom Joining Link'}
-              </button>
-              <button
-                type="button"
-                className="webinar-admin-email-action"
-                style={{ padding: '8px 14px' }}
-                onClick={() => onSendConfirmation(registration, registration.confirmationEmailSent === true)}
-                disabled={isSendingConf}
-              >
-                {isSendingConf ? 'Sending…' : registration.confirmationEmailSent ? 'Resend Confirmation Email' : 'Send Confirmation Email'}
-              </button>
-              <button
-                type="button"
-                className="webinar-admin-email-action"
-                style={{ padding: '8px 14px' }}
-                onClick={() => onSendPostponement(registration, registration.announcementEmailSent === true)}
-                disabled={isSendingPost}
-              >
-                {isSendingPost ? 'Sending…' : registration.announcementEmailSent ? 'Resend Postponement Notice' : 'Send Postponement Notice'}
+                <Mail size={14} style={{ marginRight: '6px' }} />
+                Send Email
               </button>
             </div>
           </>
@@ -776,131 +571,159 @@ function RegistrationDetails({
   );
 }
 
-function ZoomCampaignModal({
+function IndividualEmailModal({
   isOpen,
   onClose,
-  loading,
-  data,
-  onSendPending,
-  onRetryFailed,
-  onResendAll,
-  isSendingPending,
-  isRetryingFailed,
-  isResendingAll,
+  participant,
+  selectedTemplate,
+  onTemplateChange,
+  subject,
+  onSubjectChange,
+  message,
+  onMessageChange,
+  onSend,
+  isSending,
+  error,
+  notice,
 }) {
   useEffect(() => {
-    function closeOnEscape(event) { if (event.key === 'Escape') onClose(); }
+    function closeOnEscape(event) {
+      if (event.key === 'Escape' && !isSending) onClose();
+    }
     if (isOpen) {
       window.addEventListener('keydown', closeOnEscape);
       return () => window.removeEventListener('keydown', closeOnEscape);
     }
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, isSending]);
 
-  if (!isOpen) return null;
-
-  const summary = data?.summary || { total: 0, sent: 0, pending: 0, failed: 0, eligibleCount: 0 };
-  const preview = data?.preview || {};
-  const isBusy = isSendingPending || isRetryingFailed || isResendingAll;
+  if (!isOpen || !participant) return null;
 
   return (
-    <div className="webinar-admin-modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget && !isBusy) onClose(); }}>
-      <section className="webinar-admin-modal webinar-campaign-modal" role="dialog" aria-modal="true" aria-labelledby="campaign-modal-title">
+    <div
+      className="webinar-admin-modal-backdrop"
+      role="presentation"
+      onMouseDown={event => {
+        if (event.target === event.currentTarget && !isSending) onClose();
+      }}
+    >
+      <section
+        className="webinar-admin-modal webinar-email-composer-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="email-composer-title"
+      >
         <header>
           <div>
-            <p className="webinar-admin-eyebrow">OFFICIAL ZOOM JOINING CAMPAIGN</p>
-            <h2 id="campaign-modal-title">Zoom Joining Link Campaign</h2>
-            <p style={{ margin: '4px 0 0', color: '#607987', fontSize: '13px' }}>
-              Halal Trade, Investments &amp; Generational Wealth &bull; Sunday, 18 October 2026
-            </p>
+            <p className="webinar-admin-eyebrow">INDIVIDUAL MANUAL EMAIL</p>
+            <h2 id="email-composer-title">Send Email to Participant</h2>
           </div>
-          <button type="button" onClick={onClose} disabled={isBusy} aria-label="Close campaign preview"><X size={19} /></button>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isSending}
+            aria-label="Close email composer"
+          >
+            <X size={19} />
+          </button>
         </header>
 
-        {loading ? (
-          <div className="webinar-admin-empty">Loading campaign status and email template…</div>
-        ) : (
-          <>
-            <div className="webinar-campaign-stats-grid">
-              <div className="webinar-campaign-stat-card">
-                <span>Total Registrants</span>
-                <strong>{summary.total.toLocaleString()}</strong>
-              </div>
-              <div className="webinar-campaign-stat-card webinar-campaign-stat-sent">
-                <span>Zoom Link Sent</span>
-                <strong>{summary.sent.toLocaleString()}</strong>
-              </div>
-              <div className="webinar-campaign-stat-card webinar-campaign-stat-pending">
-                <span>Pending to Send</span>
-                <strong>{summary.pending.toLocaleString()}</strong>
-              </div>
-              <div className="webinar-campaign-stat-card webinar-campaign-stat-failed">
-                <span>Failed Deliveries</span>
-                <strong>{summary.failed.toLocaleString()}</strong>
-              </div>
-            </div>
+        <div className="webinar-email-recipient-card">
+          <div className="webinar-email-recipient-field">
+            <span className="recipient-label">Recipient:</span>
+            <strong className="recipient-value">{participant.fullName || 'Participant'}</strong>
+          </div>
+          <div className="webinar-email-recipient-field">
+            <span className="recipient-label">Registered Email:</span>
+            <strong className="recipient-value email-highlight">{participant.email || '—'}</strong>
+          </div>
+        </div>
 
-            <div className="webinar-campaign-preview-box">
-              <div className="webinar-campaign-preview-header">
-                <p><strong>Subject:</strong> {preview.subject || 'Your Zoom Joining Link – Halal Wealth Webinar | 18 October 2026'}</p>
-                <p><strong>Sender:</strong> Halal Wealth Webinar &lt;info@halalwealth.finance&gt;</p>
-              </div>
-
-              <div className="webinar-campaign-zoom-box">
-                <p style={{ margin: '0 0 6px', fontSize: '14px', fontWeight: 700 }}>Join the webinar using the Zoom link below:</p>
-                <a href="https://us06web.zoom.us/j/81487983324?pwd=iiWszjuBKKDHZ7SNibjY9aUkfFVEvS.1" target="_blank" rel="noopener noreferrer" className="webinar-campaign-zoom-link">
-                  https://us06web.zoom.us/j/81487983324?pwd=iiWszjuBKKDHZ7SNibjY9aUkfFVEvS.1
-                </a>
-                <div className="webinar-campaign-zoom-creds">
-                  <span>Meeting ID: <strong>814 8798 3324</strong></span>
-                  <span>Passcode: <strong>666991</strong></span>
-                </div>
-              </div>
-
-              <div style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', color: '#415a6b', fontSize: '12px', marginTop: '12px' }}>
-                {preview.text}
-              </div>
-            </div>
-
-            <div className="webinar-campaign-actions">
-              <button
-                type="button"
-                className="webinar-admin-bulk-action webinar-admin-bulk-action-primary"
-                onClick={onSendPending}
-                disabled={isBusy || summary.pending === 0}
-              >
-                {isSendingPending ? 'Sending to Pending…' : `Send Zoom Link to Pending (${summary.pending})`}
-              </button>
-
-              <button
-                type="button"
-                className="webinar-admin-bulk-action webinar-admin-bulk-action-secondary"
-                onClick={onRetryFailed}
-                disabled={isBusy || summary.failed === 0}
-              >
-                {isRetryingFailed ? 'Retrying Failed…' : `Retry Failed Only (${summary.failed})`}
-              </button>
-
-              <button
-                type="button"
-                className="webinar-admin-bulk-action webinar-admin-bulk-action-secondary"
-                onClick={onResendAll}
-                disabled={isBusy || summary.total === 0}
-              >
-                {isResendingAll ? 'Resending to All…' : `Resend to All (${summary.total})`}
-              </button>
-
-              <button
-                type="button"
-                className="webinar-admin-clear"
-                style={{ marginLeft: 'auto' }}
-                onClick={onClose}
-                disabled={isBusy}
-              >
-                Close
-              </button>
-            </div>
-          </>
+        {notice && (
+          <p className="webinar-admin-notice" role="status" style={{ margin: '10px 0' }}>
+            {notice}
+          </p>
         )}
+        {error && (
+          <div className="webinar-admin-alert" role="alert" style={{ margin: '10px 0' }}>
+            <span>{error}</span>
+          </div>
+        )}
+
+        <form onSubmit={onSend} className="webinar-email-form">
+          <div className="webinar-email-form-group">
+            <label htmlFor="email-template-select">Email Template</label>
+            <select
+              id="email-template-select"
+              value={selectedTemplate}
+              onChange={e => onTemplateChange(e.target.value)}
+              disabled={isSending}
+              className="webinar-email-select"
+            >
+              <option value="custom">1. Custom Email</option>
+              <option value="feedback">2. Feedback Request</option>
+              <option value="reminder">3. Webinar Reminder</option>
+              <option value="zoom">4. Zoom Joining Link</option>
+              <option value="postponement">5. Postponement Notice</option>
+            </select>
+            <small className="webinar-email-helper">
+              Selecting a template fills the subject and message with appropriate default text. You can freely edit both before sending.
+            </small>
+          </div>
+
+          <div className="webinar-email-form-group">
+            <label htmlFor="email-subject-input">
+              Subject <span style={{ color: '#c53030' }}>*</span>
+            </label>
+            <input
+              id="email-subject-input"
+              type="text"
+              maxLength={300}
+              value={subject}
+              onChange={e => onSubjectChange(e.target.value)}
+              placeholder="Enter email subject"
+              disabled={isSending}
+              required
+              className="webinar-email-input"
+            />
+          </div>
+
+          <div className="webinar-email-form-group">
+            <label htmlFor="email-message-textarea">
+              Message <span style={{ color: '#c53030' }}>*</span>
+            </label>
+            <textarea
+              id="email-message-textarea"
+              rows={9}
+              maxLength={10000}
+              value={message}
+              onChange={e => onMessageChange(e.target.value)}
+              placeholder="Compose your email message here..."
+              disabled={isSending}
+              required
+              className="webinar-email-textarea"
+            />
+          </div>
+
+          <div className="webinar-email-modal-actions">
+            <button
+              type="button"
+              className="webinar-admin-clear"
+              onClick={onClose}
+              disabled={isSending}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="webinar-admin-bulk-action webinar-admin-bulk-action-primary"
+              disabled={isSending || !subject.trim() || !message.trim()}
+              style={{ minWidth: '130px' }}
+            >
+              <Mail size={15} style={{ marginRight: '6px' }} />
+              {isSending ? 'Sending Email…' : 'Send Email'}
+            </button>
+          </div>
+        </form>
       </section>
     </div>
   );
