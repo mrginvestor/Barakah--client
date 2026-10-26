@@ -125,6 +125,7 @@ const financialTopics = [
 ];
 
 const webinarSourceOptions = [
+  'Solidarity',
   'WhatsApp',
   'Friends or Family',
   'Social Media',
@@ -378,6 +379,7 @@ export default function WebinarRegisterPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (submitState === 'loading') return;
     if (isRegistrationClosed) return;
     if (!validate()) {
       const firstError = document.querySelector('.field-error, [aria-invalid="true"]');
