@@ -345,7 +345,7 @@ export default function WebinarAdminDashboard() {
       setNotice(successMsg);
       setRefreshKey(value => value + 1);
     } catch (err) {
-      setEmailModalError(err.response?.data?.message || 'Failed to send email. Please check SMTP configuration and try again.');
+      setEmailModalError(err.response?.data?.message || 'Failed to send email. Please check email service configuration and try again.');
     } finally {
       setIsSendingEmail(false);
     }
