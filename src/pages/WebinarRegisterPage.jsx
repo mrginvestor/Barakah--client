@@ -1,13 +1,57 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Calendar, Clock, Video, ShieldCheck, CheckCircle2, AlertCircle, ArrowLeft } from 'lucide-react';
+import { Calendar, Clock, Video, ShieldCheck, CheckCircle2, AlertCircle, ArrowLeft, MessageCircle, Copy, Check, ExternalLink } from 'lucide-react';
 import PhoneInput from 'react-phone-number-input/max';
 import { parsePhoneNumberFromString } from 'libphonenumber-js/max';
 import phoneMetadata from 'libphonenumber-js/metadata.max.json';
 import 'react-phone-number-input/style.css';
 import API_URL from '../config/api';
 import './WebinarRegisterPage.css';
+
+const WHATSAPP_PHONE = '919790655520';
+
+function buildWebinarWhatsAppUrl(nameOrRefId, maybeRefId) {
+  let cleanName = '';
+  let cleanId = '';
+
+  if (maybeRefId !== undefined) {
+    cleanName = typeof nameOrRefId === 'string' ? nameOrRefId.trim() : '';
+    cleanId = typeof maybeRefId === 'string' ? maybeRefId.trim() : '';
+  } else {
+    cleanId = typeof nameOrRefId === 'string' ? nameOrRefId.trim() : '';
+    cleanName = '';
+  }
+
+  if (!cleanId) {
+    return '';
+  }
+  if (!cleanName) {
+    cleanName = 'Participant';
+  }
+
+  const phone = '919790655520';
+  if (!/^\d+$/.test(phone) || phone !== '919790655520') {
+    console.error('[REGISTRATION_WHATSAPP] WhatsApp phone number validation failed:', phone);
+    return '';
+  }
+
+  const message =
+    `Assalamu Alaikum,\n\n` +
+    `I have successfully registered for the webinar "Halal Investment and Retirement Planning".\n\n` +
+    `Name: ${cleanName}\n` +
+    `Reference ID: ${cleanId}\n\n` +
+    `Please share the webinar announcements, updates, and joining link.\n\n` +
+    `JazakAllahu Khairan.`;
+
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  if (!url.startsWith('https://wa.me/919790655520?text=')) {
+    console.error('[REGISTRATION_WHATSAPP] WhatsApp URL failed prefix check:', url);
+    return '';
+  }
+
+  return url;
+}
 
 const initialForm = {
   fullName: '',
@@ -159,7 +203,32 @@ export default function WebinarRegisterPage() {
   const [submitState, setSubmitState] = useState('idle');
   const [submitError, setSubmitError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [referenceId, setReferenceId] = useState('');
+  const [registrantName, setRegistrantName] = useState('');
+  const [generatedWhatsAppUrl, setGeneratedWhatsAppUrl] = useState('');
+  const [isPopupBlocked, setIsPopupBlocked] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [phoneCountry, setPhoneCountry] = useState('IN');
+
+  const handleCopyReferenceId = async () => {
+    if (!referenceId) return;
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(referenceId);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = referenceId;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch (_) {
+      // ignore
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -387,6 +456,22 @@ export default function WebinarRegisterPage() {
       return;
     }
 
+    // CRITICAL: Synchronously reserve a blank tab during the direct user-initiated event
+    // before any await/asynchronous boundary to preserve the browser user gesture context.
+    let reservedTab = null;
+    try {
+      reservedTab = window.open('about:blank', '_blank');
+    } catch (popupErr) {
+      console.warn('[REGISTRATION_WHATSAPP] Synchronous popup window reservation encountered error:', popupErr);
+      reservedTab = null;
+    }
+
+    const isTabReserved = Boolean(reservedTab && typeof reservedTab.closed !== 'undefined' && !reservedTab.closed);
+    console.info('[REGISTRATION_WHATSAPP] Blank tab reservation status:', {
+      reserved: isTabReserved,
+      timestamp: new Date().toISOString(),
+    });
+
     setSubmitState('loading');
     setSubmitError('');
 
@@ -434,11 +519,93 @@ export default function WebinarRegisterPage() {
         consent: Boolean(form.consent),
       };
 
-      await axios.post(`${API_URL}/api/webinar/register`, payload);
+      const response = await axios.post(`${API_URL}/api/webinar/register`, payload);
+
+      console.info('[REGISTRATION_API] Registration request succeeded.', {
+        status: response?.status,
+        timestamp: new Date().toISOString(),
+      });
+
+      const returnedReferenceId = String(
+        response.data?.referenceId ||
+        response.data?.registrationId ||
+        response.data?.data?.referenceId ||
+        response.data?.data?.registrationId ||
+        response.data?.registration?.referenceId ||
+        response.data?.registration?.registrationId ||
+        ''
+      ).trim();
+
+      const returnedName = String(
+        response.data?.fullName ||
+        response.data?.data?.fullName ||
+        response.data?.registration?.fullName ||
+        payload.fullName ||
+        form.fullName ||
+        ''
+      ).trim();
+
+      console.info('[REGISTRATION_WHATSAPP] Registration data received from server:', {
+        hasReferenceId: Boolean(returnedReferenceId),
+        referenceId: returnedReferenceId || '(none)',
+        registrantName: returnedName || '(none)',
+      });
+
+      // Construct and validate WhatsApp URL with name and reference ID
+      const whatsappUrl = buildWebinarWhatsAppUrl(returnedName, returnedReferenceId);
+      if (whatsappUrl) {
+        console.info('[REGISTRATION_WHATSAPP] WhatsApp URL constructed successfully:', {
+          urlPrefix: whatsappUrl.slice(0, 35),
+        });
+      } else {
+        console.warn('[REGISTRATION_WHATSAPP] Could not construct valid WhatsApp URL. Missing or invalid referenceId.');
+      }
+
+      setReferenceId(returnedReferenceId);
+      setRegistrantName(returnedName);
+      setGeneratedWhatsAppUrl(whatsappUrl);
       setSuccess(true);
       setSubmitState('idle');
       window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      // Navigate the reserved tab to WhatsApp if available and open
+      let tabNavigated = false;
+      if (reservedTab && !reservedTab.closed && whatsappUrl) {
+        try {
+          try { reservedTab.opener = null; } catch (_) {}
+          reservedTab.location.href = whatsappUrl;
+          tabNavigated = true;
+          console.info('[REGISTRATION_WHATSAPP] Successfully navigated reserved tab to WhatsApp URL.');
+        } catch (navErr) {
+          console.warn('[REGISTRATION_WHATSAPP] Error navigating reserved tab to WhatsApp:', navErr);
+          try { reservedTab.close(); } catch (_) {}
+          tabNavigated = false;
+        }
+      } else if (reservedTab && !reservedTab.closed && !whatsappUrl) {
+        try { reservedTab.close(); } catch (_) {}
+      }
+
+      if (!tabNavigated) {
+        setIsPopupBlocked(true);
+        console.info('[REGISTRATION_WHATSAPP] Automatic tab navigation was not possible; fallback button active.');
+      } else {
+        setIsPopupBlocked(false);
+      }
     } catch (error) {
+      // If registration failed, safely close the reserved blank tab immediately
+      if (reservedTab && !reservedTab.closed) {
+        try {
+          reservedTab.close();
+          console.info('[REGISTRATION_WHATSAPP] Reserved blank tab safely closed after registration error.');
+        } catch (_) {}
+      }
+
+      console.error('[REGISTRATION_API] Registration request failed.', {
+        message: error?.message,
+        status: error?.response?.status,
+        timestamp: new Date().toISOString(),
+      });
+
       const message = error.response?.data?.message || 'We could not complete your registration right now. Please try again.';
       setSubmitError(message);
       setSubmitState('idle');
@@ -474,6 +641,20 @@ export default function WebinarRegisterPage() {
   }
 
   if (success) {
+    const waUrl = generatedWhatsAppUrl || buildWebinarWhatsAppUrl(registrantName || form.fullName, referenceId);
+
+    const handleFallbackWhatsAppClick = (event) => {
+      if (!waUrl) return;
+      try {
+        const directTab = window.open(waUrl, '_blank', 'noopener,noreferrer');
+        if (directTab && !directTab.closed) {
+          event.preventDefault();
+        }
+      } catch (_) {
+        // Allow normal anchor tag navigation fallback
+      }
+    };
+
     return (
       <div className="webinar-page-wrapper">
         <main className="webinar-form-section">
@@ -485,9 +666,82 @@ export default function WebinarRegisterPage() {
               <span className="webinar-badge">REGISTRATION CONFIRMED</span>
               <h1 className="webinar-card-title">You&rsquo;re Registered!</h1>
               <p className="webinar-success-message">
-                Thank you for registering for the <strong>Halal Wealth Webinar</strong>. We are thrilled to welcome you to this session.
+                Thank you{registrantName ? `, ${registrantName},` : ''} for registering for the <strong>Halal Wealth Webinar</strong>. We are thrilled to welcome you to this session.
               </p>
 
+              {/* Unique Registration Reference ID Card */}
+              {referenceId && (
+                <div className="webinar-reference-card">
+                  <span className="webinar-reference-label">YOUR REGISTRATION REFERENCE ID</span>
+                  <div className="webinar-reference-value-row">
+                    <span className="webinar-reference-code">{referenceId}</span>
+                    <button
+                      type="button"
+                      className="webinar-reference-copy-btn"
+                      onClick={handleCopyReferenceId}
+                      title="Copy Reference ID"
+                      aria-label="Copy Reference ID"
+                    >
+                      {copied ? (
+                        <>
+                          <Check size={16} />
+                          <span>Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy size={16} />
+                          <span>Copy ID</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  <p className="webinar-reference-subtext">
+                    Please keep this unique Reference ID handy for webinar entry, verification, and support communications.
+                  </p>
+                </div>
+              )}
+
+              {/* WhatsApp Updates Card */}
+              <div className="webinar-whatsapp-card">
+                <div className="webinar-whatsapp-header">
+                  <div className="webinar-whatsapp-icon-circle" aria-hidden="true">
+                    <MessageCircle size={26} />
+                  </div>
+                  <div>
+                    <h2 className="webinar-whatsapp-title">Webinar Updates on WhatsApp</h2>
+                    <p className="webinar-whatsapp-desc">
+                      Connect directly with our team on WhatsApp to receive timely webinar announcements, presentation resources, and your exclusive Zoom joining link.
+                    </p>
+                  </div>
+                </div>
+
+                {isPopupBlocked && (
+                  <div className="webinar-whatsapp-popup-notice" role="alert">
+                    <AlertCircle size={18} style={{ flexShrink: 0 }} />
+                    <span>Your browser prevented WhatsApp from opening automatically. Click the button below to join the WhatsApp updates.</span>
+                  </div>
+                )}
+
+                <div className="webinar-whatsapp-action-wrap">
+                  <a
+                    href={waUrl || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-whatsapp-updates"
+                    onClick={handleFallbackWhatsAppClick}
+                  >
+                    <MessageCircle size={20} />
+                    <span>Join WhatsApp Updates</span>
+                    <ExternalLink size={16} style={{ marginLeft: '4px', opacity: 0.85 }} />
+                  </a>
+                </div>
+
+                <p className="webinar-whatsapp-instructions">
+                  📌 <strong>Note:</strong> The WhatsApp chat will open with your Reference ID prefilled in the message. <em>Please remember to press <strong>Send</strong> in WhatsApp</em> once the chat window opens.
+                </p>
+              </div>
+
+              {/* Event Details Summary */}
               <div className="webinar-event-summary">
                 <div className="summary-item">
                   <span className="summary-label">TOPIC</span>
@@ -503,6 +757,7 @@ export default function WebinarRegisterPage() {
                 </div>
               </div>
 
+              {/* Next Steps */}
               <div className="webinar-next-steps">
                 <h2 className="next-steps-heading">What Happens Next?</h2>
                 <ul className="next-steps-list">
@@ -512,9 +767,11 @@ export default function WebinarRegisterPage() {
                 </ul>
               </div>
 
-              <button type="button" className="btn-primary" onClick={() => navigate('/')}>
-                <ArrowLeft size={18} style={{ marginRight: '8px' }} /> Return to Home
-              </button>
+              <div className="webinar-success-actions">
+                <button type="button" className="btn-secondary" onClick={() => navigate('/')}>
+                  <ArrowLeft size={18} style={{ marginRight: '8px' }} /> Return to Home
+                </button>
+              </div>
             </section>
           </div>
         </main>

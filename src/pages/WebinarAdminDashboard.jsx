@@ -13,7 +13,7 @@ function extractRecordId(record) {
   if (typeof record === 'string') {
     return record === '[object Object]' ? '' : record;
   }
-  const raw = record.registrationId || record._id || record.id;
+  const raw = record.referenceId || record.registrationId || record._id || record.id;
   if (!raw) return '';
   if (typeof raw === 'string') {
     return raw === '[object Object]' ? '' : raw;
@@ -55,6 +55,8 @@ function formatPhone(value) {
 
 function labelFor(key) {
   if (key === '_id') return 'Record ID';
+  if (key === 'referenceId') return 'Reference ID';
+  if (key === 'registrationId') return 'Registration ID';
   if (key === 'companyName') return 'Company Name';
   if (key === 'businessWebsite') return 'Business Website';
   if (key === 'additionalInfo') return 'Additional Information';
@@ -410,7 +412,7 @@ export default function WebinarAdminDashboard() {
             <table className="webinar-admin-table">
               <thead>
                 <tr>
-                  <th>Record ID</th>
+                  <th>Reference ID</th>
                   <th>Name</th>
                   <th>Email</th>
                   <th>Mobile</th>
@@ -425,10 +427,11 @@ export default function WebinarAdminDashboard() {
               <tbody>
                 {records.map(record => {
                   const recordId = extractRecordId(record);
+                  const displayId = record.referenceId || record.registrationId || (recordId ? recordId.slice(-8).toUpperCase() : '—');
 
                   return (
                     <tr key={recordId || record.email}>
-                      <td className="webinar-admin-id">{recordId ? recordId.slice(-8).toUpperCase() : '—'}</td>
+                      <td className="webinar-admin-id" title={record.referenceId || record.registrationId || recordId || ''}>{displayId}</td>
                       <td>
                         <button className="webinar-admin-name" type="button" onClick={() => openDetails(record)}>
                           {text(record.fullName)}

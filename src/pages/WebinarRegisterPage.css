@@ -810,6 +810,206 @@
 }
 
 /* ==========================================================================
+   Reference ID & WhatsApp Updates Card Styles
+   ========================================================================== */
+.webinar-reference-card {
+  background: linear-gradient(135deg, #051c30 0%, #082b49 100%);
+  border: 1px solid rgba(212, 175, 90, 0.45);
+  border-radius: var(--radius-md);
+  padding: 20px 24px;
+  max-width: 580px;
+  margin: 0 auto 24px;
+  text-align: left;
+  box-shadow: 0 4px 16px rgba(5, 28, 48, 0.16);
+  color: #ffffff;
+}
+
+.webinar-reference-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--color-gold);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.webinar-reference-value-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 10px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(212, 175, 90, 0.28);
+}
+
+.webinar-reference-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: clamp(17px, 3.5vw, 21px);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #ffffff;
+  user-select: all;
+}
+
+.webinar-reference-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(212, 175, 90, 0.16);
+  color: var(--color-gold-light);
+  border: 1px solid rgba(212, 175, 90, 0.4);
+  border-radius: var(--radius-sm);
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.webinar-reference-copy-btn:hover {
+  background: var(--color-gold);
+  color: #051c30;
+}
+
+.webinar-reference-subtext {
+  font-size: 12.5px;
+  color: #b0c4de;
+  margin: 10px 0 0;
+  line-height: 1.45;
+}
+
+/* WhatsApp Updates Card */
+.webinar-whatsapp-card {
+  background: #f0fdf4;
+  border: 2px solid #25D366;
+  border-radius: var(--radius-md);
+  padding: 22px 24px;
+  max-width: 580px;
+  margin: 0 auto 28px;
+  text-align: left;
+  box-shadow: 0 4px 16px rgba(37, 211, 102, 0.14);
+}
+
+.webinar-whatsapp-header {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.webinar-whatsapp-icon-circle {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background-color: #25D366;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(37, 211, 102, 0.35);
+}
+
+.webinar-whatsapp-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0e5a26;
+  margin: 0 0 4px;
+}
+
+.webinar-whatsapp-desc {
+  font-size: 14px;
+  color: #2e4d38;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.webinar-whatsapp-popup-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background-color: #fff8e1;
+  border: 1px solid #ffe082;
+  color: #8d6e15;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.webinar-whatsapp-action-wrap {
+  text-align: center;
+  margin: 18px 0 16px;
+}
+
+.btn-whatsapp-updates {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background-color: #25D366;
+  color: #ffffff !important;
+  font-size: 16px;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 14px 28px;
+  border-radius: 30px;
+  box-shadow: 0 4px 14px rgba(37, 211, 102, 0.38);
+  transition: all 0.25s ease;
+  width: 100%;
+  max-width: 360px;
+}
+
+.btn-whatsapp-updates:hover {
+  background-color: #1eb956;
+  box-shadow: 0 6px 18px rgba(37, 211, 102, 0.48);
+  transform: translateY(-1px);
+}
+
+.webinar-whatsapp-instructions {
+  font-size: 13px;
+  color: #3b5344;
+  background-color: #ffffff;
+  border: 1px dashed rgba(37, 211, 102, 0.5);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 11px 24px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--color-navy);
+  background-color: #ffffff;
+  border: 1.5px solid var(--color-navy);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-navy);
+  color: #ffffff;
+}
+
+.webinar-success-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* ==========================================================================
    3. RESPONSIVE BREAKPOINTS
    ========================================================================== */
 
