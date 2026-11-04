@@ -197,7 +197,7 @@ function getCountryName(country) {
 
 export default function WebinarRegisterPage() {
   const navigate = useNavigate();
-  const [isRegistrationClosed, setIsRegistrationClosed] = useState(false);
+  const [isRegistrationClosed, setIsRegistrationClosed] = useState(true);
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [submitState, setSubmitState] = useState('idle');
@@ -232,7 +232,9 @@ export default function WebinarRegisterPage() {
 
   useEffect(() => {
     let isMounted = true;
-    axios.get(`${API_URL}/api/webinar/status`)
+    axios.get(`${API_URL}/api/webinar/status`, {
+      params: { webinarId: 'halal-wealth-nov-2026' },
+    })
       .then((response) => {
         if (isMounted && typeof response.data?.closed === 'boolean') {
           setIsRegistrationClosed(response.data.closed);
@@ -612,34 +614,6 @@ export default function WebinarRegisterPage() {
     }
   };
 
-  if (isRegistrationClosed) {
-    return (
-      <div className="webinar-page-wrapper">
-        <main className="webinar-form-section">
-          <div className="webinar-form-container">
-            <section className="webinar-closed-card" aria-live="polite">
-              <div className="closed-icon-badge" aria-hidden="true">
-                <AlertCircle size={32} />
-              </div>
-              <span className="webinar-badge">REGISTRATION CLOSED</span>
-              <h1 className="webinar-closed-title">Registration Closed</h1>
-              <p className="webinar-closed-subtitle">
-                Thank you for your interest in the Halal Wealth Webinar: <strong>&ldquo;Halal Trade, Investments &amp; Generational Wealth&rdquo;</strong>.
-              </p>
-              <p className="webinar-closed-detail">
-                Registration for this webinar has now closed. We appreciate your interest and support.
-                Follow our community updates for announcements on future webinars and masterclasses.
-              </p>
-              <button type="button" className="btn-primary" onClick={() => navigate('/')}>
-                Return to Home
-              </button>
-            </section>
-          </div>
-        </main>
-      </div>
-    );
-  }
-
   if (success) {
     const waUrl = generatedWhatsAppUrl || buildWebinarWhatsAppUrl(registrantName || form.fullName, referenceId);
 
@@ -786,12 +760,19 @@ export default function WebinarRegisterPage() {
         <div className="webinar-hero-container">
           <div className="webinar-hero-grid">
             
-            {/* Left Column: Live Badge and Main Title */}
+            {/* Left Column: Live/Closed Badge and Main Title */}
             <div className="webinar-hero-col webinar-hero-col--left">
-              <div className="webinar-hero-badge" aria-label="Webinar status: Live interactive webinar">
-                <span className="live-dot" aria-hidden="true" />
-                <span>LIVE INTERACTIVE WEBINAR</span>
-              </div>
+              {isRegistrationClosed ? (
+                <div className="webinar-hero-badge webinar-hero-badge--closed" aria-label="Webinar status: Registration Closed">
+                  <span className="closed-dot" aria-hidden="true" />
+                  <span>REGISTRATION CLOSED</span>
+                </div>
+              ) : (
+                <div className="webinar-hero-badge" aria-label="Webinar status: Live interactive webinar">
+                  <span className="live-dot" aria-hidden="true" />
+                  <span>LIVE INTERACTIVE WEBINAR</span>
+                </div>
+              )}
               <h1 className="webinar-hero-title">Halal Wealth Webinar</h1>
             </div>
 
@@ -876,14 +857,93 @@ export default function WebinarRegisterPage() {
         </div>
       </header>
 
-      {/* Main Registration Form Section */}
+      {/* Main Registration / Closed Section */}
       <main className="webinar-form-section">
         <div className="webinar-form-container">
-          <section className="webinar-card" aria-label="Webinar registration form card">
-            <form className="webinar-form" onSubmit={handleSubmit} noValidate>
-              
-              {/* Section 1: Personal Information */}
-              <fieldset className="form-section">
+          {isRegistrationClosed ? (
+            <section className="webinar-card webinar-closed-card" aria-label="Webinar registration closed card">
+              <div className="closed-icon-badge" aria-hidden="true">
+                <AlertCircle size={36} />
+              </div>
+              <span className="webinar-badge webinar-badge--closed">REGISTRATION CLOSED</span>
+              <h1 className="webinar-closed-title">Registration Is Now Closed</h1>
+              <p className="webinar-closed-subtitle">
+                Registration for this webinar is now closed. Thank you for your interest. We look forward to connecting with you.
+              </p>
+              <p className="webinar-closed-detail">
+                The live session on <strong>Halal Trade, Investments &amp; Generational Wealth</strong> was held on Sunday, November 1, 2026. We sincerely appreciate everyone who joined and participated.
+              </p>
+
+              {/* Feedback Form Card */}
+              <div className="webinar-closed-feedback-section">
+                <div className="webinar-closed-feedback-header">
+                  <div className="feedback-icon-circle" aria-hidden="true">
+                    <MessageCircle size={24} />
+                  </div>
+                  <div className="feedback-header-text">
+                    <h2 className="feedback-section-title">Your Feedback Matters</h2>
+                    <p className="feedback-section-sub">
+                      Thank you for being part of our Halal Wealth Webinar! Your feedback helps us improve our future webinars and deliver more meaningful sessions tailored to your needs.
+                    </p>
+                  </div>
+                </div>
+                <div className="feedback-action-row">
+                  <a
+                    href="https://forms.gle/yzQWLFSDr1va4A5o9"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-feedback-action"
+                  >
+                    <span>Fill Out Feedback Form</span>
+                    <ExternalLink size={16} />
+                  </a>
+                </div>
+              </div>
+
+              {/* Event Details Summary */}
+              <div className="webinar-event-summary">
+                <div className="summary-item">
+                  <span className="summary-label">EVENT TOPIC</span>
+                  <span className="summary-value">Halal Trade, Investments &amp; Generational Wealth</span>
+                </div>
+                <div className="summary-item">
+                  <span className="summary-label">EVENT DATE</span>
+                  <span className="summary-value">Sunday, November 1, 2026</span>
+                </div>
+                <div className="summary-item">
+                  <span className="summary-label">TIME</span>
+                  <span className="summary-value">🇮🇳 India: 11:00 AM • 🇸🇬 Singapore: 1:30 PM • 🇦🇪 UAE: 9:30 AM • 🇸🇦 Saudi Arabia: 8:30 AM</span>
+                </div>
+              </div>
+
+              {/* Actions & WhatsApp Updates */}
+              <div className="webinar-closed-actions">
+                <a
+                  href="https://wa.me/919790655520?text=Assalamu%20Alaikum%2C%20please%20notify%20me%20about%20upcoming%20Halal%20Wealth%20webinars."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-whatsapp-updates"
+                >
+                  <MessageCircle size={18} />
+                  <span>Stay Connected on WhatsApp</span>
+                  <ExternalLink size={14} style={{ marginLeft: '4px' }} />
+                </a>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => navigate('/')}
+                >
+                  <ArrowLeft size={16} style={{ marginRight: '6px' }} /> Return to Home
+                </button>
+              </div>
+            </section>
+          ) : (
+            <section className="webinar-card" aria-label="Webinar registration form card">
+              <form className="webinar-form" onSubmit={handleSubmit} noValidate>
+                <fieldset style={{ border: 'none', margin: 0, padding: 0 }}>
+                
+                {/* Section 1: Personal Information */}
+                <fieldset className="form-section">
                 <legend className="section-legend">
                   <span className="legend-number">1</span>
                   Personal Information
@@ -1204,16 +1264,19 @@ export default function WebinarRegisterPage() {
                   </span>
                 </div>
               </div>
+              </fieldset>
 
               {/* Submit button */}
               <div className="form-submit-row">
                 <button
                   type="submit"
-                  className="btn-submit"
-                  disabled={submitState === 'loading'}
+                  className={`btn-submit ${isRegistrationClosed ? 'btn-submit-disabled' : ''}`}
+                  disabled={submitState === 'loading' || isRegistrationClosed}
                 >
                   {submitState === 'loading' ? (
                     <span className="submit-spinner-text">Registering…</span>
+                  ) : isRegistrationClosed ? (
+                    'Registration Closed'
                   ) : (
                     'Register for the Webinar'
                   )}
@@ -1221,8 +1284,9 @@ export default function WebinarRegisterPage() {
               </div>
             </form>
           </section>
-        </div>
-      </main>
+        )}
+      </div>
+    </main>
     </div>
   );
 }
