@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, HandCoins, Linkedin, MapPin, Mic2, Users, WalletCards } from 'lucide-react';
 import RegistrationModal from '../components/RegistrationModal';
 import IslamicPattern from '../components/IslamicPattern';
+import Footer from '../components/Footer';
 import barakahLogo from '../assets/Barakah-logo.png';
 import summitBackground from '../assets/Basith image.png';
 
@@ -107,13 +108,7 @@ const Home = () => {
               <button className="gold-button" onClick={() => setModalOpen(true)}>Register now <ArrowRight size={17} /></button>
               <small>Limited Seats Available</small>
             </section>
-            <footer id="contact" className="footer">
-              <div><p className="eyebrow">VENUE</p><strong>Chennai, India</strong><small>Venue details coming soon</small></div>
-              <div><p className="eyebrow">EMAIL</p><strong>info@halalwealth.finance</strong></div>
-              <div><p className="eyebrow">WHATSAPP / CALL</p><strong>+91 12345 67890</strong></div>
-              <div><p className="eyebrow">FOLLOW US</p><div className="socials"><Linkedin /><span>𝕏</span><span>◎</span><span>◉</span></div></div>
-              <div className="footer-bottom"><span>© 2026 Halal Wealth Summit. All Rights Reserved.</span><span>Privacy Policy &nbsp; | &nbsp; Terms & Conditions</span></div>
-            </footer>
+            <Footer />
           <RegistrationModal isOpen={isModalOpen} onClose={() => setModalOpen(false)} />
     </main>
   );
