@@ -122,7 +122,7 @@ export default function MainSummitAdminDashboard() {
             fontSize: '13px',
           }}
         >
-          Main Summit 2026 ({registrations.length})
+          Main Summit 2027 ({registrations.length})
         </Link>
         <Link
           to="/admin/dec-summit"
@@ -190,7 +190,7 @@ export default function MainSummitAdminDashboard() {
       {/* Heading */}
       <div className="admin-heading">
         <div>
-          <p className="eyebrow">HALAL WEALTH SUMMIT 2026 • 29 NOVEMBER 2026 • CHENNAI</p>
+          <p className="eyebrow">HALAL WEALTH SUMMIT 2027 • 24 JANUARY 2027 • CHENNAI</p>
           <h1>Main Summit Registrations</h1>
           <p>Full 5-step attendee submissions, personal &amp; professional profiles, financial interests and check-in status.</p>
         </div>

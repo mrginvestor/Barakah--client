@@ -354,7 +354,7 @@ export default function AdminDashboard() {
             fontSize: '13px',
           }}
         >
-          Main Summit 2026 &rarr;
+          Main Summit 2027 &rarr;
         </Link>
         <Link
           to="/admin/dec-summit"

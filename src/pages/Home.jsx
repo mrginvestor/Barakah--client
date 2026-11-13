@@ -18,7 +18,7 @@ const Home = () => {
   const navigate = useNavigate();
   const [isModalOpen, setModalOpen] = useState(false);
   const [activeTheme, setActiveTheme] = useState(null); const [speakerIndex, setSpeakerIndex] = useState(0); const [time, setTime] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-  useEffect(() => { const target = new Date('2026-11-29T09:00:00+05:30'); const tick = () => { const diff = Math.max(0, target - new Date()); setTime({ days: Math.floor(diff / 86400000), hours: Math.floor(diff / 3600000) % 24, minutes: Math.floor(diff / 60000) % 60, seconds: Math.floor(diff / 1000) % 60 }); }; tick(); const timer = setInterval(tick, 1000); const openRegistration = () => setModalOpen(true); window.addEventListener('registration-open', openRegistration); return () => { clearInterval(timer); window.removeEventListener('registration-open', openRegistration); }; }, []);
+  useEffect(() => { const target = new Date('2027-01-24T09:00:00+05:30'); const tick = () => { const diff = Math.max(0, target - new Date()); setTime({ days: Math.floor(diff / 86400000), hours: Math.floor(diff / 3600000) % 24, minutes: Math.floor(diff / 60000) % 60, seconds: Math.floor(diff / 1000) % 60 }); }; tick(); const timer = setInterval(tick, 1000); const openRegistration = () => setModalOpen(true); window.addEventListener('registration-open', openRegistration); return () => { clearInterval(timer); window.removeEventListener('registration-open', openRegistration); }; }, []);
   const displaySpeakers = Array.from({ length: Math.min(5, speakers.length) }, (_, i) => speakers[(speakerIndex + i) % speakers.length]);
 
   return (
@@ -30,11 +30,11 @@ const Home = () => {
                 <div className="hero-logo-wrap">
                   <img src={barakahLogo} alt="Barakah logo" className="hero-logo" />
                 </div>
-                <p className="eyebrow">CHENNAI <i>•</i>  29 NOVEMBER 2026</p>
-                <h1>HALAL<br /><em>WEALTH</em><br />SUMMIT <span>2026</span> </h1>
+                <p className="eyebrow">CHENNAI <i>•</i>  24 JANUARY 2027</p>
+                <h1>HALAL<br /><em>WEALTH</em><br />SUMMIT <span>2027</span> </h1>
                 <p className="tagline">Humanizing Finance. Empowering Communities.</p>
                 <div className="event-meta">
-                  <span><CalendarDays /> NOVEMBER<br /><b>29, 2026</b></span>
+                  <span><CalendarDays /> JANUARY<br /><b>24, 2027</b></span>
                   <span><MapPin /> CHENNAI<br /><b>INDIA</b></span>
                   <span><Users /> <b>400+ ATTENDEES</b></span>
                 </div>
@@ -100,7 +100,7 @@ const Home = () => {
               </div>
               <div className="agenda-layout">
                 <div className="timeline">{dayOne.map(([timeLabel, title]) => <div className="timeline-item" key={timeLabel}><time>{timeLabel}</time><span /><strong>{title}</strong></div>)}</div>
-                <aside className="agenda-note"><CalendarDays /><p>29 NOVEMBER 2026</p><strong>CHENNAI, INDIA</strong><button className="gold-button">Learn more</button></aside>
+                <aside className="agenda-note"><CalendarDays /><p>24 JANUARY 2027</p><strong>CHENNAI, INDIA</strong><button className="gold-button">Learn more</button></aside>
               </div>
             </section>
             <section className="cta geometric">
