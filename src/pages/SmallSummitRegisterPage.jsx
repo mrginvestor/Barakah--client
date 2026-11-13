@@ -14,8 +14,8 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import API_URL from '../config/api';
-import Footer from '../components/Footer';
 import barakahLogo from '../assets/Barakah-logo.png';
+import posterImg from '../assets/investor-mission-poster.jpg';
 import './SmallSummitRegisterPage.css';
 
 const INDIAN_STATES = [
@@ -98,10 +98,11 @@ export default function SmallSummitRegisterPage() {
 
   // Fetch real-time seat availability
   useEffect(() => {
-    document.title = 'DEC Summit Registration | Halal Wealth';
+    document.title = 'Investor Mission 2026 Registration | Halal Wealth';
     let isMounted = true;
     axios
-      .get(`${API_URL}/api/dec-summit/availability`)
+      .get(`${API_URL}/api/investor-mission/availability`)
+      .catch(() => axios.get(`${API_URL}/api/dec-summit/availability`))
       .catch(() => axios.get(`${API_URL}/api/small-summit/availability`))
       .then((res) => {
         if (isMounted && res.data?.success) {
@@ -115,7 +116,7 @@ export default function SmallSummitRegisterPage() {
         }
       })
       .catch((err) => {
-        console.error('Failed to load DEC summit capacity:', err);
+        console.error('Failed to load Investor Mission capacity:', err);
         if (isMounted) setCapacity((prev) => ({ ...prev, loading: false }));
       });
 
@@ -242,14 +243,15 @@ export default function SmallSummitRegisterPage() {
       };
 
       const res = await axios
-        .post(`${API_URL}/api/dec-summit/register`, payload)
+        .post(`${API_URL}/api/investor-mission/register`, payload)
+        .catch(() => axios.post(`${API_URL}/api/dec-summit/register`, payload))
         .catch(() => axios.post(`${API_URL}/api/small-summit/register`, payload));
 
       if (res.data?.success && res.data?.registrationId) {
         if (formData.paymentMethod === 'OFFLINE') {
-          navigate(res.data.redirectUrl || `/dec-summit-confirmation/${res.data.registrationId}`);
+          navigate(res.data.redirectUrl || `/investor-mission-confirmation/${res.data.registrationId}`);
         } else {
-          navigate(res.data.redirectUrl || `/dec-summit-payment/${res.data.registrationId}`);
+          navigate(res.data.redirectUrl || `/investor-mission-payment/${res.data.registrationId}`);
         }
       } else {
         setFormError(res.data?.message || 'Failed to complete registration.');
@@ -271,48 +273,50 @@ export default function SmallSummitRegisterPage() {
 
   return (
     <div className="small-summit-page">
-      {/* 3. HEADER REDESIGN */}
-      <header className="ssp-header" role="banner">
-        <div className="ssp-header-container">
-          {/* Left: Halal Wealth Logo + Summit Title + Description */}
-          <div className="ssp-brand-section">
-            <Link to="/" className="ssp-brand-link" title="Halal Wealth Summit Homepage">
-              <div className="ssp-brand-logo-wrap">
-                <img src={barakahLogo} alt="Halal Wealth Logo" className="ssp-brand-logo" />
-              </div>
-              <div className="ssp-brand-headings">
-                <span className="ssp-brand-kicker">HALAL WEALTH</span>
-                <h1 className="ssp-brand-title">DEC SUMMIT</h1>
-              </div>
-            </Link>
-            <p className="ssp-brand-tagline">
-              Join an exclusive gathering focused on Islamic finance, halal wealth and financial awareness.
-            </p>
-          </div>
+      {/* 1. HEADER: OFFICIAL INVESTOR MISSION 2026 POSTER */}
+      <header className="ssp-poster-header" role="banner">
+        <div className="ssp-poster-stage">
+          <Link
+            to="/investor-mission"
+            className="ssp-poster-link"
+            title="Investor Mission 2026 – View Full Event Information"
+          >
+            <img
+              src={posterImg}
+              alt="Investor Mission 2026 – The Halal Way of Investing Official Poster"
+              className="ssp-header-poster-img"
+            />
+          </Link>
+        </div>
 
-          {/* Right: ₹500 Fee + Limited to 50 Participants + Dynamic Available Seats */}
-          <div className="ssp-header-badges" aria-label="Event Highlights">
-            <div className="ssp-badge ssp-badge--fee">
-              <span className="ssp-badge-label">Registration Fee</span>
-              <span className="ssp-badge-value">₹{capacity.registrationFee}</span>
+        {/* 2. COMPACT EVENT INFORMATION BAR */}
+        <div className="ssp-compact-info-bar" aria-label="Event Key Highlights">
+          <div className="ssp-compact-info-container">
+            <div className="ssp-compact-info-item">
+              <span className="ssp-compact-info-label">Registration Fee</span>
+              <strong className="ssp-compact-info-val">₹{capacity.registrationFee}</strong>
             </div>
 
-            <div className="ssp-badge ssp-badge--capacity">
-              <span className="ssp-badge-label">Exclusive Access</span>
-              <span className="ssp-badge-value">Limited to {capacity.maxCapacity} Participants</span>
+            <div className="ssp-compact-divider" aria-hidden="true" />
+
+            <div className="ssp-compact-info-item">
+              <span className="ssp-compact-info-label">Event Capacity</span>
+              <strong className="ssp-compact-info-val">Limited to {capacity.maxCapacity} Participants</strong>
             </div>
 
-            <div className={`ssp-badge ssp-badge--seats ${capacity.isSoldOut ? 'is-soldout' : ''}`}>
-              <span className="ssp-badge-label">Available Seats</span>
-              <span className="ssp-badge-value">
+            <div className="ssp-compact-divider" aria-hidden="true" />
+
+            <div className={`ssp-compact-info-item ${capacity.isSoldOut ? 'is-soldout' : ''}`}>
+              <span className="ssp-compact-info-label">Available Seats</span>
+              <strong className="ssp-compact-info-val">
                 {capacity.loading ? (
                   'Checking...'
                 ) : capacity.isSoldOut ? (
-                  'DEC Summit Registration Full'
+                  'Full (0 Seats Left)'
                 ) : (
-                  `${capacity.availableSeats} of ${capacity.maxCapacity} Seats Available`
+                  `${capacity.availableSeats} of ${capacity.maxCapacity} Available`
                 )}
-              </span>
+              </strong>
             </div>
           </div>
         </div>
@@ -343,7 +347,7 @@ export default function SmallSummitRegisterPage() {
           <div className="ssp-capacity-content">
             {capacity.isSoldOut ? (
               <>
-                <strong>DEC Summit Registration Full</strong>
+                <strong>Investor Mission Registration Full</strong>
                 <span>
                   All {capacity.maxCapacity} seats for this exclusive gathering have been filled and confirmed.
                 </span>
@@ -364,10 +368,10 @@ export default function SmallSummitRegisterPage() {
         {/* Main Form Card */}
         <div className="ssp-form-card">
           <div className="ssp-card-intro">
-            <span className="ssp-intro-eyebrow">EXCLUSIVE DEC SUMMIT</span>
-            <h2 className="ssp-intro-title">DEC Summit Registration</h2>
+            <span className="ssp-intro-eyebrow">OFFICIAL REGISTRATION</span>
+            <h2 className="ssp-intro-title">Investor Mission 2026 Registration</h2>
             <p className="ssp-intro-subtitle">
-              Please provide accurate information. After submitting, your seat will be reserved for 30 minutes to complete UPI payment proof upload.
+              Please provide accurate participant information. After submitting, proceed to complete your ₹{capacity.registrationFee} payment via Online UPI or confirm your Offline payment at the venue.
             </p>
           </div>
 
@@ -383,10 +387,10 @@ export default function SmallSummitRegisterPage() {
               <span className="ssp-soldout-badge">Capacity Reached</span>
               <h2>Registration Closed</h2>
               <p>
-                This exclusive DEC summit is strictly capped at {capacity.maxCapacity} participants and is currently full. We thank you for your overwhelming interest.
+                This exclusive Investor Mission gathering is strictly capped at {capacity.maxCapacity} participants and is currently full. We thank you for your overwhelming interest.
               </p>
-              <Link to="/" className="ssp-btn-secondary">
-                Return to Homepage
+              <Link to="/investor-mission" className="ssp-btn-secondary">
+                Return to Investor Mission
               </Link>
             </div>
           ) : (
@@ -866,7 +870,7 @@ export default function SmallSummitRegisterPage() {
                   {isSubmitting ? (
                     'Processing Registration...'
                   ) : capacity.isSoldOut ? (
-                    'DEC Summit Registration Full'
+                    'Investor Mission Registration Full'
                   ) : formData.paymentMethod === 'OFFLINE' ? (
                     <>
                       <span>CONFIRM OFFLINE REGISTRATION – ₹{capacity.registrationFee}</span>
@@ -882,18 +886,15 @@ export default function SmallSummitRegisterPage() {
               </div>
 
               <div className="ssp-trust-note">
-                <ShieldCheck size={16} style={{ color: '#0B2D49' }} />
+                <ShieldCheck size={16} style={{ color: '#064B36' }} />
                 <span>
-                  Your personal details are encrypted and strictly used for Halal Wealth DEC Summit coordination.
+                  Your personal details are encrypted and strictly used for Investor Mission 2026 coordination.
                 </span>
               </div>
             </form>
           )}
         </div>
       </main>
-
-      {/* 8. FOOTER REDESIGN */}
-      <Footer />
     </div>
   );
 }

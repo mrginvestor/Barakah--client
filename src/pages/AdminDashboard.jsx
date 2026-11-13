@@ -65,11 +65,13 @@ export default function AdminDashboard() {
     setLoading(true);
     Promise.all([
       adminApi
-        .get('/api/admin/dec-summit/registrations')
+        .get('/api/admin/investor-mission/registrations')
+        .catch(() => adminApi.get('/api/admin/dec-summit/registrations'))
         .catch(() => adminApi.get('/api/admin/small-summit/registrations'))
         .catch(() => adminApi.get('/api/admin/summit/registrations')),
       adminApi
-        .get('/api/admin/dec-summit/stats')
+        .get('/api/admin/investor-mission/stats')
+        .catch(() => adminApi.get('/api/admin/dec-summit/stats'))
         .catch(() => adminApi.get('/api/admin/small-summit/stats'))
         .catch(() => adminApi.get('/api/admin/summit/stats')),
     ])
@@ -166,7 +168,8 @@ export default function AdminDashboard() {
 
     try {
       const res = await adminApi
-        .get(`/api/admin/dec-summit/receipt/${reg.registrationId}`, { responseType: 'blob' })
+        .get(`/api/admin/investor-mission/receipt/${reg.registrationId}`, { responseType: 'blob' })
+        .catch(() => adminApi.get(`/api/admin/dec-summit/receipt/${reg.registrationId}`, { responseType: 'blob' }))
         .catch(() => adminApi.get(`/api/admin/small-summit/receipt/${reg.registrationId}`, { responseType: 'blob' }))
         .catch(() => adminApi.get(`/api/admin/summit/receipt/${reg.registrationId}`, { responseType: 'blob' }));
       const url = URL.createObjectURL(res.data);
@@ -190,7 +193,8 @@ export default function AdminDashboard() {
     setActionLoading(true);
     try {
       const res = await adminApi
-        .post(`/api/admin/dec-summit/registrations/${regId}/approve-registration`)
+        .post(`/api/admin/investor-mission/registrations/${regId}/approve-registration`)
+        .catch(() => adminApi.post(`/api/admin/dec-summit/registrations/${regId}/approve-registration`))
         .catch(() => adminApi.post(`/api/admin/small-summit/registrations/${regId}/approve-registration`));
       alert(res.data?.message || 'Registration details approved.');
       loadData();
@@ -211,7 +215,8 @@ export default function AdminDashboard() {
     setActionLoading(true);
     try {
       const res = await adminApi
-        .post(`/api/admin/dec-summit/registrations/${regId}/reject-registration`, { reason })
+        .post(`/api/admin/investor-mission/registrations/${regId}/reject-registration`, { reason })
+        .catch(() => adminApi.post(`/api/admin/dec-summit/registrations/${regId}/reject-registration`, { reason }))
         .catch(() => adminApi.post(`/api/admin/small-summit/registrations/${regId}/reject-registration`, { reason }));
       alert(res.data?.message || 'Registration rejected.');
       loadData();
@@ -228,7 +233,8 @@ export default function AdminDashboard() {
     setActionLoading(true);
     try {
       const res = await adminApi
-        .post(`/api/admin/dec-summit/registrations/${regId}/approve-payment`)
+        .post(`/api/admin/investor-mission/registrations/${regId}/approve-payment`)
+        .catch(() => adminApi.post(`/api/admin/dec-summit/registrations/${regId}/approve-payment`))
         .catch(() => adminApi.post(`/api/admin/small-summit/registrations/${regId}/approve-payment`))
         .catch(() => adminApi.post(`/api/admin/summit/registrations/${regId}/approve`));
       alert(res.data?.message || 'Payment approved.');
@@ -251,7 +257,8 @@ export default function AdminDashboard() {
     setActionLoading(true);
     try {
       const res = await adminApi
-        .post(`/api/admin/dec-summit/registrations/${regId}/reject-payment`, { reason })
+        .post(`/api/admin/investor-mission/registrations/${regId}/reject-payment`, { reason })
+        .catch(() => adminApi.post(`/api/admin/dec-summit/registrations/${regId}/reject-payment`, { reason }))
         .catch(() => adminApi.post(`/api/admin/small-summit/registrations/${regId}/reject-payment`, { reason }))
         .catch(() => adminApi.post(`/api/admin/summit/registrations/${regId}/reject`, { reason }));
       alert(res.data?.message || 'Payment rejected.');
@@ -282,13 +289,22 @@ export default function AdminDashboard() {
     setActionLoading(true);
     try {
       const res = await adminApi
-        .post(`/api/admin/dec-summit/registrations/${offlineModalReg.registrationId}/record-offline-payment`, {
+        .post(`/api/admin/investor-mission/registrations/${offlineModalReg.registrationId}/record-offline-payment`, {
           paymentAmount: Number(offlineForm.amount) || 500,
           paymentDate: offlineForm.paymentDate,
           offlinePaymentMethod: offlineForm.method,
           adminVerificationNotes: offlineForm.notes,
           approvePayment: offlineForm.approve,
         })
+        .catch(() =>
+          adminApi.post(`/api/admin/dec-summit/registrations/${offlineModalReg.registrationId}/record-offline-payment`, {
+            paymentAmount: Number(offlineForm.amount) || 500,
+            paymentDate: offlineForm.paymentDate,
+            offlinePaymentMethod: offlineForm.method,
+            adminVerificationNotes: offlineForm.notes,
+            approvePayment: offlineForm.approve,
+          })
+        )
         .catch(() =>
           adminApi.post(`/api/admin/small-summit/registrations/${offlineModalReg.registrationId}/record-offline-payment`, {
             paymentAmount: Number(offlineForm.amount) || 500,
@@ -320,9 +336,14 @@ export default function AdminDashboard() {
     setActionLoading(true);
     try {
       const res = await adminApi
-        .post(`/api/admin/dec-summit/registrations/${notesModalReg.registrationId}/notes`, {
+        .post(`/api/admin/investor-mission/registrations/${notesModalReg.registrationId}/notes`, {
           adminVerificationNotes: notesText,
         })
+        .catch(() =>
+          adminApi.post(`/api/admin/dec-summit/registrations/${notesModalReg.registrationId}/notes`, {
+            adminVerificationNotes: notesText,
+          })
+        )
         .catch(() =>
           adminApi.post(`/api/admin/small-summit/registrations/${notesModalReg.registrationId}/notes`, {
             adminVerificationNotes: notesText,
@@ -357,10 +378,10 @@ export default function AdminDashboard() {
           Main Summit 2027 &rarr;
         </Link>
         <Link
-          to="/admin/dec-summit"
+          to="/admin/investor-mission"
           style={{
             padding: '8px 16px',
-            background: '#0B2D49',
+            background: '#064B36',
             color: '#FFFFFF',
             fontWeight: 700,
             borderRadius: '6px',
@@ -368,7 +389,7 @@ export default function AdminDashboard() {
             fontSize: '13px',
           }}
         >
-          DEC Summit ({registrations.length} registered)
+          Investor Mission 2026 ({registrations.length} registered)
         </Link>
         <Link
           to="/admin/dashboard"
@@ -403,8 +424,8 @@ export default function AdminDashboard() {
       {/* Heading */}
       <div className="admin-heading">
         <div>
-          <p className="eyebrow">DEC SUMMIT • 50 PARTICIPANTS • ₹500</p>
-          <h1>DEC Summit Registrations &amp; Seat Management</h1>
+          <p className="eyebrow">INVESTOR MISSION 2026 • 50 PARTICIPANTS • ₹500</p>
+          <h1>Investor Mission 2026 Registrations &amp; Seat Management</h1>
           <p>
             Manage two-step verification (Registration &amp; Payment), review online UPI proofs, record offline payments, and maintain strict 50-seat event capacity.
           </p>

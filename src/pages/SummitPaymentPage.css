@@ -614,27 +614,3 @@
   }
 }
 
-.dec-payment-page .footer {
-  background-color: #08243B !important;
-  border-top: 2px solid #D8AE54 !important;
-  color: #FFFFFF !important;
-  font-family: 'Plus Jakarta Sans', sans-serif !important;
-  padding: 48px 32px 28px 32px !important;
-  display: grid !important;
-  grid-template-columns: repeat(4, 1fr) !important;
-  gap: 36px 28px !important;
-}
-
-@media (max-width: 900px) {
-  .dec-payment-page .footer {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-}
-
-@media (max-width: 600px) {
-  .dec-payment-page .footer {
-    grid-template-columns: 1fr !important;
-    padding: 32px 16px 24px !important;
-  }
-}
-

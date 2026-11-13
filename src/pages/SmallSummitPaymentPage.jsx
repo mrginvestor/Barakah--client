@@ -18,7 +18,6 @@ import {
   X,
 } from 'lucide-react';
 import API_URL from '../config/api';
-import Footer from '../components/Footer';
 import barakahLogo from '../assets/Barakah-logo.png';
 import phonepeQrImg from '../assets/phonepe-qr.jpg';
 import './SummitPaymentPage.css';
@@ -63,7 +62,8 @@ export default function SmallSummitPaymentPage() {
     if (!registrationId) return;
     setLoading(true);
     axios
-      .get(`${API_URL}/api/dec-summit/payment/${registrationId}`)
+      .get(`${API_URL}/api/investor-mission/payment/${registrationId}`)
+      .catch(() => axios.get(`${API_URL}/api/dec-summit/payment/${registrationId}`))
       .catch(() => axios.get(`${API_URL}/api/small-summit/payment/${registrationId}`))
       .catch(() => axios.get(`${API_URL}/api/summit/payment/${registrationId}`))
       .then((res) => {
@@ -80,7 +80,7 @@ export default function SmallSummitPaymentPage() {
         }
       })
       .catch((err) => {
-        console.error('Error loading DEC summit payment details:', err);
+        console.error('Error loading Investor Mission payment details:', err);
         setError(err.response?.data?.message || 'Registration not found or connection error.');
       })
       .finally(() => {
@@ -89,7 +89,7 @@ export default function SmallSummitPaymentPage() {
   };
 
   useEffect(() => {
-    document.title = 'DEC Summit Payment | Halal Wealth';
+    document.title = 'Investor Mission 2026 Payment | Halal Wealth';
     fetchPaymentDetails();
 
     if (typeof window !== 'undefined' && typeof navigator !== 'undefined') {
@@ -180,9 +180,14 @@ export default function SmallSummitPaymentPage() {
       }
 
       const res = await axios
-        .post(`${API_URL}/api/dec-summit/payment/${registrationId}/submit`, formData, {
+        .post(`${API_URL}/api/investor-mission/payment/${registrationId}/submit`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' },
         })
+        .catch(() =>
+          axios.post(`${API_URL}/api/dec-summit/payment/${registrationId}/submit`, formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          })
+        )
         .catch(() =>
           axios.post(`${API_URL}/api/small-summit/payment/${registrationId}/submit`, formData, {
             headers: { 'Content-Type': 'multipart/form-data' },
@@ -215,7 +220,7 @@ export default function SmallSummitPaymentPage() {
         <div className="summit-flow-container summit-loading-box" style={{ textAlign: 'center', padding: '100px 20px' }}>
           <div className="summit-spinner" />
           <p style={{ marginTop: '16px', color: '#0B2D49', fontWeight: 600 }}>
-            Loading your DEC Summit registration details...
+            Loading your Investor Mission 2026 registration details...
           </p>
         </div>
       </div>
@@ -232,11 +237,11 @@ export default function SmallSummitPaymentPage() {
             {error || 'The requested registration ID could not be loaded.'}
           </p>
           <Link
-            to="/dec-summit-registration"
+            to="/investor-mission-registration"
             className="btn-summit-submit"
             style={{ display: 'inline-flex', padding: '12px 24px', textDecoration: 'none' }}
           >
-            Go to DEC Summit Registration
+            Go to Investor Mission Registration
           </Link>
         </div>
       </div>
@@ -245,7 +250,7 @@ export default function SmallSummitPaymentPage() {
 
   // If registrant selected offline payment, route them directly to the offline confirmation page
   if (regData?.paymentMethod === 'OFFLINE') {
-    return <Navigate to={`/dec-summit-confirmation/${registrationId}`} replace />;
+    return <Navigate to={`/investor-mission-confirmation/${registrationId}`} replace />;
   }
 
   const {
@@ -262,7 +267,7 @@ export default function SmallSummitPaymentPage() {
   const isRejected = paymentStatus === 'REJECTED';
 
   // Dynamic unique registration reference for the payment transaction
-  const uniquePaymentRef = String(regData?.registrationId || registrationId || 'DECSUMMIT')
+  const uniquePaymentRef = String(regData?.registrationId || registrationId || 'INVESTORMISSION')
     .trim()
     .replace(/[^a-zA-Z0-9_-]/g, '');
 
@@ -272,7 +277,7 @@ export default function SmallSummitPaymentPage() {
     `pn=${encodeURIComponent(DEC_ACCOUNT_DETAILS.accountName)}`,
     `am=${encodeURIComponent(fee)}`,
     `cu=INR`,
-    `tn=${encodeURIComponent('DEC Summit Registration')}`,
+    `tn=${encodeURIComponent('Investor Mission Registration')}`,
     `tr=${encodeURIComponent(uniquePaymentRef)}`,
   ].join('&');
 
@@ -347,27 +352,27 @@ export default function SmallSummitPaymentPage() {
   };
 
   return (
-    <div className="summit-flow-page dec-payment-page">
+    <div className="summit-flow-page investor-mission-payment-page">
       {/* Header */}
-      <header className="summit-flow-header" role="banner" style={{ background: '#0B2D49', borderBottom: '2px solid #D8AE54' }}>
+      <header className="summit-flow-header" role="banner" style={{ background: '#064B36', borderBottom: '2px solid #80DF35' }}>
         <div className="summit-flow-container summit-flow-header-inner" style={{ maxWidth: '1080px', margin: '0 auto', padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
-          <Link to="/" className="summit-flow-brand" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none', color: '#FFFFFF' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid #D8AE54' }}>
+          <Link to="/investor-mission" className="summit-flow-brand" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none', color: '#FFFFFF' }}>
+            <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid #80DF35' }}>
               <img src={barakahLogo} alt="Halal Wealth Logo" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
             </div>
             <div className="summit-flow-title-block">
-              <strong style={{ fontSize: '18px', letterSpacing: '0.5px', color: '#FFFFFF', display: 'block', lineHeight: 1.1 }}>
-                HALAL WEALTH
-              </strong>
-              <span style={{ fontSize: '11px', color: '#D8AE54', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700 }}>
-                DEC SUMMIT
+              <span style={{ fontSize: '10.5px', color: '#80DF35', letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 800, display: 'block', lineHeight: 1.2 }}>
+                SIO COIMBATORE &amp; HALAL WEALTH
               </span>
+              <strong style={{ fontSize: '17px', letterSpacing: '0.5px', color: '#FFFFFF', display: 'block', lineHeight: 1.2 }}>
+                INVESTOR MISSION 2026
+              </strong>
             </div>
           </Link>
 
-          <div className="summit-flow-pill" style={{ background: '#08243B', border: '1px solid rgba(216, 174, 84, 0.4)', borderRadius: '6px', padding: '6px 14px', color: '#FFFFFF' }}>
+          <div className="summit-flow-pill" style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(128, 223, 53, 0.4)', borderRadius: '6px', padding: '6px 14px', color: '#FFFFFF' }}>
             <span style={{ fontSize: '13px' }}>
-              Registration ID: <strong style={{ color: '#D8AE54' }}>{registrationId}</strong>
+              Registration ID: <strong style={{ color: '#80DF35' }}>{registrationId}</strong>
             </span>
           </div>
         </div>
@@ -376,15 +381,15 @@ export default function SmallSummitPaymentPage() {
       <main className="summit-flow-container summit-flow-main" style={{ maxWidth: '1080px', margin: '0 auto', padding: '32px 24px 60px' }}>
         {/* Progress Tracker */}
         <div className="summit-steps-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '28px' }}>
-          <div className="summit-step-item done" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '20px', background: '#E2E8F0', color: '#15803D', fontSize: '12.5px', fontWeight: 600 }}>
-            <span className="step-num" style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#15803D', color: '#FFFFFF', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }}>
+          <div className="summit-step-item done" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '20px', background: '#E2E8F0', color: '#138C3B', fontSize: '12.5px', fontWeight: 600 }}>
+            <span className="step-num" style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#138C3B', color: '#FFFFFF', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }}>
               <Check size={12} />
             </span>
             <span className="step-text">Details Registered</span>
           </div>
-          <div className="summit-step-connector active" style={{ width: '28px', height: '2px', background: '#D8AE54' }} />
-          <div className="summit-step-item active" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '20px', background: '#0B2D49', color: '#FFFFFF', border: '1px solid #D8AE54', fontSize: '12.5px', fontWeight: 700 }}>
-            <span className="step-num" style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#D8AE54', color: '#08243B', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 700 }}>
+          <div className="summit-step-connector active" style={{ width: '28px', height: '2px', background: '#80DF35' }} />
+          <div className="summit-step-item active" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '20px', background: '#064B36', color: '#FFFFFF', border: '1px solid #80DF35', fontSize: '12.5px', fontWeight: 700 }}>
+            <span className="step-num" style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#80DF35', color: '#064B36', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800 }}>
               2
             </span>
             <span className="step-text">UPI Payment &amp; Proof (₹{fee})</span>
@@ -398,7 +403,7 @@ export default function SmallSummitPaymentPage() {
             <div>
               <h3 style={{ margin: '0 0 4px', fontSize: '17px', fontWeight: 700 }}>Payment Confirmed &amp; Seat Secured!</h3>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.5 }}>
-                Assalamu Alaikum {fullName}, your payment of ₹{fee} has been verified and your seat is confirmed for the <strong>Halal Wealth DEC Summit</strong>. An official confirmation email has been dispatched to <strong>{email}</strong>.
+                Assalamu Alaikum {fullName}, your payment of ₹{fee} has been verified and your seat is confirmed for <strong>Investor Mission 2026</strong>. An official confirmation email has been dispatched to <strong>{email}</strong>.
               </p>
             </div>
           </div>
@@ -442,10 +447,10 @@ export default function SmallSummitPaymentPage() {
 
         {/* Section Intro */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <span style={{ fontSize: '11.5px', fontWeight: 700, letterSpacing: '2px', color: '#D8AE54', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
-            DEC SUMMIT
+          <span style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '2px', color: '#138C3B', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
+            INVESTOR MISSION 2026
           </span>
-          <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#08243B', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
+          <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#064B36', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
             Complete Your Registration
           </h1>
           <p style={{ fontSize: '15px', color: '#475569', margin: 0 }}>
@@ -980,9 +985,9 @@ export default function SmallSummitPaymentPage() {
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '16px', fontSize: '12px', color: '#64748B', lineHeight: 1.4 }}>
-                <ShieldCheck size={18} color="#0B2D49" style={{ flexShrink: 0 }} />
+                <ShieldCheck size={18} color="#064B36" style={{ flexShrink: 0 }} />
                 <span>
-                  Our administrative team verifies all payments directly with bank records before confirming your DEC Summit seat.
+                  Our administrative team verifies all payments directly with bank records before confirming your Investor Mission 2026 seat.
                 </span>
               </div>
             </form>
@@ -992,18 +997,18 @@ export default function SmallSummitPaymentPage() {
         {/* Back Link */}
         <div style={{ marginTop: '36px', textAlign: 'center' }}>
           <Link
-            to="/"
+            to="/investor-mission"
             style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '6px',
-              color: '#0B2D49',
+              color: '#064B36',
               fontSize: '14px',
               fontWeight: 600,
               textDecoration: 'none',
             }}
           >
-            <ArrowLeft size={16} /> Back to Halal Wealth Homepage
+            <ArrowLeft size={16} /> Back to Investor Mission Overview
           </Link>
         </div>
       </main>
@@ -1155,8 +1160,6 @@ export default function SmallSummitPaymentPage() {
           </div>
         </div>
       )}
-
-      <Footer />
     </div>
   );
 }

@@ -71,11 +71,11 @@ const Navbar = ({ onRegister = () => window.dispatchEvent(new CustomEvent('regis
             Main Summit 2026 <ArrowUpRight size={15} />
           </button>
           <Link
-            to="/dec-summit-registration"
+            to="/investor-mission"
             className="nav-register nav-register--small"
-            title="Exclusive DEC Summit – 50 Participants (₹500)"
+            title="Investor Mission 2026 – The Halal Way of Investing (06 Dec 2026)"
           >
-            DEC Summit <ArrowUpRight size={15} />
+            Investor Mission <ArrowUpRight size={15} />
           </Link>
         </div>
         <button className="menu-toggle" aria-label="Toggle menu" onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button>
@@ -95,10 +95,10 @@ const Navbar = ({ onRegister = () => window.dispatchEvent(new CustomEvent('regis
           </button>
           <Link
             className="nav-register nav-register--small"
-            to="/dec-summit-registration"
+            to="/investor-mission"
             onClick={() => setOpen(false)}
           >
-            DEC Summit <ArrowUpRight size={15} />
+            Investor Mission <ArrowUpRight size={15} />
           </Link>
         </div>
       )}

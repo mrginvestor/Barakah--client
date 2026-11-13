@@ -17,7 +17,6 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import API_URL from '../config/api';
-import Footer from '../components/Footer';
 import barakahLogo from '../assets/Barakah-logo.png';
 import './SmallSummitRegisterPage.css';
 
@@ -28,11 +27,12 @@ export default function SmallSummitConfirmationPage() {
   const [regData, setRegData] = useState(null);
 
   useEffect(() => {
-    document.title = 'DEC Summit Registration Received | Halal Wealth';
+    document.title = 'Investor Mission 2026 Registration Received | Halal Wealth';
     if (!registrationId) return;
 
     axios
-      .get(`${API_URL}/api/dec-summit/payment/${registrationId}`)
+      .get(`${API_URL}/api/investor-mission/payment/${registrationId}`)
+      .catch(() => axios.get(`${API_URL}/api/dec-summit/payment/${registrationId}`))
       .catch(() => axios.get(`${API_URL}/api/small-summit/payment/${registrationId}`))
       .catch(() => axios.get(`${API_URL}/api/summit/payment/${registrationId}`))
       .then((res) => {
@@ -59,17 +59,17 @@ export default function SmallSummitConfirmationPage() {
       <header className="ssp-header" role="banner">
         <div className="ssp-header-container">
           <div className="ssp-brand-section">
-            <Link to="/" className="ssp-brand-link" title="Halal Wealth Summit Homepage">
+            <Link to="/investor-mission" className="ssp-brand-link" title="Investor Mission 2026 Overview">
               <div className="ssp-brand-logo-wrap">
                 <img src={barakahLogo} alt="Halal Wealth Logo" className="ssp-brand-logo" />
               </div>
               <div className="ssp-brand-headings">
-                <span className="ssp-brand-kicker">HALAL WEALTH</span>
-                <h1 className="ssp-brand-title">DEC SUMMIT</h1>
+                <span className="ssp-brand-kicker">SIO COIMBATORE &amp; HALAL WEALTH PRESENTS</span>
+                <h1 className="ssp-brand-title">INVESTOR MISSION 2026</h1>
               </div>
             </Link>
             <p className="ssp-brand-tagline">
-              Exclusive gathering focused on Islamic finance, halal wealth and ethical investments.
+              The Halal Way of Investing • Sunday, 06 December 2026 • Coimbatore
             </p>
           </div>
 
@@ -91,17 +91,17 @@ export default function SmallSummitConfirmationPage() {
         {loading ? (
           <div className="ssp-form-card" style={{ textAlign: 'center', padding: '60px 24px' }}>
             <div className="ssp-spinner" style={{ margin: '0 auto 16px' }} />
-            <h3 style={{ color: '#0B2D49', fontSize: '18px', margin: 0 }}>
+            <h3 style={{ color: '#064B36', fontSize: '18px', margin: 0 }}>
               Loading registration confirmation...
             </h3>
           </div>
         ) : error ? (
           <div className="ssp-form-card" style={{ textAlign: 'center', padding: '48px 24px' }}>
             <AlertCircle size={44} style={{ color: '#DC2626', margin: '0 auto 16px' }} />
-            <h2 style={{ color: '#08243B', marginBottom: '8px' }}>Registration Not Found</h2>
+            <h2 style={{ color: '#064B36', marginBottom: '8px' }}>Registration Not Found</h2>
             <p style={{ color: '#64748B', maxWidth: '440px', margin: '0 auto 24px' }}>{error}</p>
-            <Link to="/dec-summit-registration" className="ssp-btn-submit" style={{ display: 'inline-flex', width: 'auto', padding: '0 24px' }}>
-              Register for DEC Summit
+            <Link to="/investor-mission-registration" className="ssp-btn-submit" style={{ display: 'inline-flex', width: 'auto', padding: '0 24px' }}>
+              Register for Investor Mission 2026
             </Link>
           </div>
         ) : (
@@ -137,7 +137,7 @@ export default function SmallSummitConfirmationPage() {
                   fontWeight: 700,
                   letterSpacing: '1.5px',
                   textTransform: 'uppercase',
-                  color: '#D8AE54',
+                  color: '#138C3B',
                   display: 'block',
                   marginBottom: '6px',
                 }}
@@ -148,11 +148,11 @@ export default function SmallSummitConfirmationPage() {
                 style={{
                   fontSize: '26px',
                   fontWeight: 800,
-                  color: '#08243B',
+                  color: '#064B36',
                   margin: '0 0 10px 0',
                 }}
               >
-                DEC SUMMIT REGISTRATION RECEIVED
+                INVESTOR MISSION 2026 REGISTRATION RECEIVED
               </h2>
               <p
                 style={{
@@ -435,7 +435,7 @@ export default function SmallSummitConfirmationPage() {
               </button>
 
               <Link
-                to="/"
+                to="/investor-mission"
                 className="ssp-btn-submit"
                 style={{
                   display: 'inline-flex',
@@ -449,14 +449,12 @@ export default function SmallSummitConfirmationPage() {
                 }}
               >
                 <ArrowLeft size={16} />
-                Return to Homepage
+                Return to Investor Mission Overview
               </Link>
             </div>
           </div>
         )}
       </main>
-
-      <Footer />
     </div>
   );
 }

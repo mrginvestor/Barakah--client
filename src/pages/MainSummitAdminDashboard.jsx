@@ -125,10 +125,10 @@ export default function MainSummitAdminDashboard() {
           Main Summit 2027 ({registrations.length})
         </Link>
         <Link
-          to="/admin/dec-summit"
+          to="/admin/investor-mission"
           style={{
             padding: '8px 16px',
-            background: '#0B2D49',
+            background: '#064B36',
             color: '#FFFFFF',
             fontWeight: 600,
             borderRadius: '6px',
@@ -136,7 +136,7 @@ export default function MainSummitAdminDashboard() {
             fontSize: '13px',
           }}
         >
-          DEC Summit (₹500 / 50 Seats) &rarr;
+          Investor Mission 2026 (₹500 / 50 Seats) &rarr;
         </Link>
         <Link
           to="/admin/dashboard"

@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import MainSummitRegisterPage from './pages/MainSummitRegisterPage';
+import InvestorMissionLandingPage from './pages/InvestorMissionLandingPage';
 import SmallSummitRegisterPage from './pages/SmallSummitRegisterPage';
 import SmallSummitPaymentPage from './pages/SmallSummitPaymentPage';
 import SmallSummitConfirmationPage from './pages/SmallSummitConfirmationPage';
@@ -37,7 +38,12 @@ function ScrollToTopOnNavigation() {
 function AppRoutes() {
   const location = useLocation();
   const isWebinarRoute = location.pathname === '/webinar-register' || location.pathname.startsWith('/webinar-register/');
-  const isDecSummitFlowRoute =
+  const isInvestorMissionFlowRoute =
+    location.pathname === '/investor-mission' ||
+    location.pathname === '/investor-mission-registration' ||
+    location.pathname.startsWith('/investor-mission-payment') ||
+    location.pathname.startsWith('/investor-mission-confirmation') ||
+    location.pathname === '/dec-summit' ||
     location.pathname === '/dec-summit-registration' ||
     location.pathname.startsWith('/dec-summit-payment') ||
     location.pathname.startsWith('/dec-summit-confirmation') ||
@@ -50,7 +56,7 @@ function AppRoutes() {
   return (
     <>
       <ScrollToTopOnNavigation />
-      {!isWebinarRoute && !isDecSummitFlowRoute && !isAdminRoute && <Navbar />}
+      {!isWebinarRoute && !isInvestorMissionFlowRoute && !isAdminRoute && <Navbar />}
       <Routes>
         {/* Main Summit 2026 Routes */}
         <Route path="/" element={<Home />} />
@@ -58,7 +64,14 @@ function AppRoutes() {
         <Route path="/summit-registration" element={<MainSummitRegisterPage />} />
         <Route path="/summit-register" element={<Navigate to="/main-summit-registration" replace />} />
 
-        {/* DEC Summit 50-Capacity UPI & Offline Flow Routes */}
+        {/* Investor Mission 2026 Dedicated Landing Page & Registration Flow */}
+        <Route path="/investor-mission" element={<InvestorMissionLandingPage />} />
+        <Route path="/investor-mission-registration" element={<SmallSummitRegisterPage />} />
+        <Route path="/investor-mission-payment/:registrationId" element={<SmallSummitPaymentPage />} />
+        <Route path="/investor-mission-confirmation/:registrationId" element={<SmallSummitConfirmationPage />} />
+
+        {/* DEC Summit & Small Summit Aliases for 100% Backward Compatibility */}
+        <Route path="/dec-summit" element={<Navigate to="/investor-mission" replace />} />
         <Route path="/dec-summit-registration" element={<SmallSummitRegisterPage />} />
         <Route path="/dec-summit-payment/:registrationId" element={<SmallSummitPaymentPage />} />
         <Route path="/dec-summit-confirmation/:registrationId" element={<SmallSummitConfirmationPage />} />
@@ -85,6 +98,7 @@ function AppRoutes() {
         <Route element={<ProtectedAdminRoute />}>
           <Route path="/admin/dashboard" element={<WebinarAdminDashboard />} />
           <Route path="/admin/main-summit" element={<MainSummitAdminDashboard />} />
+          <Route path="/admin/investor-mission" element={<AdminDashboard />} />
           <Route path="/admin/dec-summit" element={<AdminDashboard />} />
           <Route path="/admin/small-summit" element={<AdminDashboard />} />
           <Route path="/admin/summit" element={<AdminDashboard />} />
