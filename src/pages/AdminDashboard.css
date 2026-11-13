@@ -1,0 +1,304 @@
+/* ==============================================================================
+   Halal Wealth Summit - Admin Dashboard Styling
+   ============================================================================== */
+
+.summit-admin-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.summit-admin-kpi-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 16px 18px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.summit-admin-kpi-card.kpi-confirmed {
+  border-left: 4px solid #16A34A;
+}
+
+.summit-admin-kpi-card.kpi-verification {
+  border-left: 4px solid #D97706;
+  background-color: #FFFBEB;
+}
+
+.summit-admin-kpi-card.kpi-pending {
+  border-left: 4px solid #2563EB;
+}
+
+.summit-admin-kpi-card.kpi-rejected {
+  border-left: 4px solid #DC2626;
+}
+
+.summit-admin-kpi-card.kpi-seats {
+  border-left: 4px solid #1B5E20;
+}
+
+.kpi-label {
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  color: #64748B;
+}
+
+.kpi-number {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+.kpi-confirmed .kpi-number { color: #15803D; }
+.kpi-verification .kpi-number { color: #B45309; }
+.kpi-seats .kpi-number { color: #1B5E20; }
+.kpi-rejected .kpi-number { color: #B91C1C; }
+
+/* Filter Tabs */
+.summit-admin-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+
+.summit-tab-btn {
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.summit-tab-btn:hover {
+  background: #F8FAFC;
+  border-color: #94A3B8;
+}
+
+.summit-tab-btn.active {
+  background: #1B5E20;
+  color: #FFFFFF;
+  border-color: #1B5E20;
+}
+
+/* Status Badges */
+.admin-badge-paid {
+  background-color: #DCFCE7;
+  color: #15803D;
+  border: 1px solid #86EFAC;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 11.5px;
+  display: inline-block;
+}
+
+.admin-badge-pending-verification {
+  background-color: #FEF3C7;
+  color: #B45309;
+  border: 1px solid #FCD34D;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 11.5px;
+  display: inline-block;
+  animation: pulse-soft 2s infinite ease-in-out;
+}
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.75; }
+}
+
+.admin-badge-pending {
+  background-color: #EFF6FF;
+  color: #1D4ED8;
+  border: 1px solid #BFDBFE;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 11.5px;
+  display: inline-block;
+}
+
+.admin-badge-rejected {
+  background-color: #FEE2E2;
+  color: #B91C1C;
+  border: 1px solid #FCA5A5;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 11.5px;
+  display: inline-block;
+}
+
+/* Action Buttons in Table */
+.admin-action-btn-group {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.btn-admin-action {
+  padding: 4px 8px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.btn-admin-view-receipt {
+  background-color: #F0FDF4;
+  color: #166534;
+  border-color: #A5D6A7;
+}
+
+.btn-admin-view-receipt:hover {
+  background-color: #DCFCE7;
+}
+
+.btn-admin-approve {
+  background-color: #1B5E20;
+  color: #FFFFFF;
+}
+
+.btn-admin-approve:hover {
+  background-color: #144718;
+}
+
+.btn-admin-reject {
+  background-color: #FEF2F2;
+  color: #991B1B;
+  border-color: #FCA5A5;
+}
+
+.btn-admin-reject:hover {
+  background-color: #FEE2E2;
+}
+
+/* Modal Lightbox for Screenshot Verification */
+.summit-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.summit-modal-card {
+  background: #FFFFFF;
+  border-radius: 8px;
+  max-width: 680px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.summit-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.summit-modal-header h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  color: #1B5E20;
+}
+
+.summit-modal-close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  line-height: 1;
+  color: #64748B;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.summit-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-receipt-meta {
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px 16px;
+  font-size: 13px;
+}
+
+.modal-receipt-meta span {
+  color: #64748B;
+}
+
+.modal-receipt-meta strong {
+  color: #0F172A;
+  margin-left: 6px;
+}
+
+.modal-screenshot-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #0F172A;
+  border-radius: 6px;
+  padding: 12px;
+  min-height: 250px;
+}
+
+.modal-screenshot-img {
+  max-width: 100%;
+  max-height: 450px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
+.summit-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid #E2E8F0;
+  background: #F8FAFC;
+}
+
+@media (max-width: 1024px) {
+  .summit-admin-kpi-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .summit-admin-kpi-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

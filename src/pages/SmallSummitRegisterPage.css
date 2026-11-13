@@ -1,0 +1,1157 @@
+/* ==============================================================================
+   HALAL WEALTH SMALL SUMMIT - REGISTRATION PAGE STYLING
+   Scoped exclusively for Small Summit Page (.small-summit-page)
+   Palette:
+     - Navy Blue: #0B2D49
+     - Dark Navy: #08243B
+     - Gold: #D8AE54
+     - White: #FFFFFF
+     - Light background: #F7F8FA
+   Font: Plus Jakarta Sans
+   ============================================================================== */
+
+/* Base Page Root */
+.small-summit-page {
+  min-height: 100vh;
+  background-color: #F7F8FA;
+  color: #08243B;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.small-summit-page *,
+.small-summit-page *::before,
+.small-summit-page *::after {
+  box-sizing: border-box;
+}
+
+/* ==============================================================================
+   HEADER COMPONENT
+   ============================================================================== */
+.ssp-header {
+  background-color: #0B2D49;
+  border-bottom: 2px solid #D8AE54;
+  color: #FFFFFF;
+  width: 100%;
+}
+
+.ssp-header-container {
+  max-width: 1140px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 22px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+/* Brand Section (Left aligned) */
+.ssp-brand-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 580px;
+}
+
+.ssp-brand-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  color: #FFFFFF;
+  transition: opacity 0.2s ease;
+}
+
+.ssp-brand-link:hover {
+  opacity: 0.92;
+}
+
+.ssp-brand-logo-wrap {
+  width: 46px;
+  height: 46px;
+  background-color: #FFFFFF;
+  border: 1px solid #D8AE54;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.ssp-brand-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  object-position: center 20%;
+}
+
+.ssp-brand-headings {
+  display: flex;
+  flex-direction: column;
+}
+
+.ssp-brand-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #D8AE54;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.ssp-brand-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #FFFFFF;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.ssp-brand-tagline {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Header Badges / Meta Info (Right aligned) */
+.ssp-header-badges {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.ssp-badge {
+  background: #08243B;
+  border: 1px solid rgba(216, 174, 84, 0.4);
+  border-radius: 6px;
+  padding: 8px 14px;
+  display: flex;
+  flex-direction: column;
+  min-width: 130px;
+  transition: border-color 0.2s ease;
+}
+
+.ssp-badge--fee {
+  background: rgba(216, 174, 84, 0.12);
+  border-color: #D8AE54;
+}
+
+.ssp-badge-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #D8AE54;
+  margin-bottom: 2px;
+}
+
+.ssp-badge-value {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #FFFFFF;
+  line-height: 1.2;
+}
+
+.ssp-badge--seats.is-soldout {
+  border-color: #EF4444;
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.ssp-badge--seats.is-soldout .ssp-badge-value {
+  color: #F87171;
+}
+
+/* ==============================================================================
+   MAIN CONTAINER AND FORM WRAPPER
+   Centred, Max-width 850px, width 100%, Consistent Spacing
+   ============================================================================== */
+.ssp-main-container {
+  max-width: 850px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 36px 32px 72px 32px;
+  flex: 1 0 auto;
+}
+
+/* Progress Step Tracker */
+.ssp-progress-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.ssp-progress-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border-radius: 30px;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: #E2E8F0;
+  color: #64748B;
+  transition: all 0.2s ease;
+}
+
+.ssp-progress-step.active {
+  background: #0B2D49;
+  color: #FFFFFF;
+  border: 1px solid #D8AE54;
+  box-shadow: 0 2px 6px rgba(11, 45, 73, 0.15);
+}
+
+.ssp-step-circle {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.ssp-progress-step.active .ssp-step-circle {
+  background: #D8AE54;
+  color: #08243B;
+}
+
+.ssp-progress-divider {
+  width: 32px;
+  height: 2px;
+  background-color: #CBD5E1;
+}
+
+/* Seat Availability Notice Banner */
+.ssp-capacity-banner {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-left: 4px solid #D8AE54;
+  border-radius: 6px;
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  box-shadow: 0 2px 8px rgba(11, 45, 73, 0.04);
+}
+
+.ssp-capacity-banner.is-soldout {
+  border-left-color: #DC2626;
+  background-color: #FEF2F2;
+}
+
+.ssp-capacity-icon-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 6px;
+  background-color: rgba(216, 174, 84, 0.12);
+  color: #0B2D49;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ssp-capacity-banner.is-soldout .ssp-capacity-icon-wrap {
+  background-color: rgba(220, 38, 38, 0.12);
+  color: #DC2626;
+}
+
+.ssp-capacity-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ssp-capacity-content strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: #08243B;
+}
+
+.ssp-capacity-banner.is-soldout .ssp-capacity-content strong {
+  color: #991B1B;
+}
+
+.ssp-capacity-content span {
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.4;
+}
+
+.ssp-capacity-banner.is-soldout .ssp-capacity-content span {
+  color: #B91C1C;
+}
+
+/* Sold Out Detailed Card */
+.ssp-soldout-card {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.ssp-soldout-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background-color: #FEE2E2;
+  color: #991B1B;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.ssp-soldout-card h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #08243B;
+  margin: 0 0 10px 0;
+}
+
+.ssp-soldout-card p {
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: #475569;
+  max-width: 520px;
+  margin: 0 auto 24px auto;
+}
+
+.ssp-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 6px;
+  background-color: #08243B;
+  color: #FFFFFF;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.ssp-btn-secondary:hover {
+  background-color: #0B2D49;
+  box-shadow: 0 4px 12px rgba(11, 45, 73, 0.2);
+}
+
+/* Alert Error Banner */
+.ssp-alert-error {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background-color: #FEF2F2;
+  border: 1px solid #F87171;
+  border-radius: 6px;
+  padding: 14px 18px;
+  color: #991B1B;
+  font-size: 14px;
+  margin-bottom: 24px;
+  line-height: 1.45;
+}
+
+/* ==============================================================================
+   FORM CARD & SECTION ARCHITECTURE
+   ============================================================================== */
+.ssp-form-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(11, 45, 73, 0.05);
+  padding: 38px 40px;
+}
+
+/* Card Header */
+.ssp-card-intro {
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.ssp-intro-eyebrow {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  color: #D8AE54;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.ssp-intro-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: #08243B;
+  letter-spacing: -0.01em;
+  margin: 0 0 8px 0;
+  line-height: 1.25;
+}
+
+.ssp-intro-subtitle {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Section Containers */
+.ssp-section {
+  margin-bottom: 32px;
+}
+
+.ssp-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.ssp-section-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background-color: #0B2D49;
+  color: #FFFFFF;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.ssp-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #08243B;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin: 0;
+}
+
+/* 2-Column Grid on Desktop */
+.ssp-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px 20px;
+}
+
+.ssp-grid-full {
+  grid-column: 1 / -1;
+}
+
+/* Form Group & Labels */
+.ssp-form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.ssp-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #08243B;
+  margin-bottom: 7px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  line-height: 1.3;
+}
+
+.ssp-label .req {
+  color: #DC2626;
+  font-weight: 700;
+}
+
+.ssp-label .opt {
+  color: #94A3B8;
+  font-size: 12px;
+  font-weight: 400;
+  margin-left: 4px;
+}
+
+/* Input Fields & Selects */
+.ssp-input,
+.ssp-select {
+  width: 100%;
+  height: 46px;
+  padding: 10px 14px;
+  font-family: inherit;
+  font-size: 14.5px;
+  color: #08243B;
+  background-color: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.ssp-select {
+  cursor: pointer;
+  appearance: auto;
+}
+
+.ssp-input::placeholder {
+  color: #94A3B8;
+}
+
+.ssp-input:focus,
+.ssp-select:focus,
+.ssp-textarea:focus {
+  outline: none;
+  border-color: #0B2D49;
+  box-shadow: 0 0 0 3px rgba(11, 45, 73, 0.12);
+}
+
+.ssp-input.has-error,
+.ssp-select.has-error,
+.ssp-textarea.has-error {
+  border-color: #DC2626;
+  background-color: #FFF9F9;
+}
+
+.ssp-field-error {
+  color: #DC2626;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 5px;
+  line-height: 1.35;
+}
+
+/* Phone Group: Country code + Number */
+.ssp-phone-group {
+  display: flex;
+  gap: 8px;
+}
+
+.ssp-country-select {
+  width: 128px;
+  flex-shrink: 0;
+  height: 46px;
+  padding: 0 10px;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: #08243B;
+  background-color: #F8FAFC;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.ssp-country-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  height: 46px;
+  background-color: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #08243B;
+  flex-shrink: 0;
+}
+
+.ssp-country-select:focus {
+  outline: none;
+  border-color: #0B2D49;
+  box-shadow: 0 0 0 3px rgba(11, 45, 73, 0.12);
+}
+
+.ssp-phone-input {
+  flex: 1;
+}
+
+/* Textarea for Session Expectations */
+.ssp-textarea {
+  width: 100%;
+  min-height: 110px;
+  padding: 12px 14px;
+  font-family: inherit;
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: #08243B;
+  background-color: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  resize: vertical;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.ssp-textarea::placeholder {
+  color: #94A3B8;
+}
+
+.ssp-textarea-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 5px;
+}
+
+.ssp-field-hint {
+  font-size: 12px;
+  color: #64748B;
+  line-height: 1.35;
+}
+
+.ssp-char-counter {
+  font-size: 11.5px;
+  color: #64748B;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.ssp-section-subtitle {
+  font-size: 13px;
+  color: #64748B;
+  margin: 3px 0 0 0;
+  font-weight: 400;
+}
+
+/* Payment Method Cards Grid */
+.ssp-payment-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 14px;
+}
+
+.ssp-payment-card {
+  border: 2px solid #E2E8F0;
+  border-radius: 8px;
+  padding: 18px;
+  background-color: #FFFFFF;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  text-align: left;
+}
+
+.ssp-payment-card:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 4px 12px rgba(11, 45, 73, 0.06);
+  transform: translateY(-1px);
+}
+
+.ssp-payment-card.is-selected {
+  border-color: #0B2D49;
+  background-color: #F8FAFC;
+  box-shadow: 0 4px 16px rgba(11, 45, 73, 0.12);
+}
+
+.ssp-payment-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.ssp-radio-outer {
+  width: 20px;
+  height: 20px;
+  border: 2px solid #94A3B8;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+  transition: border-color 0.2s ease;
+}
+
+.ssp-payment-card.is-selected .ssp-radio-outer {
+  border-color: #0B2D49;
+}
+
+.ssp-radio-inner {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: transparent;
+  transition: background-color 0.2s ease;
+}
+
+.ssp-radio-inner.is-checked {
+  background-color: #0B2D49;
+}
+
+.ssp-payment-card-title-group {
+  flex: 1;
+}
+
+.ssp-payment-card-badge {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+}
+
+.ssp-badge-recommended {
+  background-color: rgba(216, 174, 84, 0.18);
+  color: #8C6A15;
+  border: 1px solid rgba(216, 174, 84, 0.4);
+}
+
+.ssp-badge-offline {
+  background-color: #EDE9FE;
+  color: #5B21B6;
+  border: 1px solid #DDD6FE;
+}
+
+.ssp-payment-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #08243B;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.ssp-payment-card-icon {
+  color: #0B2D49;
+  flex-shrink: 0;
+}
+
+.ssp-payment-card-body {
+  border-top: 1px solid #E2E8F0;
+  padding-top: 12px;
+  flex: 1;
+}
+
+.ssp-payment-feature-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ssp-payment-feature-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 12.5px;
+  color: #334155;
+  line-height: 1.45;
+}
+
+.ssp-feat-check {
+  color: #0B2D49;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+@media (max-width: 640px) {
+  .ssp-payment-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Consent Box */
+.ssp-consent-box {
+  margin-top: 4px;
+  padding: 16px 18px;
+  background-color: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+}
+
+.ssp-checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.ssp-checkbox {
+  margin-top: 2px;
+  width: 18px;
+  height: 18px;
+  accent-color: #0B2D49;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.ssp-checkbox-text {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #334155;
+}
+
+.ssp-checkbox-text a {
+  color: #0B2D49;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.15s ease;
+}
+
+.ssp-checkbox-text a:hover {
+  color: #D8AE54;
+}
+
+/* Actions & Submit Button */
+.ssp-actions {
+  margin-top: 32px;
+}
+
+.ssp-btn-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  height: 48px;
+  background-color: #08243B;
+  color: #FFFFFF;
+  border: 1px solid #D8AE54;
+  border-radius: 6px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(8, 36, 59, 0.2);
+}
+
+.ssp-btn-submit:hover:not(:disabled) {
+  background-color: #0B2D49;
+  border-color: #E6C875;
+  box-shadow: 0 4px 14px rgba(11, 45, 73, 0.25);
+  transform: translateY(-1px);
+}
+
+.ssp-btn-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.ssp-btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ssp-trust-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+  font-size: 12.5px;
+  color: #64748B;
+  text-align: center;
+}
+
+/* ==============================================================================
+   FOOTER STYLING (Scoped to .small-summit-page)
+   Keep all links and functionality, elevate design, alignment & typography
+   ============================================================================== */
+.small-summit-page .footer {
+  background-color: #08243B !important;
+  border-top: 2px solid #D8AE54 !important;
+  color: #FFFFFF !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  padding: 48px 32px 28px 32px !important;
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 36px 28px !important;
+  box-sizing: border-box !important;
+  margin-top: auto !important;
+}
+
+.small-summit-page .footer > div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.small-summit-page .footer .eyebrow {
+  color: #D8AE54 !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 1.5px !important;
+  text-transform: uppercase !important;
+  margin: 0 0 6px 0 !important;
+}
+
+.small-summit-page .footer strong {
+  color: #FFFFFF !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  line-height: 1.4 !important;
+}
+
+.small-summit-page .footer strong a {
+  color: #FFFFFF !important;
+  text-decoration: none !important;
+  transition: color 0.2s ease !important;
+}
+
+.small-summit-page .footer strong a:hover {
+  color: #D8AE54 !important;
+}
+
+.small-summit-page .footer small {
+  color: rgba(255, 255, 255, 0.72) !important;
+  font-size: 12.5px !important;
+  line-height: 1.4 !important;
+}
+
+.small-summit-page .footer small a {
+  color: #D8AE54 !important;
+  text-decoration: underline !important;
+  font-weight: 500 !important;
+}
+
+.small-summit-page .footer small a:hover {
+  color: #E6C875 !important;
+}
+
+.small-summit-page .footer .socials {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-top: 4px !important;
+}
+
+.small-summit-page .footer .socials a {
+  color: #D8AE54 !important;
+  font-size: 16px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 50% !important;
+  background: rgba(216, 174, 84, 0.12) !important;
+  border: 1px solid rgba(216, 174, 84, 0.3) !important;
+  text-decoration: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.small-summit-page .footer .socials a:hover {
+  background: #D8AE54 !important;
+  color: #08243B !important;
+  transform: translateY(-2px) !important;
+}
+
+.small-summit-page .footer-bottom {
+  grid-column: 1 / -1 !important;
+  border-top: 1px solid rgba(216, 174, 84, 0.22) !important;
+  padding-top: 20px !important;
+  margin-top: 12px !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+  color: rgba(255, 255, 255, 0.75) !important;
+  font-size: 12px !important;
+}
+
+.small-summit-page .footer-legal-nav {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 10px 14px !important;
+}
+
+.small-summit-page .footer-legal-link {
+  color: rgba(255, 255, 255, 0.8) !important;
+  text-decoration: none !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  transition: color 0.2s ease !important;
+}
+
+.small-summit-page .footer-legal-link:hover {
+  color: #D8AE54 !important;
+  text-decoration: underline !important;
+}
+
+.small-summit-page .footer-sep {
+  color: #D8AE54 !important;
+  opacity: 0.6 !important;
+}
+
+/* ==============================================================================
+   RESPONSIVE DESIGN BREAKPOINTS
+   - Tablet (<= 768px)
+   - Mobile (<= 640px)
+   ============================================================================== */
+@media (max-width: 900px) {
+  .ssp-header-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+  }
+
+  .ssp-header-badges {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .small-summit-page .footer {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 28px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .ssp-main-container {
+    padding: 28px 24px 60px 24px;
+  }
+
+  .ssp-form-card {
+    padding: 30px 24px;
+  }
+}
+
+@media (max-width: 640px) {
+  .ssp-header-container {
+    padding: 16px 16px;
+    gap: 16px;
+  }
+
+  .ssp-brand-logo-wrap {
+    width: 40px;
+    height: 40px;
+  }
+
+  .ssp-brand-logo {
+    width: 36px;
+    height: 36px;
+  }
+
+  .ssp-brand-title {
+    font-size: 19px;
+  }
+
+  .ssp-brand-tagline {
+    font-size: 12.5px;
+  }
+
+  .ssp-header-badges {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .ssp-badge {
+    min-width: unset;
+    padding: 7px 10px;
+  }
+
+  .ssp-badge--seats {
+    grid-column: 1 / -1;
+  }
+
+  .ssp-badge-value {
+    font-size: 13.5px;
+  }
+
+  .ssp-main-container {
+    padding: 18px 16px 44px 16px;
+  }
+
+  .ssp-progress-bar {
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .ssp-progress-step {
+    padding: 5px 10px;
+    font-size: 11.5px;
+  }
+
+  .ssp-progress-divider {
+    width: 16px;
+  }
+
+  .ssp-form-card {
+    padding: 24px 16px;
+    border-radius: 6px;
+  }
+
+  .ssp-card-intro {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+  }
+
+  .ssp-intro-title {
+    font-size: 20px;
+  }
+
+  /* Single Column on Mobile for all form fields */
+  .ssp-grid-2 {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .ssp-grid-full {
+    grid-column: auto;
+  }
+
+  .ssp-phone-group {
+    flex-direction: row;
+  }
+
+  .ssp-country-select {
+    width: 105px;
+    font-size: 12.5px;
+    padding: 0 6px;
+  }
+
+  .ssp-btn-submit {
+    font-size: 14px;
+    height: 48px;
+  }
+
+  .small-summit-page .footer {
+    grid-template-columns: 1fr !important;
+    padding: 36px 16px 24px 16px !important;
+    gap: 24px !important;
+  }
+
+  .small-summit-page .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}

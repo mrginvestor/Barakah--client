@@ -37,6 +37,15 @@ const Navbar = ({ onRegister = () => window.dispatchEvent(new CustomEvent('regis
     }
   };
 
+  const handleMainSummitClick = () => {
+    setOpen(false);
+    if (location.pathname === '/') {
+      window.dispatchEvent(new CustomEvent('registration-open'));
+    } else {
+      navigate('/main-summit-registration');
+    }
+  };
+
   const isHome = location.pathname === '/';
 
   return (
@@ -52,7 +61,23 @@ const Navbar = ({ onRegister = () => window.dispatchEvent(new CustomEvent('regis
             <button className="nav-link" key={link} onClick={() => jump(link)}>{link}</button>
           ))}
         </div>
-        <Link to="/webinar-register" className="nav-register nav-register--webinar">Register for Webinar <ArrowUpRight size={16} /></Link>
+        <div className="nav-summit-actions">
+          <button
+            type="button"
+            className="nav-register nav-register--main"
+            onClick={handleMainSummitClick}
+            title="Halal Wealth Summit 2026 – Chennai (29 Nov 2026)"
+          >
+            Main Summit 2026 <ArrowUpRight size={15} />
+          </button>
+          <Link
+            to="/dec-summit-registration"
+            className="nav-register nav-register--small"
+            title="Exclusive DEC Summit – 50 Participants (₹500)"
+          >
+            DEC Summit <ArrowUpRight size={15} />
+          </Link>
+        </div>
         <button className="menu-toggle" aria-label="Toggle menu" onClick={() => setOpen(!open)}>{open ? <X /> : <Menu />}</button>
       </div>
       {open && (
@@ -61,7 +86,20 @@ const Navbar = ({ onRegister = () => window.dispatchEvent(new CustomEvent('regis
           {links.map((link) => (
             <button key={link} onClick={() => jump(link)}>{link}</button>
           ))}
-          <Link className="nav-register nav-register--webinar" to="/webinar-register" onClick={() => setOpen(false)}>Register for Webinar <ArrowUpRight size={16} /></Link>
+          <button
+            type="button"
+            className="nav-register nav-register--main"
+            onClick={handleMainSummitClick}
+          >
+            Main Summit 2026 <ArrowUpRight size={15} />
+          </button>
+          <Link
+            className="nav-register nav-register--small"
+            to="/dec-summit-registration"
+            onClick={() => setOpen(false)}
+          >
+            DEC Summit <ArrowUpRight size={15} />
+          </Link>
         </div>
       )}
     </nav>

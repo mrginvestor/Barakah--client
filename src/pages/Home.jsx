@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, HandCoins, Linkedin, MapPin, Mic2, Users, WalletCards } from 'lucide-react';
 import RegistrationModal from '../components/RegistrationModal';
@@ -14,6 +15,7 @@ const dayOne = [['08:00 AM', 'Registration & Networking'], ['09:30 AM', 'Opening
 const Reveal = ({ children, className = '' }) => <motion.div className={className} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: 0.15 }} transition={{ duration: .65 }}>{children}</motion.div>;
 
 const Home = () => {
+  const navigate = useNavigate();
   const [isModalOpen, setModalOpen] = useState(false);
   const [activeTheme, setActiveTheme] = useState(null); const [speakerIndex, setSpeakerIndex] = useState(0); const [time, setTime] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   useEffect(() => { const target = new Date('2026-11-29T09:00:00+05:30'); const tick = () => { const diff = Math.max(0, target - new Date()); setTime({ days: Math.floor(diff / 86400000), hours: Math.floor(diff / 3600000) % 24, minutes: Math.floor(diff / 60000) % 60, seconds: Math.floor(diff / 1000) % 60 }); }; tick(); const timer = setInterval(tick, 1000); const openRegistration = () => setModalOpen(true); window.addEventListener('registration-open', openRegistration); return () => { clearInterval(timer); window.removeEventListener('registration-open', openRegistration); }; }, []);
