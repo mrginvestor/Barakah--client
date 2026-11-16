@@ -69,7 +69,7 @@ export default function SmallSummitConfirmationPage() {
               </div>
             </Link>
             <p className="ssp-brand-tagline">
-              The Halal Way of Investing • Sunday, 06 December 2026 • Coimbatore
+              The Halal Way of Investing • Sunday, 06 December 2026 • Siruthuli Noyyal Life Centre, Coimbatore
             </p>
           </div>
 
@@ -358,6 +358,44 @@ export default function SmallSummitConfirmationPage() {
               >
                 <strong>Note:</strong> Seat confirmation is subject to admin approval and offline payment verification. Seats are capped at 50 participants.
               </div>
+            </div>
+
+            {/* Official Venue Information */}
+            <div
+              style={{
+                border: '1px solid #E2E8F0',
+                borderRadius: '8px',
+                padding: '20px',
+                marginBottom: '28px',
+                background: '#F8FAFC',
+              }}
+            >
+              <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#053726', margin: '0 0 8px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <MapPin size={16} style={{ color: '#16A34A' }} />
+                Official Event Venue
+              </h4>
+              <p style={{ fontSize: '15px', fontWeight: 800, color: '#053726', margin: '0 0 4px 0' }}>
+                Siruthuli Noyyal Life Centre
+              </p>
+              <p style={{ fontSize: '13.5px', color: '#475569', margin: '0 0 12px 0', lineHeight: 1.5 }}>
+                Ukkadam Sungam Bypass Rd, Shanmuga Nagar, Ramanathapuram, Coimbatore, Tamil Nadu 641023, India.
+              </p>
+              <a
+                href="https://maps.google.com/?q=Siruthuli+Noyyal+Life+Centre,+Ukkadam+Sungam+Bypass+Rd,+Shanmuga+Nagar,+Ramanathapuram,+Coimbatore,+Tamil+Nadu+641023"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '13px',
+                  color: '#053726',
+                  fontWeight: 700,
+                  textDecoration: 'underline',
+                }}
+              >
+                <span>Open in Google Maps &amp; Get Directions &rarr;</span>
+              </a>
             </div>
 
             {/* Organizer Contact Info */}

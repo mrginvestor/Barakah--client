@@ -89,7 +89,7 @@ export default function InvestorMissionLandingPage() {
     if (navigator.share) {
       navigator.share({
         title: 'INVESTOR MISSION 2026 – The Halal Way of Investing',
-        text: 'Join Abdul Basith (Licensed Financial Consultant) on Sunday, 06 Dec 2026 in Coimbatore. Limited to 50 seats.',
+        text: 'Join Abdul Basith (Licensed Financial Consultant) on Sunday, 06 Dec 2026 at Siruthuli Noyyal Life Centre, Coimbatore. Limited to 50 seats.',
         url: window.location.href,
       }).catch(() => {});
     } else {
@@ -210,7 +210,7 @@ export default function InvestorMissionLandingPage() {
     },
     {
       q: 'When and where is the event taking place?',
-      a: 'The event takes place on Sunday, 06 December 2026 in Coimbatore. The specific central venue address will be shared directly with all confirmed registrants alongside their entry pass.',
+      a: 'The event takes place on Sunday, 06 December 2026 at Siruthuli Noyyal Life Centre, Ukkadam Sungam Bypass Rd, Shanmuga Nagar, Ramanathapuram, Coimbatore, Tamil Nadu 641023, India.',
     },
     {
       q: 'Why is attendance limited to only 50 participants?',
@@ -315,7 +315,7 @@ export default function InvestorMissionLandingPage() {
               </div>
 
               <p className="im-hero-subtitle">
-                An exclusive educational gathering in Coimbatore designed to help individuals discover a more informed, ethical, and Shariah-conscious approach to investing and long-term wealth creation.
+                An exclusive educational gathering at Siruthuli Noyyal Life Centre, Coimbatore, designed to help individuals discover a more informed, ethical, and Shariah-conscious approach to investing and long-term wealth creation.
               </p>
 
               {/* Handcrafted Visual Pills: "Limited Seats Only" & "From Ideas into Impact" */}
@@ -363,7 +363,7 @@ export default function InvestorMissionLandingPage() {
                   <strong className="im-meta-seat-val">
                     {capacity.loading ? '50 Seats' : capacity.isSoldOut ? 'Event Full' : `${capacity.availableSeats} of 50 Left`}
                   </strong>
-                  <span className="im-meta-seat-note">Coimbatore Venue</span>
+                  <span className="im-meta-seat-note">Siruthuli Noyyal Life Centre</span>
                 </div>
               </div>
 
@@ -428,8 +428,8 @@ export default function InvestorMissionLandingPage() {
                 {/* Direct quick action under poster */}
                 <div className="im-poster-footer-card">
                   <div className="im-poster-footer-text">
-                    <strong>Coimbatore • Sunday 06 Dec</strong>
-                    <span>₹500 • Strict 50 Seats Limit</span>
+                    <strong>Siruthuli Noyyal Life Centre, Coimbatore</strong>
+                    <span>Sunday, 06 Dec • ₹500 • Strict 50 Seats Limit</span>
                   </div>
                   <Link
                     to="/investor-mission-registration"
@@ -730,7 +730,7 @@ export default function InvestorMissionLandingPage() {
               <div className="im-logistics-header">
                 <span className="im-kicker" style={{ color: '#D8AE54' }}>CONFERENCE BRIEF</span>
                 <h2 className="im-logistics-title">INVESTOR MISSION 2026</h2>
-                <span className="im-logistics-tagline">THE HALAL WAY OF INVESTING • COIMBATORE</span>
+                <span className="im-logistics-tagline">THE HALAL WAY OF INVESTING • SIRUTHULI NOYYAL LIFE CENTRE, COIMBATORE</span>
               </div>
 
               <div className="im-logistics-grid">
@@ -746,9 +746,28 @@ export default function InvestorMissionLandingPage() {
                 <div className="im-logistic-item">
                   <MapPin size={22} className="im-log-icon" />
                   <div>
-                    <span className="im-log-label">City &amp; Venue</span>
-                    <strong className="im-log-val">Coimbatore, Tamil Nadu</strong>
-                    <small>Central venue shared with confirmed attendees</small>
+                    <span className="im-log-label">Official Venue</span>
+                    <strong className="im-log-val">Siruthuli Noyyal Life Centre</strong>
+                    <small style={{ display: 'block', marginTop: '2px', lineHeight: 1.4 }}>
+                      Ukkadam Sungam Bypass Rd, Shanmuga Nagar, Ramanathapuram, Coimbatore, Tamil Nadu 641023, India.
+                    </small>
+                    <a
+                      href="https://maps.google.com/?q=Siruthuli+Noyyal+Life+Centre,+Ukkadam+Sungam+Bypass+Rd,+Shanmuga+Nagar,+Ramanathapuram,+Coimbatore,+Tamil+Nadu+641023"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        color: '#80DF35',
+                        fontSize: '11.5px',
+                        fontWeight: 700,
+                        marginTop: '6px',
+                        textDecoration: 'underline',
+                      }}
+                    >
+                      View on Google Maps &rarr;
+                    </a>
                   </div>
                 </div>
 
@@ -892,7 +911,7 @@ export default function InvestorMissionLandingPage() {
         <div className="im-container im-footer-inner">
           <div className="im-footer-brand">
             <strong className="im-footer-title">INVESTOR MISSION 2026</strong>
-            <p className="im-footer-tagline">The Halal Way of Investing • Sunday, 06 Dec 2026 • Coimbatore</p>
+            <p className="im-footer-tagline">The Halal Way of Investing • Sunday, 06 Dec 2026 • Siruthuli Noyyal Life Centre, Coimbatore</p>
             <p className="im-footer-org">
               Organised by <strong>SIO Coimbatore</strong> in collaboration with <strong>Halal Wealth</strong>
             </p>
@@ -971,7 +990,7 @@ export default function InvestorMissionLandingPage() {
 
             <div className="im-modal-footer">
               <p>
-                Ready to attend the live in-person session in Coimbatore?
+                Ready to attend the live in-person session at Siruthuli Noyyal Life Centre, Coimbatore?
               </p>
               <Link
                 to="/investor-mission-registration"
@@ -1014,7 +1033,7 @@ export default function InvestorMissionLandingPage() {
             <div className="im-poster-modal-footer">
               <div className="im-poster-modal-meta">
                 <strong>INVESTOR MISSION 2026</strong>
-                <span>Sunday, 06 December 2026 • Coimbatore • SIO Coimbatore</span>
+                <span>Sunday, 06 December 2026 • Siruthuli Noyyal Life Centre, Coimbatore • SIO Coimbatore</span>
               </div>
               <Link
                 to="/investor-mission-registration"

@@ -318,6 +318,15 @@ export default function SmallSummitRegisterPage() {
                 )}
               </strong>
             </div>
+
+            <div className="ssp-compact-divider" aria-hidden="true" />
+
+            <div className="ssp-compact-info-item">
+              <span className="ssp-compact-info-label">Official Venue</span>
+              <strong className="ssp-compact-info-val" title="Siruthuli Noyyal Life Centre, Ukkadam Sungam Bypass Rd, Shanmuga Nagar, Ramanathapuram, Coimbatore, Tamil Nadu 641023">
+                Siruthuli Noyyal Life Centre, Coimbatore
+              </strong>
+            </div>
           </div>
         </div>
       </header>
@@ -371,6 +380,9 @@ export default function SmallSummitRegisterPage() {
             <span className="ssp-intro-eyebrow">OFFICIAL REGISTRATION</span>
             <h2 className="ssp-intro-title">Investor Mission 2026 Registration</h2>
             <p className="ssp-intro-subtitle">
+              Sunday, 06 December 2026 • <strong>Siruthuli Noyyal Life Centre</strong>, Ukkadam Sungam Bypass Rd, Shanmuga Nagar, Ramanathapuram, Coimbatore, Tamil Nadu 641023.
+            </p>
+            <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#64748B' }}>
               Please provide accurate participant information. After submitting, proceed to complete your ₹{capacity.registrationFee} payment via Online UPI or confirm your Offline payment at the venue.
             </p>
           </div>

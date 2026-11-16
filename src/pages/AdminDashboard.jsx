@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   CheckCircle2,
@@ -16,7 +16,13 @@ import {
   Smartphone,
   MessageSquare,
   ShieldCheck,
+  Camera,
+  Download,
+  Mail,
+  QrCode,
+  Search,
 } from 'lucide-react';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 import adminApi from '../config/adminApi';
 import API_URL from '../config/api';
 import './AdminDashboard.css';
@@ -60,6 +66,21 @@ export default function AdminDashboard() {
   // Admin Notes Modal State
   const [notesModalReg, setNotesModalReg] = useState(null);
   const [notesText, setNotesText] = useState('');
+
+  // Attendance & Check-In View State
+  const [viewMode, setViewMode] = useState('REGISTRATIONS'); // 'REGISTRATIONS' | 'ATTENDANCE'
+  const [attendanceStats, setAttendanceStats] = useState({
+    totalConfirmed: 0,
+    totalCheckedIn: 0,
+    remainingNotCheckedIn: 0,
+  });
+  const [attendanceList, setAttendanceList] = useState([]);
+  const [attendanceLoading, setAttendanceLoading] = useState(false);
+  const [attendanceQuery, setAttendanceQuery] = useState('');
+  const [checkInInput, setCheckInInput] = useState('');
+  const [checkInResult, setCheckInResult] = useState(null);
+  const [scannerActive, setScannerActive] = useState(false);
+  const scannerRef = useRef(null);
 
   const loadData = () => {
     setLoading(true);
@@ -359,6 +380,132 @@ export default function AdminDashboard() {
     }
   };
 
+  const loadAttendance = async () => {
+    setAttendanceLoading(true);
+    try {
+      const res = await adminApi
+        .get('/api/admin/investor-mission/attendance')
+        .catch(() => adminApi.get('/api/admin/dec-summit/attendance'));
+      if (res.data?.stats) {
+        setAttendanceStats(res.data.stats);
+      }
+      if (res.data?.attendees) {
+        setAttendanceList(res.data.attendees);
+      }
+    } catch (err) {
+      console.error('Failed to load attendance:', err);
+    } finally {
+      setAttendanceLoading(false);
+    }
+  };
+
+  const handleCheckIn = async (lookupKey) => {
+    const raw = String(lookupKey || checkInInput || '').trim();
+    if (!raw) return;
+    const match = raw.match(/\/checkin\/verify\/([a-zA-Z0-9_-]+)/);
+    const token = match ? match[1] : raw;
+
+    setActionLoading(true);
+    setCheckInResult(null);
+    try {
+      const res = await adminApi
+        .post('/api/admin/investor-mission/checkin', { token })
+        .catch(() => adminApi.post('/api/admin/dec-summit/checkin', { token }));
+      setCheckInResult({
+        type: 'success',
+        message: res.data.message || 'Check-in successful!',
+        participantName: res.data.participantName,
+        registrationId: res.data.registrationId,
+        checkedInAt: res.data.checkedInAt,
+        checkedInBy: res.data.checkedInBy,
+      });
+      setCheckInInput('');
+      loadAttendance();
+      loadData();
+    } catch (err) {
+      const data = err.response?.data;
+      if (err.response?.status === 409 || data?.alreadyCheckedIn) {
+        setCheckInResult({
+          type: 'warning',
+          message: data?.message || 'Already Checked In',
+          participantName: data?.participantName,
+          registrationId: data?.registrationId,
+          checkedInAt: data?.checkedInAt,
+          checkedInBy: data?.checkedInBy,
+        });
+      } else {
+        setCheckInResult({
+          type: 'error',
+          message: data?.message || 'Check-in failed.',
+          participantName: data?.participantName,
+          registrationId: data?.registrationId,
+        });
+      }
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleResendConfirmation = async (regId) => {
+    if (!window.confirm(`Resend Investor Mission confirmation email with QR code for ${regId}?`)) return;
+    setActionLoading(true);
+    try {
+      const res = await adminApi
+        .post(`/api/admin/investor-mission/registrations/${regId}/resend-confirmation`)
+        .catch(() => adminApi.post(`/api/admin/dec-summit/registrations/${regId}/resend-confirmation`));
+      alert(res.data?.message || 'Confirmation email resent successfully.');
+      loadData();
+      if (viewMode === 'ATTENDANCE') loadAttendance();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to resend confirmation email.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleExportAttendance = async () => {
+    try {
+      const res = await adminApi
+        .get('/api/admin/investor-mission/attendance/export', { responseType: 'blob' })
+        .catch(() => adminApi.get('/api/admin/dec-summit/attendance/export', { responseType: 'blob' }));
+      const url = window.URL.createObjectURL(new Blob([res.data], { type: 'text/csv' }));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `investor-mission-attendance-${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to export attendance CSV.');
+    }
+  };
+
+  useEffect(() => {
+    let scanner = null;
+    if (viewMode === 'ATTENDANCE' && scannerActive) {
+      scanner = new Html5QrcodeScanner(
+        'dashboard-qr-reader',
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        false
+      );
+      scanner.render(
+        (decodedText) => {
+          handleCheckIn(decodedText);
+        },
+        () => {}
+      );
+      scannerRef.current = scanner;
+    }
+    return () => {
+      if (scannerRef.current) {
+        try {
+          scannerRef.current.clear();
+        } catch (_) {}
+      }
+    };
+  }, [viewMode, scannerActive]);
+
   return (
     <div className="admin-page">
       {/* Top Admin Navigation Header */}
@@ -424,7 +571,7 @@ export default function AdminDashboard() {
       {/* Heading */}
       <div className="admin-heading">
         <div>
-          <p className="eyebrow">INVESTOR MISSION 2026 • 50 PARTICIPANTS • ₹500</p>
+          <p className="eyebrow">INVESTOR MISSION 2026 • SIRUTHULI NOYYAL LIFE CENTRE, COIMBATORE • 50 SEATS • ₹500</p>
           <h1>Investor Mission 2026 Registrations &amp; Seat Management</h1>
           <p>
             Manage two-step verification (Registration &amp; Payment), review online UPI proofs, record offline payments, and maintain strict 50-seat event capacity.
@@ -438,7 +585,55 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* KPI Cards Grid */}
+      {/* Primary Mode Switcher */}
+      <div style={{ display: 'flex', gap: '12px', margin: '20px 0 24px', flexWrap: 'wrap' }}>
+        <button
+          type="button"
+          onClick={() => setViewMode('REGISTRATIONS')}
+          style={{
+            padding: '10px 20px',
+            borderRadius: '8px',
+            fontWeight: 700,
+            fontSize: '14px',
+            cursor: 'pointer',
+            border: viewMode === 'REGISTRATIONS' ? '2px solid #053726' : '1px solid #CBD5E1',
+            background: viewMode === 'REGISTRATIONS' ? '#053726' : '#FFFFFF',
+            color: viewMode === 'REGISTRATIONS' ? '#FFFFFF' : '#334155',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          <FileText size={16} />
+          Registrations &amp; Seat Management ({registrations.length})
+        </button>
+        <button
+          type="button"
+          onClick={() => { setViewMode('ATTENDANCE'); loadAttendance(); }}
+          style={{
+            padding: '10px 20px',
+            borderRadius: '8px',
+            fontWeight: 700,
+            fontSize: '14px',
+            cursor: 'pointer',
+            border: viewMode === 'ATTENDANCE' ? '2px solid #053726' : '1px solid #CBD5E1',
+            background: viewMode === 'ATTENDANCE' ? '#053726' : '#FFFFFF',
+            color: viewMode === 'ATTENDANCE' ? '#FFFFFF' : '#334155',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.06)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+          }}
+        >
+          <QrCode size={16} />
+          Event Check-In &amp; Attendance ({stats.confirmedPayments} Confirmed)
+        </button>
+      </div>
+
+      {viewMode === 'REGISTRATIONS' ? (
+        <>
+          {/* KPI Cards Grid */}
       <div className="summit-admin-kpi-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))' }}>
         <div className="summit-admin-kpi-card">
           <span className="kpi-label">Total Registrations</span>
@@ -704,22 +899,50 @@ export default function AdminDashboard() {
                     </td>
                     <td>
                       {isConfirmed ? (
-                        <span
-                          style={{
-                            background: '#DCFCE7',
-                            color: '#15803D',
-                            border: '1px solid #86EFAC',
-                            padding: '3px 8px',
-                            borderRadius: '4px',
-                            fontWeight: 800,
-                            fontSize: '11.5px',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                          }}
-                        >
-                          <CheckCircle2 size={12} /> CONFIRMED
-                        </span>
+                        <>
+                          <span
+                            style={{
+                              background: '#DCFCE7',
+                              color: '#15803D',
+                              border: '1px solid #86EFAC',
+                              padding: '3px 8px',
+                              borderRadius: '4px',
+                              fontWeight: 800,
+                              fontSize: '11.5px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                            }}
+                          >
+                            <CheckCircle2 size={12} /> CONFIRMED
+                          </span>
+                          <div style={{ marginTop: '4px' }}>
+                            {reg.confirmationEmailStatus === 'SENT' || reg.confirmationEmailSent ? (
+                              <span style={{ fontSize: '10.5px', color: '#16A34A', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                <Mail size={11} /> Email Sent
+                              </span>
+                            ) : reg.confirmationEmailStatus === 'FAILED' ? (
+                              <span style={{ fontSize: '10.5px', color: '#DC2626', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                <AlertCircle size={11} /> Failed
+                                <button
+                                  type="button"
+                                  onClick={() => handleResendConfirmation(reg.registrationId)}
+                                  style={{ textDecoration: 'underline', color: '#DC2626', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 700 }}
+                                >
+                                  Retry
+                                </button>
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleResendConfirmation(reg.registrationId)}
+                                style={{ fontSize: '10.5px', color: '#0369A1', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 600 }}
+                              >
+                                Send Email
+                              </button>
+                            )}
+                          </div>
+                        </>
                       ) : isRegRejected || isPayRejected ? (
                         <span className="admin-badge-rejected">REJECTED</span>
                       ) : (
@@ -850,6 +1073,26 @@ export default function AdminDashboard() {
                           <MessageSquare size={11} />
                           {reg.adminVerificationNotes || reg.adminNotes ? 'View Notes' : 'Add Note'}
                         </button>
+
+                        {/* Resend Confirmation Email Button for Confirmed Seats */}
+                        {isConfirmed && (
+                          <button
+                            type="button"
+                            className="btn-admin-action"
+                            style={{
+                              background: '#F1F5F9',
+                              color: '#053726',
+                              border: '1px solid #CBD5E1',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                            }}
+                            onClick={() => handleResendConfirmation(reg.registrationId)}
+                            title="Resend Investor Mission confirmation email with check-in QR code"
+                          >
+                            <Mail size={11} /> Resend Email
+                          </button>
+                        )}
                       </div>
                     </td>
                     <td>
@@ -865,6 +1108,346 @@ export default function AdminDashboard() {
           )}
         </div>
       </div>
+      </>
+      ) : (
+        /* ATTENDANCE & CHECK-IN SECTION */
+        <div className="admin-section" style={{ marginTop: '8px' }}>
+          {/* Attendance KPI Cards */}
+          <div className="summit-admin-kpi-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', marginBottom: '24px' }}>
+            <div className="summit-admin-kpi-card">
+              <span className="kpi-label">Confirmed Participants</span>
+              <span className="kpi-number" style={{ color: '#053726' }}>{attendanceStats.totalConfirmed}</span>
+            </div>
+            <div className="summit-admin-kpi-card kpi-confirmed">
+              <span className="kpi-label">Checked-In Attendees</span>
+              <span className="kpi-number" style={{ color: '#16A34A' }}>{attendanceStats.totalCheckedIn}</span>
+            </div>
+            <div className="summit-admin-kpi-card kpi-verification">
+              <span className="kpi-label">Remaining to Check-In</span>
+              <span className="kpi-number" style={{ color: '#D97706' }}>{attendanceStats.remainingNotCheckedIn}</span>
+            </div>
+            <div className="summit-admin-kpi-card">
+              <span className="kpi-label">Attendance Rate</span>
+              <span className="kpi-number" style={{ color: '#2563EB' }}>
+                {attendanceStats.totalConfirmed > 0
+                  ? `${Math.round((attendanceStats.totalCheckedIn / attendanceStats.totalConfirmed) * 100)}%`
+                  : '0%'}
+              </span>
+            </div>
+          </div>
+
+          {/* Check-In Action Station */}
+          <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '14px', padding: '24px', marginBottom: '28px', boxShadow: '0 4px 12px rgba(5,55,38,0.04)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '18px' }}>
+              <div>
+                <h3 style={{ margin: '0 0 4px', fontSize: '17px', fontWeight: 800, color: '#053726' }}>
+                  Investor Mission 2026 Check-In Station — Siruthuli Noyyal Life Centre, Coimbatore
+                </h3>
+                <p style={{ margin: 0, fontSize: '13px', color: '#64748B' }}>
+                  Scan participant QR code or enter Registration ID manually to confirm venue entry at Ukkadam Sungam Bypass Rd, Ramanathapuram, Coimbatore.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => setScannerActive(prev => !prev)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '9px 16px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    border: scannerActive ? '1px solid #FCA5A5' : '1px solid #CBD5E1',
+                    background: scannerActive ? '#FEF2F2' : '#F8FAFC',
+                    color: scannerActive ? '#DC2626' : '#053726',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+                  }}
+                >
+                  <Camera size={16} />
+                  {scannerActive ? 'Stop Camera Scanner' : 'Open Camera QR Scanner'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleExportAttendance}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '9px 16px',
+                    borderRadius: '8px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    border: 'none',
+                    background: '#053726',
+                    color: '#FFFFFF',
+                    boxShadow: '0 2px 4px rgba(5,55,38,0.15)',
+                  }}
+                >
+                  <Download size={16} />
+                  Export Attendance CSV
+                </button>
+              </div>
+            </div>
+
+            {/* QR Scanner Container */}
+            {scannerActive && (
+              <div style={{ maxWidth: '400px', margin: '0 auto 20px', background: '#0F172A', padding: '16px', borderRadius: '12px', textAlign: 'center' }}>
+                <div id="dashboard-qr-reader" style={{ width: '100%' }}></div>
+                <p style={{ color: '#94A3B8', fontSize: '11px', marginTop: '8px', marginBottom: 0 }}>
+                  Hold participant's email QR code in front of the camera to verify entrance.
+                </p>
+              </div>
+            )}
+
+            {/* Manual Check-In Input Form */}
+            <form onSubmit={(e) => { e.preventDefault(); handleCheckIn(); }} style={{ display: 'flex', gap: '8px', maxWidth: '540px' }}>
+              <input
+                value={checkInInput}
+                onChange={(e) => setCheckInInput(e.target.value)}
+                placeholder="Enter Registration ID (e.g. SS26-00001) or scan token..."
+                style={{
+                  flex: 1,
+                  padding: '10px 14px',
+                  border: '1px solid #CBD5E1',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  textTransform: 'uppercase',
+                  fontFamily: 'monospace',
+                }}
+              />
+              <button
+                type="submit"
+                disabled={actionLoading}
+                style={{
+                  padding: '10px 20px',
+                  background: '#D8AE54',
+                  color: '#053726',
+                  fontWeight: 800,
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  boxShadow: '0 2px 4px rgba(216,174,84,0.3)',
+                }}
+              >
+                {actionLoading ? 'Checking...' : 'Check In'}
+              </button>
+            </form>
+
+            {/* Check-In Feedback Alert Banner */}
+            {checkInResult && (
+              <div
+                style={{
+                  marginTop: '16px',
+                  padding: '14px 18px',
+                  borderRadius: '10px',
+                  fontSize: '13.5px',
+                  border:
+                    checkInResult.type === 'success'
+                      ? '1px solid #86EFAC'
+                      : checkInResult.type === 'warning'
+                      ? '1px solid #FDE68A'
+                      : '1px solid #FECACA',
+                  background:
+                    checkInResult.type === 'success'
+                      ? '#F0FDF4'
+                      : checkInResult.type === 'warning'
+                      ? '#FFFBEB'
+                      : '#FEF2F2',
+                  color:
+                    checkInResult.type === 'success'
+                      ? '#166534'
+                      : checkInResult.type === 'warning'
+                      ? '#92400E'
+                      : '#991B1B',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.03)',
+                }}
+              >
+                <div>
+                  <strong>
+                    {checkInResult.type === 'success' && '✓ Check-In Confirmed: '}
+                    {checkInResult.type === 'warning' && '⚠️ Already Checked In: '}
+                    {checkInResult.type === 'error' && '❌ Verification Failed: '}
+                  </strong>
+                  {checkInResult.participantName ? `${checkInResult.participantName} (${checkInResult.registrationId}) — ` : ''}
+                  {checkInResult.message}
+                  {checkInResult.checkedInAt && ` (Scanned at ${new Date(checkInResult.checkedInAt).toLocaleTimeString()})`}
+                  {checkInResult.checkedInBy && ` by ${checkInResult.checkedInBy}`}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCheckInResult(null)}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '18px',
+                    color: 'inherit',
+                    fontWeight: 'bold',
+                    padding: '0 4px',
+                  }}
+                >
+                  &times;
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Attendance Table */}
+          <div className="admin-section">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px', marginBottom: '16px' }}>
+              <div>
+                <h2>Confirmed Participants Attendance ({attendanceList.length})</h2>
+                <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>
+                  Live tracking of confirmed participants and door check-in status.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <input
+                  placeholder="Filter attendees by name, ID, phone..."
+                  value={attendanceQuery}
+                  onChange={(e) => setAttendanceQuery(e.target.value)}
+                  style={{
+                    padding: '8px 12px',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '6px',
+                    fontSize: '12.5px',
+                    width: '240px',
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={loadAttendance}
+                  style={{
+                    fontSize: '12.5px',
+                    color: '#053726',
+                    background: '#F1F5F9',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '6px',
+                    padding: '8px 12px',
+                    cursor: 'pointer',
+                    fontWeight: 600,
+                  }}
+                >
+                  Refresh
+                </button>
+              </div>
+            </div>
+
+            <div className="admin-table-wrap">
+              <table className="admin-table">
+                <thead>
+                  <tr>
+                    <th>Registration ID</th>
+                    <th>Participant</th>
+                    <th>Contact</th>
+                    <th>City / State</th>
+                    <th>Attendance Status</th>
+                    <th>Check-In Time</th>
+                    <th>Checked In By</th>
+                    <th>Email Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {attendanceList
+                    .filter((a) => {
+                      if (!attendanceQuery) return true;
+                      const q = attendanceQuery.toLowerCase();
+                      return [a.registrationId, a.fullName, a.name, a.email, a.mobileNumber, a.phone, a.city, a.state]
+                        .some((f) => f && String(f).toLowerCase().includes(q));
+                    })
+                    .map((a) => {
+                      const isCheckedIn = a.attendanceStatus === 'CHECKED_IN' || a.status === 'Checked-In';
+                      const emailSent = a.confirmationEmailStatus === 'SENT' || a.confirmationEmailSent;
+                      const emailFailed = a.confirmationEmailStatus === 'FAILED';
+
+                      return (
+                        <tr key={a._id}>
+                          <td><strong>{a.registrationId}</strong></td>
+                          <td><strong>{a.fullName || a.name}</strong></td>
+                          <td>
+                            <div style={{ fontSize: '12px' }}>
+                              <div>{a.email}</div>
+                              <div style={{ color: '#64748B' }}>{a.mobileNumber || a.phone}</div>
+                            </div>
+                          </td>
+                          <td>{[a.city, a.state].filter(Boolean).join(', ') || '—'}</td>
+                          <td>
+                            {isCheckedIn ? (
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#DCFCE7', color: '#166534', border: '1px solid #86EFAC', padding: '3px 8px', borderRadius: '4px', fontWeight: 800, fontSize: '11px' }}>
+                                <CheckCircle2 size={12} /> CHECKED IN
+                              </span>
+                            ) : (
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A', padding: '3px 8px', borderRadius: '4px', fontWeight: 800, fontSize: '11px' }}>
+                                <Clock size={12} /> NOT CHECKED IN
+                              </span>
+                            )}
+                          </td>
+                          <td>
+                            {a.checkedInAt ? new Date(a.checkedInAt).toLocaleString() : '—'}
+                          </td>
+                          <td>{a.checkedInBy || '—'}</td>
+                          <td>
+                            {emailSent ? (
+                              <span style={{ color: '#16A34A', fontSize: '11px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                <Mail size={11} /> Sent
+                              </span>
+                            ) : emailFailed ? (
+                              <span style={{ color: '#DC2626', fontSize: '11px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                <AlertCircle size={11} /> Failed
+                              </span>
+                            ) : (
+                              <span style={{ color: '#64748B', fontSize: '11px' }}>Not Sent</span>
+                            )}
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                              {!isCheckedIn && (
+                                <button
+                                  type="button"
+                                  className="btn-admin-action btn-admin-approve"
+                                  onClick={() => handleCheckIn(a.registrationId)}
+                                  disabled={actionLoading}
+                                  title="Mark attendee as checked in"
+                                >
+                                  Check In
+                                </button>
+                              )}
+                              <button
+                                type="button"
+                                className="btn-admin-action"
+                                style={{ background: '#F1F5F9', color: '#053726', border: '1px solid #CBD5E1' }}
+                                onClick={() => handleResendConfirmation(a.registrationId)}
+                                disabled={actionLoading}
+                                title="Resend confirmation email with QR code"
+                              >
+                                Resend QR
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+              {!attendanceList.length && !attendanceLoading && (
+                <p className="admin-empty">No confirmed participants found.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal 1: Receipt Lightbox Modal */}
       {modalRegistration && (
