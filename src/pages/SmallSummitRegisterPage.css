@@ -43,29 +43,28 @@
 }
 
 .ssp-poster-stage {
-  max-width: 500px;
+  max-width: 520px;
   width: 100%;
   margin: 0 auto;
-  padding: 30px 20px 22px;
+  padding: 28px 16px 20px;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.ssp-poster-link {
+.ssp-poster-card {
   display: block;
   width: 100%;
-  text-decoration: none;
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
-  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.55), 0 0 0 2px rgba(128, 223, 53, 0.35);
-  transition: all 0.3s ease;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55), 0 0 0 2px rgba(128, 223, 53, 0.45);
   background: #032419;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-.ssp-poster-link:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 22px 55px rgba(0, 0, 0, 0.7), 0 0 0 2px #80DF35;
+.ssp-poster-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.65), 0 0 0 2px #80DF35;
 }
 
 /* Complete poster without cropping, maintain original aspect ratio */
@@ -74,6 +73,7 @@
   height: auto;
   display: block;
   object-fit: contain;
+  aspect-ratio: auto;
 }
 
 /* Compact Event Information Bar */
@@ -128,13 +128,29 @@
 
 @media (max-width: 640px) {
   .ssp-poster-stage {
-    padding: 16px 12px 14px;
+    padding: 14px 12px 12px;
     max-width: 100%;
   }
 
   .ssp-compact-info-container {
-    flex-direction: column;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 10px;
+    padding: 4px 0;
+  }
+
+  .ssp-compact-info-item {
+    padding: 6px 4px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 6px;
+  }
+
+  .ssp-compact-info-label {
+    font-size: 10px;
+  }
+
+  .ssp-compact-info-val {
+    font-size: 13.5px;
   }
 
   .ssp-compact-divider {

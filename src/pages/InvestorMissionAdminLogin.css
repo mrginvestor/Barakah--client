@@ -1,0 +1,457 @@
+/* ==============================================================================
+   INVESTOR MISSION 2026 - PROFESSIONAL ADMIN LOGIN PAGE
+   Identity:
+     - Deep Green: #064B36
+     - Primary Green: #138C3B
+     - Bright Green: #80DF35
+     - White: #FFFFFF
+     - Light Background: #F7F9F7
+     - Gold Accent: #D8AE54
+   Typography: Plus Jakarta Sans
+   ============================================================================== */
+
+.imal-page {
+  min-height: 100vh;
+  background-color: #F7F9F7;
+  color: #0F172A;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 36px 20px;
+  box-sizing: border-box;
+}
+
+.imal-shell {
+  width: 100%;
+  max-width: 960px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Top Utility Bar */
+.imal-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+}
+
+.imal-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #064B36;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.imal-back-btn:hover {
+  background-color: #E6EFEA;
+  color: #043627;
+}
+
+.imal-top-tag {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* Main Two-Column Card */
+.imal-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(6, 75, 54, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
+  display: grid;
+  grid-template-columns: 1fr 1.08fr;
+  overflow: hidden;
+}
+
+/* ==============================================================================
+   LEFT SIDE: EVENT BRANDING & POSTER
+   ============================================================================== */
+.imal-brand-column {
+  background: #064B36;
+  color: #FFFFFF;
+  padding: 36px 32px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.imal-brand-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.imal-brand-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.imal-org-badge {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: #80DF35;
+  margin-bottom: 4px;
+}
+
+.imal-event-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #FFFFFF;
+  line-height: 1.25;
+}
+
+.imal-event-tagline {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: #D8AE54;
+}
+
+/* Poster Artwork Box */
+.imal-poster-box {
+  width: 100%;
+  max-width: 250px;
+  margin: 0 auto;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(128, 223, 53, 0.3);
+  background: #032419;
+}
+
+.imal-poster-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.imal-brand-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.imal-brand-desc {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: #D1E7DD;
+}
+
+.imal-brand-pill {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(216, 174, 84, 0.35);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  color: #F8FAFC;
+  font-weight: 600;
+  width: fit-content;
+}
+
+/* ==============================================================================
+   RIGHT SIDE: ADMIN LOGIN FORM
+   ============================================================================== */
+.imal-form-column {
+  padding: 44px 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #FFFFFF;
+}
+
+.imal-form-wrapper {
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.imal-form-header {
+  margin-bottom: 24px;
+}
+
+.imal-kicker {
+  display: block;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: #138C3B;
+  margin-bottom: 8px;
+}
+
+.imal-heading {
+  margin: 0 0 6px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #0F172A;
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+}
+
+.imal-subheading {
+  margin: 0;
+  font-size: 14.5px;
+  color: #64748B;
+  line-height: 1.5;
+}
+
+/* Form Fields */
+.imal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.imal-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background-color: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #991B1B;
+  padding: 11px 13px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.imal-alert-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.imal-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.imal-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #1E293B;
+}
+
+.imal-input-shell {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.imal-field-icon {
+  position: absolute;
+  left: 14px;
+  color: #94A3B8;
+  pointer-events: none;
+}
+
+.imal-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px 0 40px;
+  border: 1.5px solid #CBD5E1;
+  border-radius: 8px;
+  font-size: 14.5px;
+  font-family: inherit;
+  color: #0F172A;
+  background-color: #FFFFFF;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  box-sizing: border-box;
+}
+
+.imal-input::placeholder {
+  color: #94A3B8;
+  font-size: 14px;
+}
+
+.imal-input:focus {
+  outline: none;
+  border-color: #064B36;
+  box-shadow: 0 0 0 3px rgba(6, 75, 54, 0.12);
+}
+
+.imal-input-pwd {
+  padding-right: 42px;
+}
+
+.imal-pw-toggle {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  padding: 6px;
+  color: #94A3B8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color 0.15s ease;
+}
+
+.imal-pw-toggle:hover {
+  color: #064B36;
+}
+
+/* Submit Button */
+.imal-submit-btn {
+  margin-top: 6px;
+  height: 46px;
+  width: 100%;
+  background: #064B36;
+  color: #FFFFFF;
+  border: none;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.imal-submit-btn:hover:not(:disabled) {
+  background: #138C3B;
+  transform: translateY(-1px);
+}
+
+.imal-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.imal-btn-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.imal-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
+  animation: imal-spin 0.7s linear infinite;
+}
+
+@keyframes imal-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Subtle Footer */
+.imal-footer {
+  margin-top: 24px;
+  text-align: center;
+  padding-top: 14px;
+  border-top: 1px solid #F1F5F9;
+}
+
+.imal-footer-text {
+  margin: 0;
+  font-size: 12px;
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+/* ==============================================================================
+   RESPONSIVE LAYOUTS
+   ============================================================================== */
+
+/* Tablet (768px - 960px) */
+@media (max-width: 960px) {
+  .imal-shell {
+    max-width: 780px;
+  }
+
+  .imal-brand-column {
+    padding: 30px 24px;
+  }
+
+  .imal-form-column {
+    padding: 36px 30px;
+  }
+
+  .imal-poster-box {
+    max-width: 220px;
+  }
+}
+
+/* Mobile (< 720px) */
+@media (max-width: 720px) {
+  .imal-page {
+    padding: 20px 14px;
+    align-items: flex-start;
+  }
+
+  .imal-card {
+    grid-template-columns: 1fr;
+    border-radius: 12px;
+  }
+
+  .imal-brand-column {
+    padding: 24px 20px;
+    border-right: none;
+    border-bottom: 2px solid #80DF35;
+  }
+
+  .imal-brand-content {
+    gap: 16px;
+  }
+
+  .imal-poster-box {
+    max-width: 170px;
+    margin: 6px auto;
+  }
+
+  .imal-form-column {
+    padding: 28px 20px;
+  }
+
+  .imal-form-wrapper {
+    max-width: 100%;
+  }
+
+  .imal-heading {
+    font-size: 24px;
+  }
+
+  .imal-subheading {
+    font-size: 13.5px;
+  }
+}

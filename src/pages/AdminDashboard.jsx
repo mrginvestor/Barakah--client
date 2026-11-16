@@ -27,7 +27,10 @@ import adminApi from '../config/adminApi';
 import API_URL from '../config/api';
 import './AdminDashboard.css';
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
+  const isImAdmin = isInvestorMissionAdminOnly || window.sessionStorage.getItem('admin-role') === 'INVESTOR_MISSION_ADMIN';
+  const adminDisplayName = window.sessionStorage.getItem('admin-display-name') || (isImAdmin ? 'SIO Coimbatore' : 'Admin');
+
   const [registrations, setRegistrations] = useState([]);
   const [stats, setStats] = useState({
     totalRegistrations: 0,
@@ -66,6 +69,60 @@ export default function AdminDashboard() {
   // Admin Notes Modal State
   const [notesModalReg, setNotesModalReg] = useState(null);
   const [notesText, setNotesText] = useState('');
+
+  // Password Change Modal State
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
+
+  const handlePasswordChange = async (e) => {
+    e.preventDefault();
+    setPasswordError('');
+    setPasswordSuccess('');
+
+    if (!currentPassword) {
+      setPasswordError('Enter your current password.');
+      return;
+    }
+    if (newPassword.length < 8) {
+      setPasswordError('New password must be at least 8 characters long.');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError('New passwords do not match.');
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      const res = await adminApi.post('/api/admin/investor-mission/change-password', {
+        currentPassword,
+        newPassword,
+      });
+      if (res.data?.success) {
+        setPasswordSuccess('Password updated successfully!');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setTimeout(() => setShowPasswordModal(false), 1500);
+      }
+    } catch (err) {
+      setPasswordError(err.response?.data?.message || 'Failed to update password.');
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    window.sessionStorage.removeItem('halal-wealth-admin-token');
+    window.sessionStorage.removeItem('admin-role');
+    window.sessionStorage.removeItem('admin-display-name');
+    window.location.href = isImAdmin ? '/investor-mission-admin/login' : '/admin/login';
+  };
 
   // Attendance & Check-In View State
   const [viewMode, setViewMode] = useState('REGISTRATIONS'); // 'REGISTRATIONS' | 'ATTENDANCE'
@@ -508,64 +565,112 @@ export default function AdminDashboard() {
 
   return (
     <div className="admin-page">
-      {/* Top Admin Navigation Header */}
-      <div className="admin-nav-tabs" style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap', alignItems: 'center' }}>
-        <Link
-          to="/admin/main-summit"
-          style={{
-            padding: '8px 16px',
-            background: '#F1F5F9',
-            color: '#334155',
-            fontWeight: 600,
-            borderRadius: '6px',
-            textDecoration: 'none',
-            fontSize: '13px',
-          }}
-        >
-          Main Summit 2027 &rarr;
-        </Link>
-        <Link
-          to="/admin/investor-mission"
-          style={{
-            padding: '8px 16px',
-            background: '#064B36',
-            color: '#FFFFFF',
-            fontWeight: 700,
-            borderRadius: '6px',
-            textDecoration: 'none',
-            fontSize: '13px',
-          }}
-        >
-          Investor Mission 2026 ({registrations.length} registered)
-        </Link>
-        <Link
-          to="/admin/dashboard"
-          style={{
-            padding: '8px 16px',
-            background: '#F1F5F9',
-            color: '#334155',
-            fontWeight: 600,
-            borderRadius: '6px',
-            textDecoration: 'none',
-            fontSize: '13px',
-          }}
-        >
-          Webinar Campaigns &rarr;
-        </Link>
-        <Link
-          to="/admin/check-in"
-          style={{
-            padding: '8px 16px',
-            background: '#F1F5F9',
-            color: '#334155',
-            fontWeight: 600,
-            borderRadius: '6px',
-            textDecoration: 'none',
-            fontSize: '13px',
-          }}
-        >
-          QR Check-In
-        </Link>
+      {/* Top Admin Navigation / Info Header */}
+      <div className="admin-nav-tabs" style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
+          {!isImAdmin && (
+            <Link
+              to="/admin/main-summit"
+              style={{
+                padding: '8px 16px',
+                background: '#F1F5F9',
+                color: '#334155',
+                fontWeight: 600,
+                borderRadius: '6px',
+                textDecoration: 'none',
+                fontSize: '13px',
+              }}
+            >
+              Main Summit 2027 &rarr;
+            </Link>
+          )}
+
+          <Link
+            to={isImAdmin ? '/investor-mission-admin/dashboard' : '/admin/investor-mission'}
+            style={{
+              padding: '8px 16px',
+              background: '#064B36',
+              color: '#FFFFFF',
+              fontWeight: 700,
+              borderRadius: '6px',
+              textDecoration: 'none',
+              fontSize: '13px',
+            }}
+          >
+            Investor Mission 2026 ({registrations.length} registered)
+          </Link>
+
+          {!isImAdmin && (
+            <Link
+              to="/admin/dashboard"
+              style={{
+                padding: '8px 16px',
+                background: '#F1F5F9',
+                color: '#334155',
+                fontWeight: 600,
+                borderRadius: '6px',
+                textDecoration: 'none',
+                fontSize: '13px',
+              }}
+            >
+              Webinar Campaigns &rarr;
+            </Link>
+          )}
+
+          <Link
+            to={isImAdmin ? '/investor-mission-admin/check-in' : '/admin/check-in'}
+            style={{
+              padding: '8px 16px',
+              background: '#F1F5F9',
+              color: '#334155',
+              fontWeight: 600,
+              borderRadius: '6px',
+              textDecoration: 'none',
+              fontSize: '13px',
+            }}
+          >
+            QR Check-In
+          </Link>
+        </div>
+
+        {/* User Badge & Actions */}
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '12px', background: '#E2E8F0', padding: '6px 12px', borderRadius: '6px', fontWeight: 600, color: '#0F172A' }}>
+            Organizer: <strong style={{ color: '#064B36' }}>{adminDisplayName}</strong>
+          </span>
+          <button
+            type="button"
+            onClick={() => { setShowPasswordModal(true); setPasswordError(''); setPasswordSuccess(''); }}
+            style={{
+              padding: '6px 12px',
+              fontSize: '12px',
+              background: '#FFFFFF',
+              color: '#0F172A',
+              border: '1px solid #CBD5E1',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 600,
+            }}
+          >
+            Change Password
+          </button>
+          <button
+            type="button"
+            onClick={handleLogout}
+            style={{
+              padding: '6px 12px',
+              fontSize: '12px',
+              background: '#DC2626',
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 600,
+            }}
+          >
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* Heading */}
@@ -1705,6 +1810,110 @@ export default function AdminDashboard() {
                   disabled={actionLoading}
                 >
                   Save Notes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Password Change Modal */}
+      {showPasswordModal && (
+        <div className="summit-modal-backdrop" onClick={() => setShowPasswordModal(false)}>
+          <div
+            className="summit-modal-box"
+            style={{ maxWidth: '440px' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="summit-modal-header" style={{ background: '#064B36', color: '#FFFFFF' }}>
+              <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700 }}>Change Organizer Password</h3>
+              <button
+                type="button"
+                className="btn-close-modal"
+                style={{ color: '#FFFFFF' }}
+                onClick={() => setShowPasswordModal(false)}
+              >
+                &times;
+              </button>
+            </div>
+
+            <form onSubmit={handlePasswordChange}>
+              <div className="summit-modal-body" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <p style={{ margin: 0, fontSize: '13px', color: '#475569' }}>
+                  Update password for account <strong>{adminDisplayName}</strong>. Password must be at least 8 characters.
+                </p>
+
+                {passwordError && (
+                  <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#991B1B', padding: '10px 12px', borderRadius: '6px', fontSize: '13px' }}>
+                    {passwordError}
+                  </div>
+                )}
+
+                {passwordSuccess && (
+                  <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#166534', padding: '10px 12px', borderRadius: '6px', fontSize: '13px', fontWeight: 600 }}>
+                    {passwordSuccess}
+                  </div>
+                )}
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, marginBottom: '4px', color: '#1E293B' }}>
+                    Current Password
+                  </label>
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Enter current password"
+                    style={{ width: '100%', height: '38px', padding: '0 10px', border: '1.5px solid #CBD5E1', borderRadius: '6px', fontSize: '13.5px', boxSizing: 'border-box' }}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, marginBottom: '4px', color: '#1E293B' }}>
+                    New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter new password (min. 8 characters)"
+                    style={{ width: '100%', height: '38px', padding: '0 10px', border: '1.5px solid #CBD5E1', borderRadius: '6px', fontSize: '13.5px', boxSizing: 'border-box' }}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: 700, marginBottom: '4px', color: '#1E293B' }}>
+                    Confirm New Password
+                  </label>
+                  <input
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Confirm new password"
+                    style={{ width: '100%', height: '38px', padding: '0 10px', border: '1.5px solid #CBD5E1', borderRadius: '6px', fontSize: '13.5px', boxSizing: 'border-box' }}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="summit-modal-footer">
+                <button
+                  type="button"
+                  className="btn-admin-action"
+                  style={{ padding: '8px 14px', background: '#E2E8F0', color: '#334155' }}
+                  onClick={() => setShowPasswordModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-admin-action btn-admin-approve"
+                  style={{ padding: '8px 18px', fontSize: '13px' }}
+                  disabled={passwordLoading}
+                >
+                  {passwordLoading ? 'Updating...' : 'Update Password'}
                 </button>
               </div>
             </form>

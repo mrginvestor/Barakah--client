@@ -12,8 +12,9 @@ function extractTokenOrId(decodedText) {
   return trimmed;
 }
 
-const CheckIn = () => {
-  const [selectedEvent, setSelectedEvent] = useState('INVESTOR_MISSION'); // 'INVESTOR_MISSION' | 'MAIN_SUMMIT'
+const CheckIn = ({ defaultEvent = 'INVESTOR_MISSION', isInvestorMissionAdminOnly = false }) => {
+  const isImAdmin = isInvestorMissionAdminOnly || window.sessionStorage.getItem('admin-role') === 'INVESTOR_MISSION_ADMIN';
+  const [selectedEvent, setSelectedEvent] = useState(isImAdmin ? 'INVESTOR_MISSION' : defaultEvent);
   const [inputVal, setInputVal] = useState('');
   const [loading, setLoading] = useState(false);
   const [scanResult, setScanResult] = useState(null);
@@ -113,7 +114,7 @@ const CheckIn = () => {
         {/* Navigation Back */}
         <div className="mb-4 flex items-center justify-between">
           <Link
-            to="/admin/investor-mission"
+            to={isImAdmin ? '/investor-mission-admin/dashboard' : '/admin/investor-mission'}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-[#053726] bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-sm hover:bg-slate-50 transition-colors"
           >
             <ArrowLeft size={14} /> Back to Dashboard
@@ -128,37 +129,41 @@ const CheckIn = () => {
             <span className="inline-block bg-[#80DF35] text-[#053726] text-[11px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full mb-2">
               Organizer Pass Scanner
             </span>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight">Event Entrance Check-In</h1>
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight">
+              {isImAdmin ? 'Investor Mission 2026 Check-In' : 'Event Entrance Check-In'}
+            </h1>
             <p className="text-xs text-[#D8AE54] mt-1 font-semibold">
-              Scan participant QR code or enter Registration ID manually
+              Siruthuli Noyyal Life Centre, Coimbatore
             </p>
           </div>
 
-          {/* Event Selector */}
-          <div className="p-4 bg-slate-50 border-b border-slate-200 flex gap-2">
-            <button
-              type="button"
-              onClick={() => { setSelectedEvent('INVESTOR_MISSION'); setScanResult(null); }}
-              className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all ${
-                selectedEvent === 'INVESTOR_MISSION'
-                  ? 'bg-[#053726] text-white shadow-sm'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
-              }`}
-            >
-              Investor Mission 2026
-            </button>
-            <button
-              type="button"
-              onClick={() => { setSelectedEvent('MAIN_SUMMIT'); setScanResult(null); }}
-              className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all ${
-                selectedEvent === 'MAIN_SUMMIT'
-                  ? 'bg-[#082B49] text-white shadow-sm'
-                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
-              }`}
-            >
-              Main Summit 2027
-            </button>
-          </div>
+          {/* Event Selector - Only visible for multi-event admins */}
+          {!isImAdmin && (
+            <div className="p-4 bg-slate-50 border-b border-slate-200 flex gap-2">
+              <button
+                type="button"
+                onClick={() => { setSelectedEvent('INVESTOR_MISSION'); setScanResult(null); }}
+                className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all ${
+                  selectedEvent === 'INVESTOR_MISSION'
+                    ? 'bg-[#053726] text-white shadow-sm'
+                    : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                Investor Mission 2026
+              </button>
+              <button
+                type="button"
+                onClick={() => { setSelectedEvent('MAIN_SUMMIT'); setScanResult(null); }}
+                className={`flex-1 py-2 px-3 text-xs font-bold rounded-lg transition-all ${
+                  selectedEvent === 'MAIN_SUMMIT'
+                    ? 'bg-[#082B49] text-white shadow-sm'
+                    : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                }`}
+              >
+                Main Summit 2027
+              </button>
+            </div>
+          )}
 
           <div className="p-6 space-y-6">
             {/* Camera Scanner Toggle Button */}

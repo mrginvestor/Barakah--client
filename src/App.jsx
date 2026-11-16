@@ -9,6 +9,7 @@ import SmallSummitConfirmationPage from './pages/SmallSummitConfirmationPage';
 import MainSummitAdminDashboard from './pages/MainSummitAdminDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import AdminLogin from './pages/AdminLogin';
+import InvestorMissionAdminLogin from './pages/InvestorMissionAdminLogin';
 import WebinarAdminDashboard from './pages/WebinarAdminDashboard';
 import CheckIn from './pages/CheckIn';
 import WebinarRegisterPage from './pages/WebinarRegisterPage';
@@ -51,7 +52,7 @@ function AppRoutes() {
     location.pathname.startsWith('/small-summit-payment') ||
     location.pathname.startsWith('/small-summit-confirmation') ||
     location.pathname.startsWith('/summit-payment');
-  const isAdminRoute = location.pathname.startsWith('/admin');
+  const isAdminRoute = location.pathname.startsWith('/admin') || location.pathname.startsWith('/investor-mission-admin');
 
   return (
     <>
@@ -92,10 +93,16 @@ function AppRoutes() {
         <Route path="/refunds" element={<Navigate to="/refund-policy" replace />} />
         <Route path="/cancellation-policy" element={<Navigate to="/refund-policy" replace />} />
 
+        {/* Dedicated Investor Mission Admin Operations */}
+        <Route path="/investor-mission-admin/login" element={<InvestorMissionAdminLogin />} />
+        <Route path="/investor-mission-admin" element={<Navigate to="/investor-mission-admin/dashboard" replace />} />
+
         {/* Admin Operations */}
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route element={<ProtectedAdminRoute />}>
+          <Route path="/investor-mission-admin/dashboard" element={<AdminDashboard isInvestorMissionAdminOnly={true} />} />
+          <Route path="/investor-mission-admin/check-in" element={<CheckIn defaultEvent="INVESTOR_MISSION" isInvestorMissionAdminOnly={true} />} />
           <Route path="/admin/dashboard" element={<WebinarAdminDashboard />} />
           <Route path="/admin/main-summit" element={<MainSummitAdminDashboard />} />
           <Route path="/admin/investor-mission" element={<AdminDashboard />} />

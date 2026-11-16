@@ -276,17 +276,13 @@ export default function SmallSummitRegisterPage() {
       {/* 1. HEADER: OFFICIAL INVESTOR MISSION 2026 POSTER */}
       <header className="ssp-poster-header" role="banner">
         <div className="ssp-poster-stage">
-          <Link
-            to="/investor-mission"
-            className="ssp-poster-link"
-            title="Investor Mission 2026 – View Full Event Information"
-          >
+          <div className="ssp-poster-card">
             <img
               src={posterImg}
               alt="Investor Mission 2026 – The Halal Way of Investing Official Poster"
               className="ssp-header-poster-img"
             />
-          </Link>
+          </div>
         </div>
 
         {/* 2. COMPACT EVENT INFORMATION BAR */}
