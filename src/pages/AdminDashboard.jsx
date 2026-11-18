@@ -307,15 +307,18 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
 
   // 3. Approve Payment
   const handleApprovePayment = async (regId) => {
-    if (!window.confirm(`Approve payment for ${regId}? Dual approval will confirm the seat.`)) return;
+    if (!window.confirm(`Approve ₹500 payment for ${regId}? This will officially confirm the participant's seat and send their confirmation email.`)) return;
     setActionLoading(true);
     try {
       const res = await adminApi
         .post(`/api/admin/investor-mission/registrations/${regId}/approve-payment`)
-        .catch(() => adminApi.post(`/api/admin/dec-summit/registrations/${regId}/approve-payment`))
-        .catch(() => adminApi.post(`/api/admin/small-summit/registrations/${regId}/approve-payment`))
-        .catch(() => adminApi.post(`/api/admin/summit/registrations/${regId}/approve`));
-      alert(res.data?.message || 'Payment approved.');
+        .catch((err) => {
+          if (err.response?.status === 404) {
+            return adminApi.post(`/api/admin/dec-summit/registrations/${regId}/approve-payment`);
+          }
+          throw err;
+        });
+      alert(res.data?.message || 'Payment approved and seat confirmed.');
       handleCloseModal();
       loadData();
     } catch (err) {
@@ -336,9 +339,12 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
     try {
       const res = await adminApi
         .post(`/api/admin/investor-mission/registrations/${regId}/reject-payment`, { reason })
-        .catch(() => adminApi.post(`/api/admin/dec-summit/registrations/${regId}/reject-payment`, { reason }))
-        .catch(() => adminApi.post(`/api/admin/small-summit/registrations/${regId}/reject-payment`, { reason }))
-        .catch(() => adminApi.post(`/api/admin/summit/registrations/${regId}/reject`, { reason }));
+        .catch((err) => {
+          if (err.response?.status === 404) {
+            return adminApi.post(`/api/admin/dec-summit/registrations/${regId}/reject-payment`, { reason });
+          }
+          throw err;
+        });
       alert(res.data?.message || 'Payment rejected.');
       handleCloseModal();
       loadData();
@@ -1102,102 +1108,45 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
                       )}
                     </td>
                     <td>
-                      <div className="admin-action-btn-group" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '4px' }}>
-                        {/* Registration Approval Actions */}
-                        {!isRegApproved && !isRegRejected && (
-                          <div style={{ display: 'flex', gap: '4px' }}>
-                            <button
-                              type="button"
-                              className="btn-admin-action btn-admin-approve"
-                              onClick={() => handleApproveRegistration(reg.registrationId)}
-                              title="Approve registration details"
-                            >
-                              Approve Reg
-                            </button>
-                            <button
-                              type="button"
-                              className="btn-admin-action btn-admin-reject"
-                              onClick={() => handleRejectRegistration(reg.registrationId)}
-                              title="Reject registration details"
-                            >
-                              Reject Reg
-                            </button>
-                          </div>
-                        )}
-
-                        {/* Payment Approval Actions */}
-                        {!isPayApproved && !isPayRejected && (
-                          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-                            {isOffline ? (
-                              <button
-                                type="button"
-                                className="btn-admin-action"
-                                style={{ background: '#7C3AED', color: '#FFFFFF' }}
-                                onClick={() => handleOpenOfflineModal(reg)}
-                                title="Record offline payment"
-                              >
-                                Record Offline Pay
-                              </button>
-                            ) : (
-                              <button
-                                type="button"
-                                className="btn-admin-action btn-admin-approve"
-                                onClick={() => handleApprovePayment(reg.registrationId)}
-                                title="Approve payment"
-                              >
-                                Approve Pay
-                              </button>
-                            )}
-
-                            <button
-                              type="button"
-                              className="btn-admin-action btn-admin-reject"
-                              onClick={() => handleRejectPayment(reg.registrationId)}
-                              title="Reject payment"
-                            >
-                              Reject Pay
-                            </button>
-                          </div>
-                        )}
-
-                        {/* Notes Button */}
+                      <div className="admin-action-btn-group" style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
                         <button
                           type="button"
-                          className="btn-admin-action"
+                          className="btn-admin-action btn-admin-approve"
+                          onClick={() => handleApprovePayment(reg.registrationId)}
+                          disabled={actionLoading}
+                          title="Approve payment and officially confirm seat"
                           style={{
-                            background: '#F1F5F9',
-                            color: '#334155',
-                            border: '1px solid #CBD5E1',
                             display: 'inline-flex',
                             alignItems: 'center',
                             gap: '4px',
+                            fontWeight: 700,
+                            padding: '6px 12px',
+                            borderRadius: '5px',
+                            fontSize: '12px',
+                            whiteSpace: 'nowrap',
                           }}
-                          onClick={() => handleOpenNotesModal(reg)}
-                          title="Add or view admin notes"
                         >
-                          <MessageSquare size={11} />
-                          {reg.adminVerificationNotes || reg.adminNotes ? 'View Notes' : 'Add Note'}
+                          Approve Pay
                         </button>
-
-                        {/* Resend Confirmation Email Button for Confirmed Seats */}
-                        {isConfirmed && (
-                          <button
-                            type="button"
-                            className="btn-admin-action"
-                            style={{
-                              background: '#F1F5F9',
-                              color: '#053726',
-                              border: '1px solid #CBD5E1',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                            }}
-                            onClick={() => handleResendConfirmation(reg.registrationId)}
-                            title="Resend Investor Mission confirmation email with check-in QR code"
-                          >
-                            <Mail size={11} /> Resend Email
-                          </button>
-                        )}
+                        <button
+                          type="button"
+                          className="btn-admin-action btn-admin-reject"
+                          onClick={() => handleRejectPayment(reg.registrationId)}
+                          disabled={actionLoading}
+                          title="Reject payment"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            fontWeight: 700,
+                            padding: '6px 12px',
+                            borderRadius: '5px',
+                            fontSize: '12px',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          Reject Pay
+                        </button>
                       </div>
                     </td>
                     <td>
@@ -1649,7 +1598,7 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
                     disabled={actionLoading}
                     onClick={() => handleRejectPayment(modalRegistration.registrationId)}
                   >
-                    Reject Payment
+                    Reject Pay
                   </button>
 
                   <button
@@ -1659,7 +1608,7 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
                     disabled={actionLoading}
                     onClick={() => handleApprovePayment(modalRegistration.registrationId)}
                   >
-                    Approve Payment
+                    Approve Pay
                   </button>
                 </>
               )}

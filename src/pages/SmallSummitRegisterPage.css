@@ -563,16 +563,16 @@
 .ssp-intro-organizer-logos {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   flex-shrink: 0;
 }
 
 .ssp-intro-sio-wrap {
-  width: 44px;
-  height: 44px;
+  width: 66px;
+  height: 66px;
   background-color: #064B36;
-  border-radius: 8px;
-  padding: 4px;
+  border-radius: 10px;
+  padding: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -589,13 +589,13 @@
 }
 
 .ssp-intro-solidarity-logo {
-  height: 42px;
+  height: 64px;
   width: auto;
-  max-width: 120px;
+  max-width: 180px;
   object-fit: contain;
   background: #FFFFFF;
-  border-radius: 6px;
-  padding: 3px 8px;
+  border-radius: 8px;
+  padding: 5px 12px;
   border: 1px solid #D8AE54;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   flex-shrink: 0;
@@ -1162,6 +1162,24 @@
   .ssp-form-card {
     padding: 30px 24px;
   }
+
+  .ssp-intro-organizer-logos {
+    gap: 12px;
+  }
+
+  .ssp-intro-sio-wrap {
+    width: 58px;
+    height: 58px;
+    padding: 5px;
+    border-radius: 9px;
+  }
+
+  .ssp-intro-solidarity-logo {
+    height: 56px;
+    max-width: 160px;
+    padding: 4px 10px;
+    border-radius: 7px;
+  }
 }
 
 @media (max-width: 640px) {
@@ -1244,19 +1262,30 @@
   .ssp-intro-header-row {
     flex-direction: column;
     align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+
+  .ssp-intro-organizer-logos {
+    display: flex;
+    align-items: center;
     gap: 12px;
+    margin-top: 4px;
+    margin-bottom: 6px;
   }
 
   .ssp-intro-sio-wrap {
-    width: 38px;
-    height: 38px;
-    padding: 3px;
+    width: 52px;
+    height: 52px;
+    padding: 5px;
+    border-radius: 8px;
   }
 
   .ssp-intro-solidarity-logo {
-    height: 36px;
-    max-width: 100px;
-    padding: 2px 6px;
+    height: 50px;
+    max-width: 145px;
+    padding: 4px 9px;
+    border-radius: 6px;
   }
 
   .ssp-intro-title {
