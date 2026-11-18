@@ -226,12 +226,27 @@ export default function SmallSummitRegisterPage() {
         termsAccepted: true,
       };
 
-      const res = await axios
-        .post(`${API_URL}/api/investor-mission/register`, payload)
-        .catch(() => axios.post(`${API_URL}/api/dec-summit/register`, payload))
-        .catch(() => axios.post(`${API_URL}/api/small-summit/register`, payload));
+      const postWithFallback = async (data) => {
+        try {
+          return await axios.post(`${API_URL}/api/investor-mission/register`, data);
+        } catch (err1) {
+          if (err1.response?.status === 404) {
+            try {
+              return await axios.post(`${API_URL}/api/dec-summit/register`, data);
+            } catch (err2) {
+              if (err2.response?.status === 404) {
+                return await axios.post(`${API_URL}/api/small-summit/register`, data);
+              }
+              throw err2;
+            }
+          }
+          throw err1;
+        }
+      };
 
-      if (res.data?.success && res.data?.registrationId) {
+      const res = await postWithFallback(payload);
+
+      if (res.data?.success && (res.data?.registrationId || res.data?.redirectUrl)) {
         navigate(res.data.redirectUrl || `/investor-mission-payment/${res.data.registrationId}`);
       } else {
         setFormError(res.data?.message || 'Failed to complete registration.');

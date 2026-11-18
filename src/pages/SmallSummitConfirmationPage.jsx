@@ -175,28 +175,120 @@ export default function SmallSummitConfirmationPage() {
             </div>
 
             {/* Instruction Notice Banner */}
-            <div
-              style={{
-                backgroundColor: '#FFFBEB',
-                border: '1px solid #FDE68A',
-                borderRadius: '8px',
-                padding: '16px 20px',
-                display: 'flex',
-                gap: '14px',
-                alignItems: 'flex-start',
-                marginBottom: '28px',
-              }}
-            >
-              <Banknote size={24} style={{ color: '#D97706', flexShrink: 0, marginTop: '2px' }} />
-              <div>
-                <strong style={{ display: 'block', color: '#92400E', fontSize: '14.5px', marginBottom: '4px' }}>
-                  Please complete your payment of ₹500 at the event venue or contact the organizers.
-                </strong>
-                <p style={{ margin: 0, color: '#B45309', fontSize: '13px', lineHeight: 1.45 }}>
-                  Your registration status is currently <strong>PENDING ADMIN APPROVAL</strong>. The organizer desk will record your payment upon arrival and confirm your seat.
-                </p>
+            {regData?.paymentStatus === 'PAID' || regData?.registrationStatus === 'CONFIRMED' ? (
+              <div
+                style={{
+                  backgroundColor: '#F0FDF4',
+                  border: '1px solid #BBF7D0',
+                  borderRadius: '8px',
+                  padding: '16px 20px',
+                  display: 'flex',
+                  gap: '14px',
+                  alignItems: 'flex-start',
+                  marginBottom: '28px',
+                }}
+              >
+                <CheckCircle2 size={24} style={{ color: '#16A34A', flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <strong style={{ display: 'block', color: '#166534', fontSize: '14.5px', marginBottom: '4px' }}>
+                    Registration &amp; Payment Confirmed
+                  </strong>
+                  <p style={{ margin: 0, color: '#15803D', fontSize: '13px', lineHeight: 1.45 }}>
+                    Alhamdulillah! Your seat for Investor Mission 2026 is confirmed. Please keep your Registration ID handy for event check-in on 06 December 2026.
+                  </p>
+                </div>
               </div>
-            </div>
+            ) : regData?.paymentStatus === 'PENDING_VERIFICATION' ? (
+              <div
+                style={{
+                  backgroundColor: '#F0F9FF',
+                  border: '1px solid #BAE6FD',
+                  borderRadius: '8px',
+                  padding: '16px 20px',
+                  display: 'flex',
+                  gap: '14px',
+                  alignItems: 'flex-start',
+                  marginBottom: '28px',
+                }}
+              >
+                <Clock size={24} style={{ color: '#0284C7', flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <strong style={{ display: 'block', color: '#0369A1', fontSize: '14.5px', marginBottom: '4px' }}>
+                    Payment Proof Under Verification
+                  </strong>
+                  <p style={{ margin: 0, color: '#0284C7', fontSize: '13px', lineHeight: 1.45 }}>
+                    We have received your UPI payment proof{regData?.upiTransactionId ? ` (UTR: ${regData.upiTransactionId})` : ''}. Our admin team will verify your payment and issue your final confirmation shortly.
+                  </p>
+                </div>
+              </div>
+            ) : regData?.paymentMethod === 'OFFLINE' ? (
+              <div
+                style={{
+                  backgroundColor: '#FFFBEB',
+                  border: '1px solid #FDE68A',
+                  borderRadius: '8px',
+                  padding: '16px 20px',
+                  display: 'flex',
+                  gap: '14px',
+                  alignItems: 'flex-start',
+                  marginBottom: '28px',
+                }}
+              >
+                <Banknote size={24} style={{ color: '#D97706', flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <strong style={{ display: 'block', color: '#92400E', fontSize: '14.5px', marginBottom: '4px' }}>
+                    Payment of ₹500 to be Recorded at Venue
+                  </strong>
+                  <p style={{ margin: 0, color: '#B45309', fontSize: '13px', lineHeight: 1.45 }}>
+                    Your offline registration request is registered. The organizer desk will record your payment upon arrival and confirm your seat.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div
+                style={{
+                  backgroundColor: '#FFFBEB',
+                  border: '1px solid #FDE68A',
+                  borderRadius: '8px',
+                  padding: '16px 20px',
+                  display: 'flex',
+                  gap: '14px',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '28px',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start', maxWidth: '480px' }}>
+                  <AlertCircle size={24} style={{ color: '#D97706', flexShrink: 0, marginTop: '2px' }} />
+                  <div>
+                    <strong style={{ display: 'block', color: '#92400E', fontSize: '14.5px', marginBottom: '4px' }}>
+                      UPI Payment Pending (₹500)
+                    </strong>
+                    <p style={{ margin: 0, color: '#B45309', fontSize: '13px', lineHeight: 1.45 }}>
+                      Please complete your payment via UPI to secure your seat before registrations close.
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  to={`/investor-mission-payment/${regData?.registrationId || registrationId}`}
+                  className="ssp-btn-submit"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    height: '40px',
+                    padding: '0 18px',
+                    fontSize: '13px',
+                    width: 'auto',
+                    textDecoration: 'none',
+                    margin: 0,
+                  }}
+                >
+                  Pay ₹500 via UPI &rarr;
+                </Link>
+              </div>
+            )}
 
             {/* Registration Details Grid */}
             <div

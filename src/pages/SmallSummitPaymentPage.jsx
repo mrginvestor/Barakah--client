@@ -180,25 +180,31 @@ export default function SmallSummitPaymentPage() {
         formData.append('paymentNotes', paymentNotes.trim());
       }
 
-      const res = await axios
-        .post(`${API_URL}/api/investor-mission/payment/${registrationId}/submit`, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        })
-        .catch(() =>
-          axios.post(`${API_URL}/api/dec-summit/payment/${registrationId}/submit`, formData, {
+      const postProofWithFallback = async (data) => {
+        try {
+          return await axios.post(`${API_URL}/api/investor-mission/payment/${registrationId}/submit`, data, {
             headers: { 'Content-Type': 'multipart/form-data' },
-          })
-        )
-        .catch(() =>
-          axios.post(`${API_URL}/api/small-summit/payment/${registrationId}/submit`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          })
-        )
-        .catch(() =>
-          axios.post(`${API_URL}/api/summit/payment/${registrationId}/submit`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          })
-        );
+          });
+        } catch (err1) {
+          if (err1.response?.status === 404) {
+            try {
+              return await axios.post(`${API_URL}/api/dec-summit/payment/${registrationId}/submit`, data, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+              });
+            } catch (err2) {
+              if (err2.response?.status === 404) {
+                return await axios.post(`${API_URL}/api/small-summit/payment/${registrationId}/submit`, data, {
+                  headers: { 'Content-Type': 'multipart/form-data' },
+                });
+              }
+              throw err2;
+            }
+          }
+          throw err1;
+        }
+      };
+
+      const res = await postProofWithFallback(formData);
 
       if (res.data?.success) {
         setSubmitSuccess(true);
