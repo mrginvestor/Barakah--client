@@ -70,15 +70,33 @@
   color: #FFFFFF;
 }
 
-.im-brand-logo {
-  width: 38px;
+.im-brand-logos-cluster {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.im-brand-logo-sio {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: block;
+}
+
+.im-brand-logo-solidarity {
   height: 38px;
+  width: auto;
+  max-width: 110px;
   object-fit: contain;
   background: #FFFFFF;
-  border-radius: 50%;
-  padding: 3px;
+  border-radius: 6px;
+  padding: 3px 8px;
   border: 1px solid #D8AE54;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+  display: block;
 }
 
 .im-brand-text {
@@ -1363,6 +1381,22 @@
   margin-top: 2px;
 }
 
+.im-log-solidarity-wrap {
+  margin: 6px 0 4px;
+}
+
+.im-log-solidarity-logo {
+  height: 28px;
+  width: auto;
+  max-width: 105px;
+  object-fit: contain;
+  background: #FFFFFF;
+  border: 1px solid #CBD5E1;
+  border-radius: 4px;
+  padding: 2px 6px;
+  display: block;
+}
+
 /* 3-Step Flow */
 .im-step-flow-box {
   background: #FFFFFF;
@@ -1586,6 +1620,34 @@
   grid-template-columns: 1.2fr 1fr 1fr;
   gap: 36px;
   align-items: flex-start;
+}
+
+.im-footer-logos-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.im-footer-sio-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: block;
+}
+
+.im-footer-solidarity-logo {
+  height: 38px;
+  width: auto;
+  max-width: 120px;
+  object-fit: contain;
+  background: #FFFFFF;
+  border-radius: 6px;
+  padding: 3px 8px;
+  border: 1px solid #D8AE54;
+  flex-shrink: 0;
+  display: block;
 }
 
 .im-footer-title {
@@ -1967,5 +2029,20 @@
 
   .im-logistics-card {
     padding: 24px 18px;
+  }
+
+  .im-brand-logo-sio {
+    width: 34px;
+    height: 34px;
+  }
+
+  .im-brand-logo-solidarity {
+    height: 32px;
+    max-width: 95px;
+    padding: 2px 6px;
+  }
+
+  .im-footer-logos-row {
+    justify-content: center;
   }
 }

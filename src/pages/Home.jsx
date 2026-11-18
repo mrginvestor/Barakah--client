@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, HandCoins, Linkedin, MapPin, Mic2, Users, WalletCards } from 'lucide-react';
+import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, ExternalLink, HandCoins, Linkedin, MapPin, Mic2, Play, Users, Video, WalletCards } from 'lucide-react';
 import RegistrationModal from '../components/RegistrationModal';
 import IslamicPattern from '../components/IslamicPattern';
 import Footer from '../components/Footer';
@@ -101,6 +101,116 @@ const Home = () => {
               <div className="agenda-layout">
                 <div className="timeline">{dayOne.map(([timeLabel, title]) => <div className="timeline-item" key={timeLabel}><time>{timeLabel}</time><span /><strong>{title}</strong></div>)}</div>
                 <aside className="agenda-note"><CalendarDays /><p>24 JANUARY 2027</p><strong>CHENNAI, INDIA</strong><button className="gold-button">Learn more</button></aside>
+              </div>
+            </section>
+            {/* OUR WEBINARS SECTION */}
+            <section id="webinars" className="webinars-section geometric">
+              <div className="webinars-inner">
+                <Reveal className="section-head webinars-section-head">
+                  <p className="eyebrow">KNOWLEDGE &amp; INSIGHTS</p>
+                  <h2>OUR WEBINARS</h2>
+                  <p className="webinars-subtitle">
+                    Explore our previous sessions and gain valuable insights into ethical and Shariah-compliant financial planning.
+                  </p>
+                </Reveal>
+
+                <div className="webinars-grid">
+                  {/* Webinar 1 */}
+                  <Reveal className="webinar-card">
+                    <a
+                      href="https://www.youtube.com/watch?v=89AESkKr3_s"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="webinar-thumbnail-wrap"
+                      aria-label="Watch Halal Investing & Retirement Planning on YouTube"
+                    >
+                      <img
+                        src="https://img.youtube.com/vi/89AESkKr3_s/maxresdefault.jpg"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://img.youtube.com/vi/89AESkKr3_s/hqdefault.jpg';
+                        }}
+                        alt="Halal Investing & Retirement Planning Recording Thumbnail"
+                        className="webinar-thumbnail-img"
+                        loading="lazy"
+                      />
+                      <div className="webinar-thumbnail-overlay">
+                        <div className="webinar-play-badge" aria-hidden="true">
+                          <Play size={22} fill="currentColor" />
+                        </div>
+                      </div>
+                      <span className="webinar-badge-pill">
+                        <Video size={13} />
+                        Webinar Recording
+                      </span>
+                    </a>
+                    <div className="webinar-content">
+                      <h3 className="webinar-title">Halal Investing &amp; Retirement Planning</h3>
+                      <p className="webinar-desc">
+                        A focused session on ethical financial planning, Shariah-compliant wealth creation, and securing long-term retirement through Halal investments.
+                      </p>
+                      <div className="webinar-action">
+                        <a
+                          href="https://www.youtube.com/watch?v=89AESkKr3_s"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="webinar-btn"
+                        >
+                          <Play size={15} fill="currentColor" />
+                          <span>Watch Recording</span>
+                          <ExternalLink size={14} />
+                        </a>
+                      </div>
+                    </div>
+                  </Reveal>
+
+                  {/* Webinar 2 */}
+                  <Reveal className="webinar-card">
+                    <a
+                      href="https://youtu.be/dam9grDGDpY?si=MNVFsmet8grttPf0"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="webinar-thumbnail-wrap"
+                      aria-label="Watch Halal Wealth Webinar – Halal Investments & Retirement Planning on YouTube"
+                    >
+                      <img
+                        src="https://img.youtube.com/vi/dam9grDGDpY/maxresdefault.jpg"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://img.youtube.com/vi/dam9grDGDpY/hqdefault.jpg';
+                        }}
+                        alt="Halal Wealth Webinar – Halal Investments & Retirement Planning Recording Thumbnail"
+                        className="webinar-thumbnail-img"
+                        loading="lazy"
+                      />
+                      <div className="webinar-thumbnail-overlay">
+                        <div className="webinar-play-badge" aria-hidden="true">
+                          <Play size={22} fill="currentColor" />
+                        </div>
+                      </div>
+                      <span className="webinar-badge-pill">
+                        <Video size={13} />
+                        Webinar Recording
+                      </span>
+                    </a>
+                    <div className="webinar-content">
+                      <h3 className="webinar-title">Halal Wealth Webinar – Halal Investments &amp; Retirement Planning</h3>
+                      <p className="webinar-desc">
+                        An in-depth webinar exploring practical principles of Halal investing, portfolio diversification, and retirement readiness aligned with Islamic finance values.
+                      </p>
+                      <div className="webinar-action">
+                        <a
+                          href="https://youtu.be/dam9grDGDpY?si=MNVFsmet8grttPf0"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="webinar-btn"
+                        >
+                          <Play size={15} fill="currentColor" />
+                          <span>Watch Recording</span>
+                          <ExternalLink size={14} />
+                        </a>
+                      </div>
+                    </div>
+                  </Reveal>
+                </div>
               </div>
             </section>
             <section className="cta geometric">

@@ -31,7 +31,8 @@ import {
   Check,
 } from 'lucide-react';
 import API_URL from '../config/api';
-import barakahLogo from '../assets/Barakah-logo.png';
+import sioCoimbatoreLogo from '../assets/sio-coimbatore-logo.png';
+import solidarityLogo from '../assets/solidarity-logo.png';
 import speakerPhoto from '../assets/Basith image.png';
 import posterImg from '../assets/investor-mission-poster.jpg';
 import './InvestorMissionLandingPage.css';
@@ -50,7 +51,7 @@ export default function InvestorMissionLandingPage() {
   const [copiedLink, setCopiedLink] = useState(false);
 
   useEffect(() => {
-    document.title = 'INVESTOR MISSION 2026 | The Halal Way of Investing | SIO Coimbatore & Halal Wealth';
+    document.title = 'INVESTOR MISSION 2026 | The Halal Way of Investing | SIO Coimbatore & Solidarity Tamil Nadu';
     let isMounted = true;
 
     axios
@@ -206,7 +207,7 @@ export default function InvestorMissionLandingPage() {
   const faqs = [
     {
       q: 'What is Investor Mission 2026?',
-      a: 'Investor Mission 2026 is an exclusive in-person educational conference organized by SIO Coimbatore in collaboration with Halal Wealth. It focuses on the principles of Islamic investing, Shariah screening, building wealth without Riba, and practical long-term financial planning.',
+      a: 'Investor Mission 2026 is an exclusive in-person educational conference organized by SIO Coimbatore in collaboration with Solidarity Tamil Nadu. It focuses on the principles of Islamic investing, Shariah screening, building wealth without Riba, and practical long-term financial planning.',
     },
     {
       q: 'When and where is the event taking place?',
@@ -218,7 +219,7 @@ export default function InvestorMissionLandingPage() {
     },
     {
       q: 'How does the ₹500 registration fee work?',
-      a: 'The ₹500 fee covers admission, event materials, and refreshments. You can pay online via PhonePe QR / UPI deep link (to ANAS RAHMAN H, 6380413253@ybl) and upload your receipt, or select Offline Payment to settle at the venue.',
+      a: 'The ₹500 fee covers admission, event materials, and refreshments. You can pay online via PhonePe QR / UPI deep link (to ANAS RAHMAN H, 6380413253@ybl) and upload your payment proof and UTR transaction ID.',
     },
     {
       q: 'What language will the session be conducted in?',
@@ -236,10 +237,13 @@ export default function InvestorMissionLandingPage() {
       <header className="im-header">
         <div className="im-header-inner">
           <div className="im-header-brand">
-            <Link to="/" className="im-brand-link" title="Halal Wealth">
-              <img src={barakahLogo} alt="Halal Wealth Logo" className="im-brand-logo" />
+            <Link to="/" className="im-brand-link" title="SIO Coimbatore – Investor Mission 2026">
+              <div className="im-brand-logos-cluster">
+                <img src={sioCoimbatoreLogo} alt="SIO Coimbatore Logo" className="im-brand-logo-sio" />
+                <img src={solidarityLogo} alt="Solidarity Youth Organisation – Tamil Nadu" className="im-brand-logo-solidarity" />
+              </div>
               <div className="im-brand-text">
-                <span className="im-brand-kicker">SIO COIMBATORE &amp; HALAL WEALTH</span>
+                <span className="im-brand-kicker">SIO COIMBATORE &amp; SOLIDARITY TAMIL NADU</span>
                 <span className="im-brand-title">INVESTOR MISSION 2026</span>
               </div>
             </Link>
@@ -463,7 +467,7 @@ export default function InvestorMissionLandingPage() {
                   Yet beneath the promise of returns lies a critical question that few mainstream financial advisors can answer: <strong>"Is this truly permissible, ethical, and Riba-free?"</strong>
                 </p>
                 <p>
-                  <strong>Investor Mission 2026</strong> was conceived by SIO Coimbatore and Halal Wealth to provide grounded, rigorous, and actionable answers. We do not sell financial products or make speculative return guarantees. Our single objective is financial literacy anchored in Islamic principles.
+                  <strong>Investor Mission 2026</strong> was conceived by SIO Coimbatore and SOLIDARITY TAMIL NADU to provide grounded, rigorous, and actionable answers. We do not sell financial products or make speculative return guarantees. Our single objective is financial literacy anchored in Islamic principles.
                 </p>
               </div>
 
@@ -752,7 +756,7 @@ export default function InvestorMissionLandingPage() {
                       Ukkadam Sungam Bypass Rd, Shanmuga Nagar, Ramanathapuram, Coimbatore, Tamil Nadu 641023, India.
                     </small>
                     <a
-                      href="https://maps.google.com/?q=Siruthuli+Noyyal+Life+Centre,+Ukkadam+Sungam+Bypass+Rd,+Shanmuga+Nagar,+Ramanathapuram,+Coimbatore,+Tamil+Nadu+641023"
+                      href="https://maps.app.goo.gl/4hwJsFTMujiSVDMEA"
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{
@@ -802,8 +806,11 @@ export default function InvestorMissionLandingPage() {
                   <Award size={22} className="im-log-icon" />
                   <div>
                     <span className="im-log-label">Organisers</span>
-                    <strong className="im-log-val">SIO Coimbatore &amp; Halal Wealth</strong>
-                    <small>Social: @sio_coimbatore</small>
+                    <strong className="im-log-val">SIO Coimbatore &amp; Solidarity Tamil Nadu</strong>
+                    <div className="im-log-solidarity-wrap">
+                      <img src={solidarityLogo} alt="Solidarity Youth Organisation – Tamil Nadu" className="im-log-solidarity-logo" />
+                    </div>
+                    <small>Solidarity Youth Organisation – Tamil Nadu • Social: @sio_coimbatore</small>
                   </div>
                 </div>
               </div>
@@ -820,8 +827,8 @@ export default function InvestorMissionLandingPage() {
                   <div className="im-step-arrow">&rarr;</div>
                   <div className="im-step-box">
                     <span className="im-step-badge">STEP 2</span>
-                    <strong>Complete Payment (₹500)</strong>
-                    <p>Pay via PhonePe QR / UPI deep link or choose Offline Payment at venue.</p>
+                    <strong>Complete Online Payment (₹500)</strong>
+                    <p>Pay online via PhonePe QR or direct UPI transfer and submit your transaction ID.</p>
                   </div>
                   <div className="im-step-arrow">&rarr;</div>
                   <div className="im-step-box">
@@ -895,7 +902,7 @@ export default function InvestorMissionLandingPage() {
               </div>
 
               <div className="im-cta-meta-notes">
-                <span>⚡ Instant PhonePe / UPI Payment or Offline Option</span>
+                <span>⚡ Instant PhonePe / Online UPI Payment</span>
                 <span>•</span>
                 <span>📋 Official Attendee Confirmation Pass</span>
                 <span>•</span>
@@ -910,10 +917,14 @@ export default function InvestorMissionLandingPage() {
       <footer className="im-footer">
         <div className="im-container im-footer-inner">
           <div className="im-footer-brand">
+            <div className="im-footer-logos-row">
+              <img src={sioCoimbatoreLogo} alt="SIO Coimbatore Logo" className="im-footer-sio-logo" />
+              <img src={solidarityLogo} alt="Solidarity Youth Organisation – Tamil Nadu" className="im-footer-solidarity-logo" />
+            </div>
             <strong className="im-footer-title">INVESTOR MISSION 2026</strong>
             <p className="im-footer-tagline">The Halal Way of Investing • Sunday, 06 Dec 2026 • Siruthuli Noyyal Life Centre, Coimbatore</p>
             <p className="im-footer-org">
-              Organised by <strong>SIO Coimbatore</strong> in collaboration with <strong>Halal Wealth</strong>
+              Organised by <strong>SIO Coimbatore</strong> (Solidarity Youth Organisation – Tamil Nadu) in collaboration with <strong>Halal Wealth</strong>
             </p>
             <div className="im-footer-social">
               <span>Follow SIO Coimbatore: </span>
@@ -943,7 +954,7 @@ export default function InvestorMissionLandingPage() {
               <Link to="/refund-policy">Refund Policy</Link>
             </div>
             <p className="im-footer-copy">
-              &copy; 2026 SIO Coimbatore &amp; Halal Wealth. All rights reserved.
+              &copy; 2026 SIO Coimbatore &amp; Solidarity Tamil Nadu. All rights reserved.
             </p>
           </div>
         </div>

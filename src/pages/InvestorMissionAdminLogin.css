@@ -102,6 +102,42 @@
   gap: 4px;
 }
 
+.imal-brand-logos-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.imal-brand-logo-sio {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: block;
+}
+
+.imal-brand-logo-solidarity-wrap {
+  height: 38px;
+  background: #FFFFFF;
+  border-radius: 6px;
+  padding: 2px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #D8AE54;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.imal-brand-logo-solidarity {
+  height: 28px;
+  width: auto;
+  max-width: 100px;
+  object-fit: contain;
+  display: block;
+}
+
 .imal-org-badge {
   display: inline-block;
   font-size: 10.5px;
@@ -432,6 +468,11 @@
 
   .imal-brand-content {
     gap: 16px;
+  }
+
+  .imal-brand-logo-sio {
+    width: 34px;
+    height: 34px;
   }
 
   .imal-poster-box {

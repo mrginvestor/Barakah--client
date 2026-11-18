@@ -5,16 +5,12 @@ import {
   Users,
   Ticket,
   AlertCircle,
-  ArrowRight,
   ShieldCheck,
-  Check,
-  CreditCard,
-  Banknote,
-  Smartphone,
   CheckCircle2,
 } from 'lucide-react';
 import API_URL from '../config/api';
-import barakahLogo from '../assets/Barakah-logo.png';
+import sioCoimbatoreLogo from '../assets/sio-coimbatore-logo.png';
+import solidarityLogo from '../assets/solidarity-logo.png';
 import posterImg from '../assets/investor-mission-poster.jpg';
 import './SmallSummitRegisterPage.css';
 
@@ -88,7 +84,7 @@ export default function SmallSummitRegisterPage() {
     otherOccupation: '',
     organization: '',
     sessionExpectations: '',
-    paymentMethod: 'ONLINE', // 'ONLINE' or 'OFFLINE'
+    paymentMethod: 'ONLINE', // Online UPI is mandatory
     termsAccepted: false,
   });
 
@@ -134,13 +130,6 @@ export default function SmallSummitRegisterPage() {
 
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: '' }));
-    }
-  };
-
-  const handlePaymentMethodSelect = (method) => {
-    setFormData((prev) => ({ ...prev, paymentMethod: method }));
-    if (errors.paymentMethod) {
-      setErrors((prev) => ({ ...prev, paymentMethod: '' }));
     }
   };
 
@@ -198,12 +187,7 @@ export default function SmallSummitRegisterPage() {
       errs.sessionExpectations = 'Session expectations must not exceed 500 characters.';
     }
 
-    // 7. Payment Method Validation:
-    if (!formData.paymentMethod) {
-      errs.paymentMethod = 'Please choose your preferred payment method.';
-    }
-
-    // 8. Terms & Conditions Validation:
+    // 7. Terms & Conditions Validation:
     if (!formData.termsAccepted) {
       errs.termsAccepted = 'You must agree to the Terms & Conditions and Privacy Policy.';
     }
@@ -238,7 +222,7 @@ export default function SmallSummitRegisterPage() {
         otherOccupation: formData.occupation === 'Other' ? formData.otherOccupation.trim() : '',
         organization: formData.organization.trim(),
         sessionExpectations: formData.sessionExpectations.trim(),
-        paymentMethod: formData.paymentMethod,
+        paymentMethod: 'ONLINE',
         termsAccepted: true,
       };
 
@@ -248,11 +232,7 @@ export default function SmallSummitRegisterPage() {
         .catch(() => axios.post(`${API_URL}/api/small-summit/register`, payload));
 
       if (res.data?.success && res.data?.registrationId) {
-        if (formData.paymentMethod === 'OFFLINE') {
-          navigate(res.data.redirectUrl || `/investor-mission-confirmation/${res.data.registrationId}`);
-        } else {
-          navigate(res.data.redirectUrl || `/investor-mission-payment/${res.data.registrationId}`);
-        }
+        navigate(res.data.redirectUrl || `/investor-mission-payment/${res.data.registrationId}`);
       } else {
         setFormError(res.data?.message || 'Failed to complete registration.');
       }
@@ -289,8 +269,8 @@ export default function SmallSummitRegisterPage() {
         <div className="ssp-compact-info-bar" aria-label="Event Key Highlights">
           <div className="ssp-compact-info-container">
             <div className="ssp-compact-info-item">
-              <span className="ssp-compact-info-label">Registration Fee</span>
-              <strong className="ssp-compact-info-val">₹{capacity.registrationFee}</strong>
+              <span className="ssp-compact-info-label">Event Date</span>
+              <strong className="ssp-compact-info-val">Sunday, 06 Dec 2026</strong>
             </div>
 
             <div className="ssp-compact-divider" aria-hidden="true" />
@@ -319,9 +299,15 @@ export default function SmallSummitRegisterPage() {
 
             <div className="ssp-compact-info-item">
               <span className="ssp-compact-info-label">Official Venue</span>
-              <strong className="ssp-compact-info-val" title="Siruthuli Noyyal Life Centre, Ukkadam Sungam Bypass Rd, Shanmuga Nagar, Ramanathapuram, Coimbatore, Tamil Nadu 641023">
-                Siruthuli Noyyal Life Centre, Coimbatore
-              </strong>
+              <a
+                href="https://maps.app.goo.gl/4hwJsFTMujiSVDMEA"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ssp-compact-info-val ssp-compact-venue-link"
+                title="View Location on Google Maps"
+              >
+                Siruthuli Noyyal Life Centre, Coimbatore ↗
+              </a>
             </div>
           </div>
         </div>
@@ -333,14 +319,12 @@ export default function SmallSummitRegisterPage() {
         <div className="ssp-progress-bar" aria-label="Registration Progress">
           <div className="ssp-progress-step active">
             <span className="ssp-step-circle">1</span>
-            <span className="ssp-step-name">Participant Details</span>
+            <span className="ssp-step-name">Participant Registration</span>
           </div>
           <div className="ssp-progress-divider" aria-hidden="true" />
           <div className="ssp-progress-step">
             <span className="ssp-step-circle">2</span>
-            <span className="ssp-step-name">
-              {formData.paymentMethod === 'OFFLINE' ? 'Venue Offline Payment' : `UPI Payment (₹${capacity.registrationFee})`}
-            </span>
+            <span className="ssp-step-name">Payment Verification</span>
           </div>
         </div>
 
@@ -373,13 +357,36 @@ export default function SmallSummitRegisterPage() {
         {/* Main Form Card */}
         <div className="ssp-form-card">
           <div className="ssp-card-intro">
-            <span className="ssp-intro-eyebrow">OFFICIAL REGISTRATION</span>
-            <h2 className="ssp-intro-title">Investor Mission 2026 Registration</h2>
-            <p className="ssp-intro-subtitle">
-              Sunday, 06 December 2026 • <strong>Siruthuli Noyyal Life Centre</strong>, Ukkadam Sungam Bypass Rd, Shanmuga Nagar, Ramanathapuram, Coimbatore, Tamil Nadu 641023.
+            <div className="ssp-intro-header-row">
+              <div className="ssp-intro-title-group">
+                <span className="ssp-intro-eyebrow">OFFICIAL REGISTRATION</span>
+                <h2 className="ssp-intro-title">Investor Mission 2026 Registration</h2>
+              </div>
+              <div className="ssp-intro-organizer-logos">
+                <div className="ssp-intro-sio-wrap">
+                  <img src={sioCoimbatoreLogo} alt="SIO Coimbatore Logo" className="ssp-intro-sio-logo" />
+                </div>
+                <img src={solidarityLogo} alt="Solidarity Youth Organisation – Tamil Nadu" className="ssp-intro-solidarity-logo" />
+              </div>
+            </div>
+            <p className="ssp-intro-date">
+              Sunday, 06 December 2026
             </p>
-            <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#64748B' }}>
-              Please provide accurate participant information. After submitting, proceed to complete your ₹{capacity.registrationFee} payment via Online UPI or confirm your Offline payment at the venue.
+            <p className="ssp-intro-venue-address">
+              <strong>Siruthuli Noyyal Life Centre</strong>
+            </p>
+            <div className="ssp-intro-venue-map">
+              <a
+                href="https://maps.app.goo.gl/4hwJsFTMujiSVDMEA"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ssp-intro-map-link"
+              >
+                View Location on Google Maps ↗
+              </a>
+            </div>
+            <p className="ssp-intro-guidance">
+              Please provide accurate participant details to register for the Investor Mission 2026 gathering.
             </p>
           </div>
 
@@ -701,133 +708,10 @@ export default function SmallSummitRegisterPage() {
                 </div>
               </section>
 
-              {/* SECTION 5: CHOOSE YOUR PAYMENT METHOD */}
-              <section className="ssp-section" aria-labelledby="section-payment-method-heading">
-                <div className="ssp-section-heading">
-                  <span className="ssp-section-badge">5</span>
-                  <div>
-                    <h3 id="section-payment-method-heading" className="ssp-section-title">
-                      Choose Your Payment Method
-                    </h3>
-                    <p className="ssp-section-subtitle">
-                      Select your preferred way to fulfill the ₹{capacity.registrationFee} registration fee.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="ssp-payment-cards-grid">
-                  {/* Option 1: Online Payment */}
-                  <div
-                    className={`ssp-payment-card ${formData.paymentMethod === 'ONLINE' ? 'is-selected' : ''}`}
-                    onClick={() => handlePaymentMethodSelect('ONLINE')}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === ' ' || e.key === 'Enter') handlePaymentMethodSelect('ONLINE');
-                    }}
-                    aria-label="Online Payment Option"
-                  >
-                    <div className="ssp-payment-card-header">
-                      <div className="ssp-radio-outer">
-                        <div className={`ssp-radio-inner ${formData.paymentMethod === 'ONLINE' ? 'is-checked' : ''}`} />
-                      </div>
-                      <div className="ssp-payment-card-title-group">
-                        <span className="ssp-payment-card-badge ssp-badge-recommended">Instant / Recommended</span>
-                        <h4 className="ssp-payment-card-title">Online Payment</h4>
-                      </div>
-                      <Smartphone className="ssp-payment-card-icon" size={24} />
-                    </div>
-
-                    <div className="ssp-payment-card-body">
-                      <ul className="ssp-payment-feature-list">
-                        <li>
-                          <Check size={14} className="ssp-feat-check" />
-                          <span>Instant UPI Payment via PhonePe QR &amp; UPI Deep Link</span>
-                        </li>
-                        <li>
-                          <Check size={14} className="ssp-feat-check" />
-                          <span>Direct UPI App opening on mobile devices</span>
-                        </li>
-                        <li>
-                          <Check size={14} className="ssp-feat-check" />
-                          <span>UPI ID: <strong>6380413253@ybl</strong></span>
-                        </li>
-                        <li>
-                          <Check size={14} className="ssp-feat-check" />
-                          <span>Pay ₹{capacity.registrationFee} directly</span>
-                        </li>
-                        <li>
-                          <Check size={14} className="ssp-feat-check" />
-                          <span>Upload payment screenshot and enter transaction ID / UTR</span>
-                        </li>
-                        <li>
-                          <Check size={14} className="ssp-feat-check" />
-                          <span>Your seat will be confirmed once payment is approved</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-
-                  {/* Option 2: Offline Payment */}
-                  <div
-                    className={`ssp-payment-card ${formData.paymentMethod === 'OFFLINE' ? 'is-selected' : ''}`}
-                    onClick={() => handlePaymentMethodSelect('OFFLINE')}
-                    role="button"
-                    tabIndex={0}
-                    onKeyDown={(e) => {
-                      if (e.key === ' ' || e.key === 'Enter') handlePaymentMethodSelect('OFFLINE');
-                    }}
-                    aria-label="Offline Payment Option"
-                  >
-                    <div className="ssp-payment-card-header">
-                      <div className="ssp-radio-outer">
-                        <div className={`ssp-radio-inner ${formData.paymentMethod === 'OFFLINE' ? 'is-checked' : ''}`} />
-                      </div>
-                      <div className="ssp-payment-card-title-group">
-                        <span className="ssp-payment-card-badge ssp-badge-offline">Pay at Venue</span>
-                        <h4 className="ssp-payment-card-title">Offline Payment</h4>
-                      </div>
-                      <Banknote className="ssp-payment-card-icon" size={24} />
-                    </div>
-
-                    <div className="ssp-payment-card-body">
-                      <ul className="ssp-payment-feature-list">
-                        <li>
-                          <Check size={14} className="ssp-feat-check" />
-                          <span>Pay offline / cash at venue registration desk</span>
-                        </li>
-                        <li>
-                          <Check size={14} className="ssp-feat-check" />
-                          <span>No immediate payment screenshot upload required</span>
-                        </li>
-                        <li>
-                          <Check size={14} className="ssp-feat-check" />
-                          <span>Admin will manually record and verify payment</span>
-                        </li>
-                        <li>
-                          <Check size={14} className="ssp-feat-check" />
-                          <span>Registration status will remain <strong>PENDING</strong> until approved by admin</span>
-                        </li>
-                        <li>
-                          <Check size={14} className="ssp-feat-check" />
-                          <em>Note: Seats are subject to availability and admin approval</em>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                {errors.paymentMethod && (
-                  <span className="ssp-field-error" role="alert" style={{ marginTop: '10px', display: 'block' }}>
-                    {errors.paymentMethod}
-                  </span>
-                )}
-              </section>
-
-              {/* SECTION 6: CONSENT */}
+              {/* SECTION 5: CONSENT */}
               <section className="ssp-section" aria-labelledby="section-consent-heading">
                 <div className="ssp-section-heading">
-                  <span className="ssp-section-badge">6</span>
+                  <span className="ssp-section-badge">5</span>
                   <h3 id="section-consent-heading" className="ssp-section-title">
                     Consent &amp; Acceptance
                   </h3>
@@ -852,8 +736,7 @@ export default function SmallSummitRegisterPage() {
                       <Link to="/privacy-policy" target="_blank" rel="noopener noreferrer">
                         Privacy Policy
                       </Link>
-                      . I understand that my registration is subject to verification and approval of ₹
-                      {capacity.registrationFee} fee.
+                      . I understand that my registration is subject to verification and approval.
                     </span>
                   </label>
                   {errors.termsAccepted && (
@@ -868,7 +751,7 @@ export default function SmallSummitRegisterPage() {
                 </div>
               </section>
 
-              {/* 7. PRIMARY BUTTON DESIGN */}
+              {/* PRIMARY BUTTON DESIGN: SUBMIT REGISTRATION */}
               <div className="ssp-actions">
                 <button
                   type="submit"
@@ -876,19 +759,11 @@ export default function SmallSummitRegisterPage() {
                   className="ssp-btn-submit"
                 >
                   {isSubmitting ? (
-                    'Processing Registration...'
+                    'Submitting Registration...'
                   ) : capacity.isSoldOut ? (
                     'Investor Mission Registration Full'
-                  ) : formData.paymentMethod === 'OFFLINE' ? (
-                    <>
-                      <span>CONFIRM OFFLINE REGISTRATION – ₹{capacity.registrationFee}</span>
-                      <ArrowRight size={18} />
-                    </>
                   ) : (
-                    <>
-                      <span>PROCEED TO PAYMENT – ₹{capacity.registrationFee}</span>
-                      <ArrowRight size={18} />
-                    </>
+                    <span>SUBMIT REGISTRATION →</span>
                   )}
                 </button>
               </div>

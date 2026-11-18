@@ -18,7 +18,8 @@ import {
   X,
 } from 'lucide-react';
 import API_URL from '../config/api';
-import barakahLogo from '../assets/Barakah-logo.png';
+import sioCoimbatoreLogo from '../assets/sio-coimbatore-logo.png';
+import solidarityLogo from '../assets/solidarity-logo.png';
 import phonepeQrImg from '../assets/phonepe-qr.jpg';
 import './SummitPaymentPage.css';
 
@@ -356,9 +357,16 @@ export default function SmallSummitPaymentPage() {
       {/* Header */}
       <header className="summit-flow-header" role="banner" style={{ background: '#064B36', borderBottom: '2px solid #80DF35' }}>
         <div className="summit-flow-container summit-flow-header-inner" style={{ maxWidth: '1080px', margin: '0 auto', padding: '18px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '14px' }}>
-          <Link to="/investor-mission" className="summit-flow-brand" style={{ display: 'flex', alignItems: 'center', gap: '12px', textDecoration: 'none', color: '#FFFFFF' }}>
-            <div style={{ width: '42px', height: '42px', borderRadius: '50%', background: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid #80DF35' }}>
-              <img src={barakahLogo} alt="Halal Wealth Logo" style={{ width: '36px', height: '36px', objectFit: 'contain' }} />
+          <Link to="/investor-mission" className="summit-flow-brand" style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none', color: '#FFFFFF', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+              <img
+                src={sioCoimbatoreLogo}
+                alt="SIO Coimbatore Logo"
+                style={{ width: '42px', height: '42px', objectFit: 'contain', flexShrink: 0, display: 'block' }}
+              />
+              <div style={{ height: '40px', background: '#FFFFFF', borderRadius: '6px', padding: '3px 8px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #80DF35', flexShrink: 0 }}>
+                <img src={solidarityLogo} alt="Solidarity Youth Organisation – Tamil Nadu" style={{ height: '32px', width: 'auto', maxWidth: '110px', objectFit: 'contain' }} />
+              </div>
             </div>
             <div className="summit-flow-title-block">
               <span style={{ fontSize: '10.5px', color: '#80DF35', letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 800, display: 'block', lineHeight: 1.2 }}>
@@ -446,16 +454,27 @@ export default function SmallSummitPaymentPage() {
         )}
 
         {/* Section Intro */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <span style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '2px', color: '#138C3B', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
             INVESTOR MISSION 2026
           </span>
           <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#064B36', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
-            Complete Your Registration
+            Investor Mission 2026 Payment
           </h1>
           <p style={{ fontSize: '15px', color: '#475569', margin: 0 }}>
             Registration Fee: <strong style={{ color: '#0B2D49', fontSize: '17px' }}>₹{fee}</strong> • Limited to {DEC_ACCOUNT_DETAILS.maxCapacity} Participants
           </p>
+
+          {/* Participant Details Badge */}
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '16px', marginTop: '16px', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '10px 20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <span style={{ fontSize: '14px', color: '#0F172A' }}>
+              Participant: <strong style={{ color: '#064B36' }}>{fullName}</strong>
+            </span>
+            <span style={{ color: '#94A3B8' }}>•</span>
+            <span style={{ fontSize: '14px', color: '#0F172A' }}>
+              Registration ID: <strong style={{ color: '#138C3B', fontFamily: 'monospace' }}>{registrationId}</strong>
+            </span>
+          </div>
         </div>
 
         {/* Main 2-Column Grid: Left QR & Account / Right Upload */}
@@ -977,10 +996,10 @@ export default function SmallSummitPaymentPage() {
                   }}
                 >
                   {isSubmitting
-                    ? 'Uploading Proof...'
+                    ? 'Submitting Payment Details...'
                     : isPaid
                     ? 'Payment Confirmed'
-                    : 'SUBMIT PAYMENT PROOF FOR VERIFICATION'}
+                    : 'SUBMIT PAYMENT DETAILS'}
                 </button>
               </div>
 

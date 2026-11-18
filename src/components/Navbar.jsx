@@ -15,7 +15,7 @@ const Navbar = ({ onRegister = () => window.dispatchEvent(new CustomEvent('regis
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const links = ['About', 'Agenda', 'Speakers', 'Sponsors', 'Venue', 'Contact'];
+  const links = ['About', 'Agenda', 'Speakers', 'Webinars', 'Contact'];
 
   const handleHomeClick = () => {
     setOpen(false);

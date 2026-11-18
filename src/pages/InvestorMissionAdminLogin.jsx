@@ -4,6 +4,8 @@ import { Eye, EyeOff, LockKeyhole, User, AlertCircle, ArrowLeft } from 'lucide-r
 import { useNavigate, Link } from 'react-router-dom';
 import API_URL from '../config/api';
 import { ADMIN_TOKEN_KEY } from '../config/adminApi';
+import sioCoimbatoreLogo from '../assets/sio-coimbatore-logo.png';
+import solidarityLogo from '../assets/solidarity-logo.png';
 import posterImg from '../assets/investor-mission-poster.jpg';
 import './InvestorMissionAdminLogin.css';
 
@@ -79,6 +81,12 @@ export default function InvestorMissionAdminLogin() {
           <section className="imal-brand-column" aria-label="Event Information">
             <div className="imal-brand-content">
               <div className="imal-brand-meta">
+                <div className="imal-brand-logos-row">
+                  <img src={sioCoimbatoreLogo} alt="SIO Coimbatore Logo" className="imal-brand-logo-sio" />
+                  <div className="imal-brand-logo-solidarity-wrap">
+                    <img src={solidarityLogo} alt="Solidarity Youth Organisation – Tamil Nadu" className="imal-brand-logo-solidarity" />
+                  </div>
+                </div>
                 <span className="imal-org-badge">
                   SIO COIMBATORE &bull; HALAL WEALTH
                 </span>

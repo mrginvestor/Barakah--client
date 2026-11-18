@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   Clock,
   Banknote,
+  Smartphone,
   AlertCircle,
   Phone,
   Mail,
@@ -17,7 +18,8 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import API_URL from '../config/api';
-import barakahLogo from '../assets/Barakah-logo.png';
+import sioCoimbatoreLogo from '../assets/sio-coimbatore-logo.png';
+import solidarityLogo from '../assets/solidarity-logo.png';
 import './SmallSummitRegisterPage.css';
 
 export default function SmallSummitConfirmationPage() {
@@ -60,8 +62,11 @@ export default function SmallSummitConfirmationPage() {
         <div className="ssp-header-container">
           <div className="ssp-brand-section">
             <Link to="/investor-mission" className="ssp-brand-link" title="Investor Mission 2026 Overview">
-              <div className="ssp-brand-logo-wrap">
-                <img src={barakahLogo} alt="Halal Wealth Logo" className="ssp-brand-logo" />
+              <div className="ssp-brand-logos-row">
+                <img src={sioCoimbatoreLogo} alt="SIO Coimbatore Logo" className="ssp-brand-sio-logo" />
+                <div className="ssp-brand-solidarity-wrap">
+                  <img src={solidarityLogo} alt="Solidarity Youth Organisation – Tamil Nadu" className="ssp-brand-solidarity-logo" />
+                </div>
               </div>
               <div className="ssp-brand-headings">
                 <span className="ssp-brand-kicker">SIO COIMBATORE &amp; HALAL WEALTH PRESENTS</span>
@@ -80,7 +85,7 @@ export default function SmallSummitConfirmationPage() {
             </div>
             <div className="ssp-badge ssp-badge--capacity">
               <span className="ssp-badge-label">Attendance Mode</span>
-              <span className="ssp-badge-value">Offline / Venue</span>
+              <span className="ssp-badge-value">In-Person / Venue</span>
             </div>
           </div>
         </div>
@@ -163,7 +168,9 @@ export default function SmallSummitConfirmationPage() {
                   lineHeight: 1.5,
                 }}
               >
-                Your offline registration request has been submitted successfully.
+                {regData?.paymentMethod === 'OFFLINE'
+                  ? 'Your offline registration request has been submitted successfully.'
+                  : 'Your registration details have been received successfully.'}
               </p>
             </div>
 
@@ -279,13 +286,21 @@ export default function SmallSummitConfirmationPage() {
                       gap: '6px',
                       fontSize: '12.5px',
                       fontWeight: 700,
-                      color: '#5B21B6',
-                      backgroundColor: '#EDE9FE',
+                      color: regData?.paymentMethod === 'OFFLINE' ? '#5B21B6' : '#166534',
+                      backgroundColor: regData?.paymentMethod === 'OFFLINE' ? '#EDE9FE' : '#DCFCE7',
                       padding: '3px 10px',
                       borderRadius: '4px',
                     }}
                   >
-                    <Banknote size={14} /> OFFLINE / AT VENUE
+                    {regData?.paymentMethod === 'OFFLINE' ? (
+                      <>
+                        <Banknote size={14} /> OFFLINE / AT VENUE
+                      </>
+                    ) : (
+                      <>
+                        <Smartphone size={14} /> ONLINE / UPI
+                      </>
+                    )}
                   </span>
                 </div>
 
@@ -331,8 +346,8 @@ export default function SmallSummitConfirmationPage() {
                       gap: '5px',
                       fontSize: '12px',
                       fontWeight: 700,
-                      color: regData?.paymentStatus === 'PAID' ? '#166534' : '#5B21B6',
-                      backgroundColor: regData?.paymentStatus === 'PAID' ? '#DCFCE7' : '#EDE9FE',
+                      color: regData?.paymentStatus === 'PAID' ? '#166534' : regData?.paymentStatus === 'PENDING_VERIFICATION' ? '#0369A1' : '#5B21B6',
+                      backgroundColor: regData?.paymentStatus === 'PAID' ? '#DCFCE7' : regData?.paymentStatus === 'PENDING_VERIFICATION' ? '#E0F2FE' : '#EDE9FE',
                       padding: '3px 10px',
                       borderRadius: '4px',
                     }}
@@ -340,7 +355,11 @@ export default function SmallSummitConfirmationPage() {
                     <Clock size={13} />
                     {regData?.paymentStatus === 'PAID'
                       ? 'PAID & CONFIRMED'
-                      : 'PENDING OFFLINE PAYMENT'}
+                      : regData?.paymentStatus === 'PENDING_VERIFICATION'
+                      ? 'UNDER VERIFICATION'
+                      : regData?.paymentMethod === 'OFFLINE'
+                      ? 'PENDING OFFLINE PAYMENT'
+                      : 'PENDING PAYMENT'}
                   </span>
                 </div>
               </div>
@@ -356,7 +375,7 @@ export default function SmallSummitConfirmationPage() {
                   lineHeight: 1.5,
                 }}
               >
-                <strong>Note:</strong> Seat confirmation is subject to admin approval and offline payment verification. Seats are capped at 50 participants.
+                <strong>Note:</strong> Seat confirmation is subject to admin approval and payment verification. Seats are capped at 50 participants.
               </div>
             </div>
 
@@ -411,7 +430,7 @@ export default function SmallSummitConfirmationPage() {
                 Event Coordinator &amp; Payment Support
               </h4>
               <p style={{ fontSize: '13px', color: '#64748B', margin: '0 0 14px 0' }}>
-                If you have questions about venue location or offline payment, contact our team:
+                If you have questions about venue location or payment verification, contact our team:
               </p>
               <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
                 <a
