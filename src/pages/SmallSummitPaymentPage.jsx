@@ -1,21 +1,22 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link, Navigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, Navigate } from 'react-router-dom';
 import axios from 'axios';
 import {
   Copy,
   Check,
   ExternalLink,
-  Upload,
   AlertCircle,
   Clock,
   CheckCircle2,
   XCircle,
   ShieldCheck,
   ArrowLeft,
+  ArrowRight,
   Smartphone,
   CreditCard,
   Info,
   X,
+  QrCode,
 } from 'lucide-react';
 import API_URL from '../config/api';
 import sioCoimbatoreLogo from '../assets/sio-coimbatore-logo.png';
@@ -28,11 +29,13 @@ const DEC_ACCOUNT_DETAILS = {
   upiId: '6380413253@ybl',
   phone: '6380413253',
   fee: 500,
+  currency: 'INR',
   maxCapacity: 50,
 };
 
 export default function SmallSummitPaymentPage() {
   const { registrationId } = useParams();
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -45,19 +48,7 @@ export default function SmallSummitPaymentPage() {
   // Device & UPI direct payment states
   const [deviceType, setDeviceType] = useState('desktop');
   const [showDesktopModal, setShowDesktopModal] = useState(false);
-  const [upiLaunchStatus, setUpiLaunchStatus] = useState('idle'); // 'idle' | 'opening-phonepe' | 'fallback-ready' | 'ios-launched'
-
-  // Upload Form State
-  const [screenshotFile, setScreenshotFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState('');
-  const [upiTransactionId, setUpiTransactionId] = useState('');
-  const [paymentDate, setPaymentDate] = useState(() => new Date().toISOString().split('T')[0]);
-  const [paymentNotes, setPaymentNotes] = useState('');
-
-  // Submit & Feedback states
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitSuccess, setSubmitSuccess] = useState(false);
-  const [uploadError, setUploadError] = useState('');
+  const [upiLaunchStatus, setUpiLaunchStatus] = useState('idle'); // 'idle' | 'launched' | 'phonepe' | 'gpay' | 'paytm' | 'bhim'
 
   const fetchPaymentDetails = () => {
     if (!registrationId) return;
@@ -70,12 +61,6 @@ export default function SmallSummitPaymentPage() {
       .then((res) => {
         if (res.data?.success) {
           setRegData(res.data);
-          if (res.data.upiTransactionId) {
-            setUpiTransactionId(res.data.upiTransactionId);
-          }
-          if (res.data.paymentNotes) {
-            setPaymentNotes(res.data.paymentNotes);
-          }
         } else {
           setError(res.data?.message || 'Unable to retrieve registration details.');
         }
@@ -106,7 +91,7 @@ export default function SmallSummitPaymentPage() {
   }, [registrationId]);
 
   const handleCopyUpi = () => {
-    const upi = regData?.upiDetails?.upiId || DEC_ACCOUNT_DETAILS.upiId;
+    const upi = DEC_ACCOUNT_DETAILS.upiId;
     navigator.clipboard.writeText(upi).then(() => {
       setCopiedUpi(true);
       setTimeout(() => setCopiedUpi(false), 2500);
@@ -114,111 +99,11 @@ export default function SmallSummitPaymentPage() {
   };
 
   const handleCopyPhone = () => {
-    const phone = regData?.upiDetails?.phoneNumber || DEC_ACCOUNT_DETAILS.phone;
+    const phone = DEC_ACCOUNT_DETAILS.phone;
     navigator.clipboard.writeText(phone).then(() => {
       setCopiedPhone(true);
       setTimeout(() => setCopiedPhone(false), 2500);
     });
-  };
-
-  const handleFileChange = (e) => {
-    setUploadError('');
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-    if (!allowedTypes.includes(file.type.toLowerCase())) {
-      setUploadError('Invalid format. Please upload a JPG, PNG, or WebP screenshot.');
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadError('File exceeds maximum size limit of 5 MB.');
-      return;
-    }
-
-    setScreenshotFile(file);
-    const objectUrl = URL.createObjectURL(file);
-    setPreviewUrl(objectUrl);
-  };
-
-  const handleRemoveFile = () => {
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setScreenshotFile(null);
-    setPreviewUrl('');
-  };
-
-  const handleSubmitProof = async (e) => {
-    e.preventDefault();
-    setUploadError('');
-
-    if (!screenshotFile && !regData?.paymentScreenshot) {
-      setUploadError('Please select and upload your UPI payment screenshot.');
-      return;
-    }
-
-    if (!upiTransactionId.trim() || upiTransactionId.trim().length < 6) {
-      setUploadError('Please enter a valid 12-digit UPI reference / UTR number.');
-      return;
-    }
-
-    if (!paymentDate) {
-      setUploadError('Please specify the date of payment.');
-      return;
-    }
-
-    setIsSubmitting(true);
-    try {
-      const formData = new FormData();
-      if (screenshotFile) {
-        formData.append('receipt', screenshotFile);
-      }
-      formData.append('registrationId', registrationId);
-      formData.append('upiTransactionId', upiTransactionId.trim());
-      formData.append('paymentDate', paymentDate);
-      if (paymentNotes.trim()) {
-        formData.append('paymentNotes', paymentNotes.trim());
-      }
-
-      const postProofWithFallback = async (data) => {
-        try {
-          return await axios.post(`${API_URL}/api/investor-mission/payment/${registrationId}/submit`, data, {
-            headers: { 'Content-Type': 'multipart/form-data' },
-          });
-        } catch (err1) {
-          if (err1.response?.status === 404) {
-            try {
-              return await axios.post(`${API_URL}/api/dec-summit/payment/${registrationId}/submit`, data, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-              });
-            } catch (err2) {
-              if (err2.response?.status === 404) {
-                return await axios.post(`${API_URL}/api/small-summit/payment/${registrationId}/submit`, data, {
-                  headers: { 'Content-Type': 'multipart/form-data' },
-                });
-              }
-              throw err2;
-            }
-          }
-          throw err1;
-        }
-      };
-
-      const res = await postProofWithFallback(formData);
-
-      if (res.data?.success) {
-        setSubmitSuccess(true);
-        fetchPaymentDetails();
-      } else {
-        setUploadError(res.data?.message || 'Failed to submit payment proof.');
-      }
-    } catch (err) {
-      setUploadError(
-        err.response?.data?.message || 'Unable to upload payment proof. Please try again.'
-      );
-    } finally {
-      setIsSubmitting(false);
-    }
   };
 
   if (loading) {
@@ -283,16 +168,19 @@ export default function SmallSummitPaymentPage() {
     `pa=${encodeURIComponent(DEC_ACCOUNT_DETAILS.upiId)}`,
     `pn=${encodeURIComponent(DEC_ACCOUNT_DETAILS.accountName)}`,
     `am=${encodeURIComponent(fee)}`,
-    `cu=INR`,
-    `tn=${encodeURIComponent('Investor Mission Registration')}`,
+    `cu=${DEC_ACCOUNT_DETAILS.currency}`,
+    `tn=${encodeURIComponent('Investor Mission 2026')}`,
     `tr=${encodeURIComponent(uniquePaymentRef)}`,
   ].join('&');
 
-  // Standard UPI URI (works across UPI apps on Android and iOS)
+  // Standard UPI URI (opens system UPI app chooser on Android, UPI handler on iOS)
   const standardUpiDeepLink = `upi://pay?${upiQueryParams}`;
 
-  // Android PhonePe Intent URI targeting com.phonepe.app directly
+  // App-specific Intent URIs for Android
   const androidPhonePeIntent = `intent://pay?${upiQueryParams}#Intent;scheme=upi;package=com.phonepe.app;end`;
+  const androidGPayIntent = `intent://pay?${upiQueryParams}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`;
+  const androidPaytmIntent = `intent://pay?${upiQueryParams}#Intent;scheme=upi;package=net.one97.paytm;end`;
+  const androidBhimIntent = `intent://pay?${upiQueryParams}#Intent;scheme=upi;package=in.org.npci.upiapp;end`;
 
   const handlePayViaUpiApp = () => {
     // 1. Desktop: Prevent broken protocol handler; open guidance modal with QR code & UPI ID instructions
@@ -301,61 +189,26 @@ export default function SmallSummitPaymentPage() {
       return;
     }
 
-    // 2. Android:
-    // - Attempt to open PhonePe directly using package identifier com.phonepe.app
-    // - If PhonePe is not installed or cannot handle the intent, provide automatic & manual fallback to standard UPI intent
-    if (deviceType === 'android') {
-      setUpiLaunchStatus('opening-phonepe');
-
-      const startTime = Date.now();
-      let fallbackTriggered = false;
-
-      const runFallback = () => {
-        if (fallbackTriggered) return;
-        fallbackTriggered = true;
-        setUpiLaunchStatus('fallback-ready');
-        window.location.href = standardUpiDeepLink;
-      };
-
-      // Fallback timer: if browser page remains visible after 1800ms, PhonePe didn't take over
-      const timer = setTimeout(() => {
-        if (document.visibilityState === 'visible' && Date.now() - startTime < 3500) {
-          runFallback();
-        }
-      }, 1800);
-
-      const handleAppOpen = () => {
-        if (document.hidden) {
-          clearTimeout(timer);
-        }
-      };
-
-      window.addEventListener('pagehide', handleAppOpen, { once: true });
-      window.addEventListener('visibilitychange', () => {
-        if (document.hidden) clearTimeout(timer);
-      }, { once: true });
-
-      // Trigger PhonePe intent directly
-      window.location.href = androidPhonePeIntent;
-      return;
-    }
-
-    // 3. iOS:
-    // - Use standard UPI payment link where supported
-    // - Provide clear fallback instructions if app cannot be opened
-    if (deviceType === 'ios') {
-      setUpiLaunchStatus('ios-launched');
-      window.location.href = standardUpiDeepLink;
-      return;
-    }
-
-    // Default fallback
+    setUpiLaunchStatus('launched');
     window.location.href = standardUpiDeepLink;
   };
 
-  const handleOpenAnyUpiApp = () => {
-    setUpiLaunchStatus('fallback-ready');
-    window.location.href = standardUpiDeepLink;
+  const handleLaunchSpecificApp = (appName, appIntent) => {
+    if (deviceType === 'desktop') {
+      setShowDesktopModal(true);
+      return;
+    }
+
+    setUpiLaunchStatus(appName);
+    if (deviceType === 'android') {
+      window.location.href = appIntent;
+    } else {
+      window.location.href = standardUpiDeepLink;
+    }
+  };
+
+  const handleContinueToSubmission = () => {
+    navigate(`/investor-mission-payment-submission/${registrationId}`);
   };
 
   return (
@@ -392,21 +245,28 @@ export default function SmallSummitPaymentPage() {
         </div>
       </header>
 
-      <main className="summit-flow-container summit-flow-main" style={{ maxWidth: '1080px', margin: '0 auto', padding: '32px 24px 60px' }}>
+      <main className="summit-flow-container summit-flow-main" style={{ maxWidth: '980px', margin: '0 auto', padding: '32px 20px 60px' }}>
         {/* Progress Tracker */}
-        <div className="summit-steps-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '28px' }}>
+        <div className="summit-steps-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '28px', flexWrap: 'wrap' }}>
           <div className="summit-step-item done" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '20px', background: '#E2E8F0', color: '#138C3B', fontSize: '12.5px', fontWeight: 600 }}>
             <span className="step-num" style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#138C3B', color: '#FFFFFF', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }}>
               <Check size={12} />
             </span>
             <span className="step-text">Details Registered</span>
           </div>
-          <div className="summit-step-connector active" style={{ width: '28px', height: '2px', background: '#80DF35' }} />
+          <div className="summit-step-connector active" style={{ width: '24px', height: '2px', background: '#80DF35' }} />
           <div className="summit-step-item active" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '20px', background: '#064B36', color: '#FFFFFF', border: '1px solid #80DF35', fontSize: '12.5px', fontWeight: 700 }}>
             <span className="step-num" style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#80DF35', color: '#064B36', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 800 }}>
               2
             </span>
-            <span className="step-text">UPI Payment &amp; Proof (₹{fee})</span>
+            <span className="step-text">UPI App Payment (₹{fee})</span>
+          </div>
+          <div className="summit-step-connector" style={{ width: '24px', height: '2px', background: '#CBD5E1' }} />
+          <div className="summit-step-item" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '20px', background: '#F1F5F9', color: '#64748B', fontSize: '12.5px', fontWeight: 600 }}>
+            <span className="step-num" style={{ width: '18px', height: '18px', borderRadius: '50%', background: '#CBD5E1', color: '#475569', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px' }}>
+              3
+            </span>
+            <span className="step-text">Submit Screenshot &amp; UTR</span>
           </div>
         </div>
 
@@ -414,23 +274,75 @@ export default function SmallSummitPaymentPage() {
         {isPaid && (
           <div className="summit-status-card paid" style={{ background: '#F0FDF4', border: '1px solid #86EFAC', borderRadius: '8px', padding: '20px', display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '28px', color: '#14532D' }}>
             <CheckCircle2 size={36} color="#15803D" style={{ flexShrink: 0 }} />
-            <div>
+            <div style={{ flex: 1 }}>
               <h3 style={{ margin: '0 0 4px', fontSize: '17px', fontWeight: 700 }}>Payment Confirmed &amp; Seat Secured!</h3>
-              <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.5 }}>
+              <p style={{ margin: '0 0 12px', fontSize: '14px', lineHeight: 1.5 }}>
                 Assalamu Alaikum {fullName}, your payment of ₹{fee} has been verified and your seat is confirmed for <strong>Investor Mission 2026</strong>. An official confirmation email has been dispatched to <strong>{email}</strong>.
               </p>
+              <Link
+                to={`/investor-mission-confirmation/${registrationId}`}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: '#15803D',
+                  color: '#FFFFFF',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  textDecoration: 'none',
+                }}
+              >
+                View Confirmed Pass <ArrowRight size={15} />
+              </Link>
             </div>
           </div>
         )}
 
-        {isPendingVerification && !submitSuccess && (
-          <div className="summit-status-card review" style={{ background: '#FEF3C7', border: '1px solid #FCD34D', borderRadius: '8px', padding: '20px', display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '28px', color: '#92400E' }}>
-            <Clock size={36} color="#B45309" style={{ flexShrink: 0 }} />
-            <div>
+        {isPendingVerification && (
+          <div className="summit-status-card review" style={{ background: '#FEF3C7', border: '1px solid #FCD34D', borderRadius: '8px', padding: '20px', display: 'flex', gap: '16px', alignItems: 'flex-start', marginBottom: '28px', color: '#92400E' }}>
+            <Clock size={32} color="#B45309" style={{ flexShrink: 0, marginTop: '2px' }} />
+            <div style={{ flex: 1 }}>
               <h3 style={{ margin: '0 0 4px', fontSize: '17px', fontWeight: 700 }}>Payment Verification in Progress</h3>
-              <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.5 }}>
-                Your payment screenshot and UTR reference have been received. Our team will verify your payment against bank records and approve your confirmed summit pass shortly.
+              <p style={{ margin: '0 0 10px', fontSize: '14px', lineHeight: 1.5 }}>
+                Your payment screenshot and UTR reference have already been submitted. Our team is verifying your payment with our bank records.
               </p>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <Link
+                  to={`/investor-mission-confirmation/${registrationId}`}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: '#B45309',
+                    color: '#FFFFFF',
+                    padding: '7px 14px',
+                    borderRadius: '6px',
+                    fontSize: '12.5px',
+                    fontWeight: 700,
+                    textDecoration: 'none',
+                  }}
+                >
+                  View Status <ArrowRight size={14} />
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleContinueToSubmission}
+                  style={{
+                    background: '#FFFFFF',
+                    border: '1px solid #FCD34D',
+                    color: '#92400E',
+                    padding: '7px 14px',
+                    borderRadius: '6px',
+                    fontSize: '12.5px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Update / Re-submit Proof
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -439,21 +351,9 @@ export default function SmallSummitPaymentPage() {
           <div className="summit-status-card rejected" style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', borderRadius: '8px', padding: '20px', display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '28px', color: '#991B1B' }}>
             <XCircle size={36} color="#B91C1C" style={{ flexShrink: 0 }} />
             <div>
-              <h3 style={{ margin: '0 0 4px', fontSize: '17px', fontWeight: 700 }}>Payment Proof Needs Correction</h3>
+              <h3 style={{ margin: '0 0 4px', fontSize: '17px', fontWeight: 700 }}>Previous Payment Proof Needs Correction</h3>
               <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.5 }}>
-                {rejectionReason || 'We could not verify your previous payment screenshot or UTR number. Please verify your reference or re-upload a clear receipt screenshot below.'}
-              </p>
-            </div>
-          </div>
-        )}
-
-        {submitSuccess && (
-          <div className="summit-status-card success-banner" style={{ background: '#F0FDF4', border: '1px solid #86EFAC', borderRadius: '8px', padding: '20px', display: 'flex', gap: '16px', alignItems: 'center', marginBottom: '28px', color: '#14532D' }}>
-            <CheckCircle2 size={36} color="#15803D" style={{ flexShrink: 0 }} />
-            <div>
-              <h3 style={{ margin: '0 0 4px', fontSize: '17px', fontWeight: 700 }}>Proof Submitted Successfully!</h3>
-              <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.5 }}>
-                Your payment proof and UTR have been submitted. An administrator will verify your payment and confirm your registration shortly.
+                {rejectionReason || 'We could not verify your previous payment screenshot or UTR number. Please complete payment and upload clear proof.'}
               </p>
             </div>
           </div>
@@ -462,17 +362,17 @@ export default function SmallSummitPaymentPage() {
         {/* Section Intro */}
         <div style={{ textAlign: 'center', marginBottom: '28px' }}>
           <span style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '2px', color: '#138C3B', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
-            INVESTOR MISSION 2026
+            STEP 2 OF 3: UPI PAYMENT
           </span>
           <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#064B36', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
             Investor Mission 2026 Payment
           </h1>
           <p style={{ fontSize: '15px', color: '#475569', margin: 0 }}>
-            Registration Fee: <strong style={{ color: '#0B2D49', fontSize: '17px' }}>₹{fee}</strong> • Limited to {DEC_ACCOUNT_DETAILS.maxCapacity} Participants
+            Registration Fee: <strong style={{ color: '#064B36', fontSize: '17px' }}>₹{fee}</strong> (INR) • Limited to {DEC_ACCOUNT_DETAILS.maxCapacity} Participants
           </p>
 
           {/* Participant Details Badge */}
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '16px', marginTop: '16px', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '10px 20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '16px', marginTop: '16px', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '10px 20px', flexWrap: 'wrap', justifyContent: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
             <span style={{ fontSize: '14px', color: '#0F172A' }}>
               Participant: <strong style={{ color: '#064B36' }}>{fullName}</strong>
             </span>
@@ -483,40 +383,203 @@ export default function SmallSummitPaymentPage() {
           </div>
         </div>
 
-        {/* Main 2-Column Grid: Left QR & Account / Right Upload */}
-        <div className="summit-payment-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '28px', alignItems: 'start' }}>
-          {/* LEFT: PhonePe QR & Account Details */}
-          <div className="summit-card payment-info-card" style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '28px', boxShadow: '0 4px 16px rgba(11, 45, 73, 0.05)' }}>
-            <div style={{ borderBottom: '1px solid #F1F5F9', paddingBottom: '16px', marginBottom: '20px' }}>
-              <span style={{ fontSize: '10.5px', fontWeight: 700, letterSpacing: '1.5px', color: '#D8AE54', textTransform: 'uppercase' }}>
-                STEP 2A: SCAN &amp; PAY
-              </span>
-              <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#08243B', margin: '4px 0 6px' }}>
-                PhonePe Payment Details
-              </h2>
-              <p style={{ fontSize: '13.5px', color: '#64748B', margin: 0 }}>
-                Scan &amp; Pay using the PhonePe app or any UPI application (Google Pay, Paytm, BHIM).
-              </p>
-            </div>
+        {/* Main Payment Container Card */}
+        <div className="summit-card" style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '30px', boxShadow: '0 4px 20px rgba(6, 75, 54, 0.08)', marginBottom: '28px' }}>
+          {/* Action A: PROMINENT UPI PAYMENT BUTTON */}
+          <div style={{ textAlign: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '24px', marginBottom: '24px' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', color: '#D8AE54', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+              INSTANT PAYMENT ON MOBILE
+            </span>
 
-            {/* Fee Pill */}
-            <div style={{ background: 'rgba(216, 174, 84, 0.12)', border: '1px solid #D8AE54', borderRadius: '6px', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <div>
-                <span style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.8px', color: '#08243B', fontWeight: 600 }}>
-                  Registration Fee
-                </span>
-                <span style={{ fontSize: '24px', fontWeight: 800, color: '#08243B' }}>
-                  ₹{fee}
-                </span>
+            <button
+              type="button"
+              onClick={handlePayViaUpiApp}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px',
+                width: '100%',
+                maxWidth: '440px',
+                minHeight: '54px',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                background: '#064B36',
+                color: '#FFFFFF',
+                fontSize: '16px',
+                fontWeight: 800,
+                letterSpacing: '0.8px',
+                textTransform: 'uppercase',
+                border: '2px solid #80DF35',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 6px 20px rgba(6, 75, 54, 0.3)',
+              }}
+              title="Click to launch UPI app with prefilled payment details"
+            >
+              <Smartphone size={22} color="#80DF35" />
+              <span>PAY ₹{fee} VIA UPI APP</span>
+              <ExternalLink size={18} color="#80DF35" />
+            </button>
+
+            <p style={{ margin: '10px 0 0', fontSize: '12.5px', color: '#64748B', lineHeight: 1.4 }}>
+              {deviceType === 'desktop'
+                ? '💻 Desktop mode: Click to see how to pay with your mobile phone or scan the QR code below.'
+                : '⚡ Opens your installed UPI app prefilled with ₹500, payee ANAS RAHMAN H, and your Registration ID.'}
+            </p>
+
+            {/* Quick UPI App Chooser Buttons */}
+            <div style={{ marginTop: '16px' }}>
+              <span style={{ fontSize: '11.5px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', marginBottom: '10px' }}>
+                Compatible with any UPI application:
+              </span>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => handleLaunchSpecificApp('phonepe', androidPhonePeIntent)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 14px',
+                    borderRadius: '6px',
+                    border: '1px solid #CBD5E1',
+                    background: '#F8FAFC',
+                    color: '#08243B',
+                    fontSize: '12.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#5F259F' }} />
+                  PhonePe
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleLaunchSpecificApp('gpay', androidGPayIntent)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 14px',
+                    borderRadius: '6px',
+                    border: '1px solid #CBD5E1',
+                    background: '#F8FAFC',
+                    color: '#08243B',
+                    fontSize: '12.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#4285F4' }} />
+                  Google Pay
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleLaunchSpecificApp('paytm', androidPaytmIntent)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 14px',
+                    borderRadius: '6px',
+                    border: '1px solid #CBD5E1',
+                    background: '#F8FAFC',
+                    color: '#08243B',
+                    fontSize: '12.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#00BAF2' }} />
+                  Paytm
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleLaunchSpecificApp('bhim', androidBhimIntent)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 14px',
+                    borderRadius: '6px',
+                    border: '1px solid #CBD5E1',
+                    background: '#F8FAFC',
+                    color: '#08243B',
+                    fontSize: '12.5px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#00796B' }} />
+                  BHIM
+                </button>
               </div>
-              <span style={{ background: '#0B2D49', color: '#FFFFFF', fontSize: '11px', fontWeight: 700, padding: '4px 8px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                All Inclusive
-              </span>
             </div>
 
-            {/* Original PhonePe QR Code (Uncropped, Unmodified, High-Quality) */}
-            <div style={{ textAlign: 'center', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '18px 14px', marginBottom: '22px' }}>
-              <div style={{ maxWidth: '280px', margin: '0 auto', background: '#FFFFFF', padding: '10px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)' }}>
+            {/* Launch Status / In-App Guidance */}
+            {upiLaunchStatus !== 'idle' && (
+              <div style={{ marginTop: '16px', background: '#F0FDF4', border: '1px solid #86EFAC', borderRadius: '8px', padding: '14px 18px', textAlign: 'left', maxWidth: '520px', margin: '16px auto 0' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#166534', fontWeight: 700, fontSize: '13.5px', marginBottom: '4px' }}>
+                  <Clock size={16} />
+                  <span>UPI Payment Requested</span>
+                </div>
+                <p style={{ margin: '0 0 10px', fontSize: '12.5px', color: '#14532D', lineHeight: 1.45 }}>
+                  If your UPI app opened, please approve the ₹{fee} payment to <strong>{DEC_ACCOUNT_DETAILS.accountName}</strong>. Once done, return here and tap the continue button below.
+                </p>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  <button
+                    type="button"
+                    onClick={handleContinueToSubmission}
+                    style={{
+                      background: '#15803D',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '6px 12px',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    I Have Paid – Continue →
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCopyUpi}
+                    style={{
+                      background: '#FFFFFF',
+                      color: '#0B2D49',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '4px',
+                      padding: '6px 12px',
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {copiedUpi ? 'Copied' : 'Copy UPI ID'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Section B: QR Code & Manual Payment Details */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', alignItems: 'center', marginBottom: '28px' }}>
+            {/* Left: Original PhonePe QR Code */}
+            <div style={{ textAlign: 'center', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '18px 14px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: '#D8AE54', display: 'block', marginBottom: '8px' }}>
+                OR SCAN VIA PHONE CAMERA / QR SCANNER
+              </span>
+              <div style={{ maxWidth: '240px', margin: '0 auto', background: '#FFFFFF', padding: '10px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)' }}>
                 <img
                   src={phonepeQrImg}
                   alt="Official PhonePe QR Code – Anas Rahman H"
@@ -529,28 +592,28 @@ export default function SmallSummitPaymentPage() {
                   }}
                 />
               </div>
-              <p style={{ margin: '12px 0 0', fontSize: '13px', fontWeight: 600, color: '#0B2D49' }}>
-                Scan &amp; Pay using PhonePe App
+              <p style={{ margin: '10px 0 2px', fontSize: '13px', fontWeight: 700, color: '#0B2D49' }}>
+                Official PhonePe QR Code
               </p>
-              <span style={{ fontSize: '11.5px', color: '#64748B', display: 'block', marginTop: '2px' }}>
-                Works with PhonePe, Google Pay, Paytm, BHIM &amp; Banking UPI apps
+              <span style={{ fontSize: '11.5px', color: '#64748B' }}>
+                Amount: ₹{fee} • Payee: {DEC_ACCOUNT_DETAILS.accountName}
               </span>
             </div>
 
-            {/* Payment Account Details */}
-            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '16px' }}>
-              <h3 style={{ fontSize: '12px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: '#08243B', margin: '0 0 12px', borderBottom: '1px solid #E2E8F0', paddingBottom: '6px' }}>
+            {/* Right: Payment Account Details Table */}
+            <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '20px' }}>
+              <h3 style={{ fontSize: '12.5px', fontWeight: 800, letterSpacing: '1px', textTransform: 'uppercase', color: '#08243B', margin: '0 0 14px', borderBottom: '1px solid #E2E8F0', paddingBottom: '8px' }}>
                 Payment Account Details
               </h3>
 
-              {/* Account Name */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #F1F5F9', fontSize: '13.5px' }}>
-                <span style={{ color: '#64748B' }}>Account Name:</span>
+              {/* Account Holder */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #E2E8F0', fontSize: '13.5px' }}>
+                <span style={{ color: '#64748B' }}>Account Holder:</span>
                 <strong style={{ color: '#08243B' }}>{DEC_ACCOUNT_DETAILS.accountName}</strong>
               </div>
 
-              {/* UPI ID with Copy Button */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #F1F5F9', fontSize: '13.5px' }}>
+              {/* UPI ID */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #E2E8F0', fontSize: '13.5px' }}>
                 <span style={{ color: '#64748B' }}>UPI ID:</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <code style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '3px 8px', borderRadius: '4px', fontWeight: 700, color: '#0B2D49', fontSize: '13px' }}>
@@ -576,14 +639,14 @@ export default function SmallSummitPaymentPage() {
                     title="Copy UPI ID"
                   >
                     {copiedUpi ? <Check size={12} /> : <Copy size={12} />}
-                    <span>{copiedUpi ? 'Copied' : 'Copy UPI'}</span>
+                    <span>{copiedUpi ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
               </div>
 
-              {/* Phone Number with Copy Button */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', fontSize: '13.5px' }}>
-                <span style={{ color: '#64748B' }}>Phone Number:</span>
+              {/* Phone Number */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid #E2E8F0', fontSize: '13.5px' }}>
+                <span style={{ color: '#64748B' }}>Phone / GPay:</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <strong style={{ color: '#08243B' }}>{DEC_ACCOUNT_DETAILS.phone}</strong>
                   <button
@@ -606,421 +669,86 @@ export default function SmallSummitPaymentPage() {
                     title="Copy Phone Number"
                   >
                     {copiedPhone ? <Check size={12} /> : <Copy size={12} />}
-                    <span>{copiedPhone ? 'Copied' : 'Copy Phone'}</span>
+                    <span>{copiedPhone ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
               </div>
-            </div>
 
-            {/* Direct UPI Intent Link / PhonePe Integration */}
-            <div style={{ marginTop: '20px', borderTop: '1px solid #E2E8F0', paddingTop: '18px' }}>
+              {/* Fixed Amount */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', fontSize: '13.5px' }}>
+                <span style={{ color: '#64748B' }}>Fixed Fee:</span>
+                <strong style={{ color: '#138C3B', fontSize: '16px' }}>₹{fee} {DEC_ACCOUNT_DETAILS.currency}</strong>
+              </div>
+            </div>
+          </div>
+
+          {/* Section C: PROMINENT CONTINUATION CARD & BUTTON */}
+          <div
+            style={{
+              background: 'linear-gradient(135deg, #F8FAFC 0%, #F0FDF4 100%)',
+              border: '2px solid #80DF35',
+              borderRadius: '10px',
+              padding: '24px',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ maxWidth: '640px', margin: '0 auto' }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', color: '#064B36', fontWeight: 800, fontSize: '14px', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
+                <CheckCircle2 size={18} color="#15803D" />
+                <span>Next Step: Submit Payment Screenshot</span>
+              </div>
+              <h3 style={{ fontSize: '20px', fontWeight: 800, color: '#08243B', margin: '0 0 8px' }}>
+                Already Made Your ₹{fee} Payment?
+              </h3>
+              <p style={{ fontSize: '13.5px', color: '#475569', lineHeight: 1.5, margin: '0 0 18px' }}>
+                After completing payment in PhonePe, Google Pay, Paytm, BHIM, or via QR code, continue to upload your screenshot and enter your 12-digit UTR reference number for administrative verification.
+              </p>
+
               <button
                 type="button"
-                onClick={handlePayViaUpiApp}
+                onClick={handleContinueToSubmission}
                 style={{
-                  display: 'flex',
+                  display: 'inline-flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '10px',
                   width: '100%',
-                  height: '48px',
-                  borderRadius: '6px',
-                  background: '#08243B',
+                  maxWidth: '440px',
+                  minHeight: '52px',
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  background: '#138C3B',
                   color: '#FFFFFF',
-                  fontSize: '13.5px',
-                  fontWeight: 700,
+                  fontSize: '15px',
+                  fontWeight: 800,
                   letterSpacing: '0.6px',
-                  border: '1.5px solid #D8AE54',
-                  boxSizing: 'border-box',
+                  textTransform: 'uppercase',
+                  border: 'none',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  boxShadow: '0 4px 14px rgba(8, 36, 59, 0.15)',
+                  boxShadow: '0 4px 16px rgba(19, 140, 59, 0.3)',
                 }}
-                title="Pay directly via PhonePe or UPI App"
               >
-                <Smartphone size={18} color="#D8AE54" />
-                <span>PAY DIRECTLY VIA UPI APP</span>
-                <ExternalLink size={15} color="#D8AE54" style={{ opacity: 0.9 }} />
+                <span>I HAVE COMPLETED PAYMENT – CONTINUE</span>
+                <ArrowRight size={18} />
               </button>
-
-              <small style={{ display: 'block', marginTop: '8px', fontSize: '11.5px', color: '#64748B', textAlign: 'center' }}>
-                {deviceType === 'desktop'
-                  ? '💻 Desktop mode: Click to view mobile instructions or scan the QR code above'
-                  : deviceType === 'android'
-                  ? '⚡ Opens PhonePe directly prefilled with ₹500 (or other UPI apps if unavailable)'
-                  : '⚡ Opens your installed UPI app prefilled with ₹500'}
-              </small>
-
-              {/* Status & Fallback Notifications */}
-              {upiLaunchStatus === 'opening-phonepe' && (
-                <div style={{ marginTop: '12px', background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '12px 14px', textAlign: 'left', fontSize: '12.5px', color: '#1E293B' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', fontWeight: 700, color: '#0B2D49' }}>
-                    <Clock size={16} color="#D8AE54" />
-                    <span>Opening PhonePe App...</span>
-                  </div>
-                  <p style={{ margin: '0 0 8px', fontSize: '12px', color: '#475569', lineHeight: 1.4 }}>
-                    If PhonePe did not open automatically on your Android device, tap below:
-                  </p>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <button
-                      type="button"
-                      onClick={handleOpenAnyUpiApp}
-                      style={{
-                        background: '#0B2D49',
-                        color: '#FFFFFF',
-                        border: '1px solid #D8AE54',
-                        borderRadius: '4px',
-                        padding: '6px 12px',
-                        fontSize: '11.5px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Open Any UPI App (GPay / Paytm / BHIM)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleCopyUpi}
-                      style={{
-                        background: '#FFFFFF',
-                        color: '#08243B',
-                        border: '1px solid #CBD5E1',
-                        borderRadius: '4px',
-                        padding: '6px 12px',
-                        fontSize: '11.5px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {copiedUpi ? 'Copied' : 'Copy UPI ID'}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {upiLaunchStatus === 'fallback-ready' && (
-                <div style={{ marginTop: '12px', background: '#FEF3C7', border: '1px solid #FCD34D', borderRadius: '6px', padding: '12px 14px', textAlign: 'left', fontSize: '12.5px', color: '#92400E' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', fontWeight: 700 }}>
-                    <AlertCircle size={16} color="#B45309" />
-                    <span>PhonePe App Not Responding</span>
-                  </div>
-                  <p style={{ margin: '0 0 8px', fontSize: '12px', lineHeight: 1.4 }}>
-                    If PhonePe is not installed, you can use Google Pay, Paytm, BHIM, or any other UPI app:
-                  </p>
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <button
-                      type="button"
-                      onClick={handleOpenAnyUpiApp}
-                      style={{
-                        background: '#08243B',
-                        color: '#FFFFFF',
-                        border: 'none',
-                        borderRadius: '4px',
-                        padding: '7px 14px',
-                        fontSize: '12px',
-                        fontWeight: 700,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      Open Any Other UPI App
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleCopyUpi}
-                      style={{
-                        background: '#FFFFFF',
-                        color: '#08243B',
-                        border: '1px solid #FCD34D',
-                        borderRadius: '4px',
-                        padding: '7px 12px',
-                        fontSize: '12px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {copiedUpi ? 'Copied' : 'Copy UPI ID'}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {upiLaunchStatus === 'ios-launched' && (
-                <div style={{ marginTop: '12px', background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '6px', padding: '12px 14px', textAlign: 'left', fontSize: '12.5px', color: '#0369A1' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', fontWeight: 700 }}>
-                    <Info size={16} color="#0284C7" />
-                    <span>iOS / iPhone Payment Guidance</span>
-                  </div>
-                  <p style={{ margin: '0 0 8px', fontSize: '12px', lineHeight: 1.4, color: '#0369A1' }}>
-                    If Safari did not launch your UPI app automatically, please scan the QR code above or copy our UPI ID:
-                  </p>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <code style={{ background: '#FFFFFF', padding: '4px 8px', borderRadius: '4px', border: '1px solid #BAE6FD', fontWeight: 700, color: '#0B2D49', fontSize: '12px' }}>
-                      {DEC_ACCOUNT_DETAILS.upiId}
-                    </code>
-                    <button
-                      type="button"
-                      onClick={handleCopyUpi}
-                      style={{
-                        background: copiedUpi ? '#15803D' : '#0B2D49',
-                        color: '#FFFFFF',
-                        border: 'none',
-                        borderRadius: '4px',
-                        padding: '5px 10px',
-                        fontSize: '11.5px',
-                        fontWeight: 600,
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {copiedUpi ? 'Copied' : 'Copy UPI ID'}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* Secondary quick option on mobile */}
-              {deviceType !== 'desktop' && (
-                <div style={{ marginTop: '10px', textAlign: 'center' }}>
-                  <button
-                    type="button"
-                    onClick={handleOpenAnyUpiApp}
-                    style={{
-                      background: 'none',
-                      border: 'none',
-                      color: '#0B2D49',
-                      fontSize: '12px',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      textDecoration: 'underline',
-                      padding: '4px 8px',
-                    }}
-                  >
-                    Pay via Google Pay, Paytm, or Other UPI App
-                  </button>
-                </div>
-              )}
-
-              {/* Post-payment guidance reminder */}
-              <div style={{ marginTop: '14px', background: 'rgba(216, 174, 84, 0.1)', border: '1px dashed #D8AE54', borderRadius: '6px', padding: '10px 12px', fontSize: '11.5px', color: '#08243B', lineHeight: 1.45, textAlign: 'left' }}>
-                <strong>📌 Important:</strong> After completing ₹{fee} payment in PhonePe/UPI, return here to upload your payment receipt screenshot and enter your 12-digit UTR in <strong>Step 2B</strong>.
-              </div>
             </div>
           </div>
+        </div>
 
-          {/* RIGHT: Upload Payment Receipt Proof */}
-          <div className="summit-card payment-upload-card" style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '28px', boxShadow: '0 4px 16px rgba(11, 45, 73, 0.05)' }}>
-            <div style={{ borderBottom: '1px solid #F1F5F9', paddingBottom: '16px', marginBottom: '20px' }}>
-              <span style={{ fontSize: '10.5px', fontWeight: 700, letterSpacing: '1.5px', color: '#D8AE54', textTransform: 'uppercase' }}>
-                STEP 2B: SUBMIT PROOF
-              </span>
-              <h2 style={{ fontSize: '20px', fontWeight: 700, color: '#08243B', margin: '4px 0 6px' }}>
-                Upload Payment Receipt
-              </h2>
-              <p style={{ fontSize: '13.5px', color: '#64748B', margin: 0 }}>
-                Upload your payment screenshot and enter the 12-digit UTR number for verification.
-              </p>
-            </div>
-
-            {uploadError && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#FEF2F2', border: '1px solid #F87171', borderRadius: '6px', padding: '12px 16px', color: '#991B1B', fontSize: '13.5px', marginBottom: '20px' }}>
-                <AlertCircle size={18} style={{ flexShrink: 0 }} />
-                <span>{uploadError}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmitProof} noValidate>
-              {/* File Dropzone */}
-              <div style={{ marginBottom: '18px' }}>
-                <label style={{ display: 'block', fontSize: '13.5px', fontWeight: 600, color: '#08243B', marginBottom: '6px' }}>
-                  Payment Screenshot <span style={{ color: '#DC2626' }}>*</span>
-                </label>
-
-                {!previewUrl ? (
-                  <label
-                    htmlFor="receipt-file"
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      border: '2px dashed #CBD5E1',
-                      borderRadius: '8px',
-                      padding: '24px 16px',
-                      background: '#F8FAFC',
-                      cursor: 'pointer',
-                      textAlign: 'center',
-                      transition: 'border-color 0.2s ease',
-                    }}
-                  >
-                    <input
-                      type="file"
-                      id="receipt-file"
-                      accept="image/png,image/jpeg,image/jpg,image/webp"
-                      onChange={handleFileChange}
-                      style={{ display: 'none' }}
-                    />
-                    <Upload size={30} color="#0B2D49" style={{ marginBottom: '8px' }} />
-                    <strong style={{ fontSize: '14px', color: '#08243B', display: 'block' }}>
-                      Click or drag payment screenshot here
-                    </strong>
-                    <span style={{ fontSize: '12px', color: '#64748B', marginTop: '4px' }}>
-                      PNG, JPG, JPEG or WebP (Max 5 MB)
-                    </span>
-                  </label>
-                ) : (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '12px', background: '#F8FAFC' }}>
-                    <img
-                      src={previewUrl}
-                      alt="Receipt preview"
-                      style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px', border: '1px solid #E2E8F0' }}
-                    />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#08243B', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {screenshotFile?.name || 'receipt-image'}
-                      </span>
-                      <span style={{ fontSize: '11.5px', color: '#64748B' }}>
-                        {screenshotFile ? `${(screenshotFile.size / 1024).toFixed(1)} KB` : ''}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={handleRemoveFile}
-                        style={{ display: 'block', background: 'none', border: 'none', color: '#DC2626', fontSize: '12px', padding: '4px 0', cursor: 'pointer', textDecoration: 'underline' }}
-                      >
-                        Remove / Choose another
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* UPI Transaction / UTR Field */}
-              <div style={{ marginBottom: '18px' }}>
-                <label htmlFor="upiTransactionId" style={{ display: 'block', fontSize: '13.5px', fontWeight: 600, color: '#08243B', marginBottom: '6px' }}>
-                  UPI Transaction ID / UTR Number <span style={{ color: '#DC2626' }}>*</span>
-                </label>
-                <input
-                  type="text"
-                  id="upiTransactionId"
-                  value={upiTransactionId}
-                  onChange={(e) => setUpiTransactionId(e.target.value)}
-                  placeholder="e.g. 423456789012"
-                  style={{
-                    width: '100%',
-                    height: '46px',
-                    padding: '10px 14px',
-                    fontFamily: 'inherit',
-                    fontSize: '14.5px',
-                    color: '#08243B',
-                    backgroundColor: '#FFFFFF',
-                    border: '1px solid #CBD5E1',
-                    borderRadius: '6px',
-                    boxSizing: 'border-box',
-                  }}
-                  required
-                />
-                <span style={{ display: 'block', fontSize: '11.5px', color: '#64748B', marginTop: '4px' }}>
-                  Locate the 12-digit UTR or UPI Reference No. in your PhonePe / bank confirmation.
-                </span>
-              </div>
-
-              {/* Payment Date Field */}
-              <div style={{ marginBottom: '18px' }}>
-                <label htmlFor="paymentDate" style={{ display: 'block', fontSize: '13.5px', fontWeight: 600, color: '#08243B', marginBottom: '6px' }}>
-                  Payment Date <span style={{ color: '#DC2626' }}>*</span>
-                </label>
-                <input
-                  type="date"
-                  id="paymentDate"
-                  value={paymentDate}
-                  onChange={(e) => setPaymentDate(e.target.value)}
-                  style={{
-                    width: '100%',
-                    height: '46px',
-                    padding: '10px 14px',
-                    fontFamily: 'inherit',
-                    fontSize: '14.5px',
-                    color: '#08243B',
-                    backgroundColor: '#FFFFFF',
-                    border: '1px solid #CBD5E1',
-                    borderRadius: '6px',
-                    boxSizing: 'border-box',
-                  }}
-                  required
-                />
-              </div>
-
-              {/* Optional Notes Field */}
-              <div style={{ marginBottom: '24px' }}>
-                <label htmlFor="paymentNotes" style={{ display: 'block', fontSize: '13.5px', fontWeight: 600, color: '#08243B', marginBottom: '6px' }}>
-                  Additional Notes <small style={{ color: '#94A3B8', fontWeight: 400 }}>(Optional)</small>
-                </label>
-                <input
-                  type="text"
-                  id="paymentNotes"
-                  value={paymentNotes}
-                  onChange={(e) => setPaymentNotes(e.target.value)}
-                  placeholder="e.g. Paid via PhonePe from HDFC Bank account"
-                  style={{
-                    width: '100%',
-                    height: '46px',
-                    padding: '10px 14px',
-                    fontFamily: 'inherit',
-                    fontSize: '14.5px',
-                    color: '#08243B',
-                    backgroundColor: '#FFFFFF',
-                    border: '1px solid #CBD5E1',
-                    borderRadius: '6px',
-                    boxSizing: 'border-box',
-                  }}
-                />
-              </div>
-
-              {/* Submit Button */}
-              <div>
-                <button
-                  type="submit"
-                  disabled={isSubmitting || isPaid}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '10px',
-                    width: '100%',
-                    height: '48px',
-                    backgroundColor: '#08243B',
-                    color: '#FFFFFF',
-                    border: '1px solid #D8AE54',
-                    borderRadius: '6px',
-                    fontFamily: 'inherit',
-                    fontSize: '14.5px',
-                    fontWeight: 700,
-                    letterSpacing: '0.5px',
-                    textTransform: 'uppercase',
-                    cursor: isSubmitting || isPaid ? 'not-allowed' : 'pointer',
-                    opacity: isSubmitting || isPaid ? 0.65 : 1,
-                    transition: 'all 0.2s ease',
-                    boxShadow: '0 2px 6px rgba(8, 36, 59, 0.2)',
-                  }}
-                >
-                  {isSubmitting
-                    ? 'Submitting Payment Details...'
-                    : isPaid
-                    ? 'Payment Confirmed'
-                    : 'SUBMIT PAYMENT DETAILS'}
-                </button>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '16px', fontSize: '12px', color: '#64748B', lineHeight: 1.4 }}>
-                <ShieldCheck size={18} color="#064B36" style={{ flexShrink: 0 }} />
-                <span>
-                  Our administrative team verifies all payments directly with bank records before confirming your Investor Mission 2026 seat.
-                </span>
-              </div>
-            </form>
+        {/* Security & Verification Notice */}
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '12.5px', color: '#64748B', lineHeight: 1.5, maxWidth: '780px', margin: '0 auto 24px', background: '#FFFFFF', padding: '14px 18px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+          <ShieldCheck size={20} color="#064B36" style={{ flexShrink: 0, marginTop: '2px' }} />
+          <div>
+            <strong style={{ color: '#08243B', display: 'block', marginBottom: '2px' }}>Important Policy Notice</strong>
+            <span>
+              Opening a UPI app or deep link initiates a payment transaction but does not guarantee completion. Payment status remains pending until our administrative team verifies the official 12-digit UTR and payment screenshot against bank records. Confirmed passes are issued strictly up to the 50-participant limit.
+            </span>
           </div>
         </div>
 
         {/* Back Link */}
-        <div style={{ marginTop: '36px', textAlign: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
           <Link
             to="/investor-mission"
             style={{
@@ -1061,7 +789,7 @@ export default function SmallSummitPaymentPage() {
             style={{
               background: '#FFFFFF',
               borderRadius: '10px',
-              maxWidth: '460px',
+              maxWidth: '480px',
               width: '100%',
               padding: '28px',
               boxShadow: '0 20px 40px rgba(0,0,0,0.25)',
@@ -1111,7 +839,7 @@ export default function SmallSummitPaymentPage() {
               Pay via PhonePe / UPI on Mobile
             </h3>
             <p style={{ fontSize: '13.5px', color: '#475569', lineHeight: 1.5, margin: '0 0 18px' }}>
-              UPI applications (PhonePe, Google Pay, Paytm) run on mobile devices. Choose how you would like to complete your ₹{fee} payment:
+              UPI applications (PhonePe, Google Pay, Paytm, BHIM) run on your mobile smartphone. Choose how you would like to complete your ₹{fee} payment:
             </p>
 
             <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '16px', textAlign: 'left', marginBottom: '18px', fontSize: '13px' }}>
@@ -1121,7 +849,7 @@ export default function SmallSummitPaymentPage() {
                 </span>
                 <div>
                   <strong style={{ color: '#08243B', display: 'block', marginBottom: '2px' }}>Scan PhonePe QR Code</strong>
-                  <span style={{ color: '#64748B', fontSize: '12.5px' }}>Use your phone camera or PhonePe to scan the QR code displayed on this page.</span>
+                  <span style={{ color: '#64748B', fontSize: '12.5px' }}>Open PhonePe, Google Pay, or your camera app and scan the QR code on this page.</span>
                 </div>
               </div>
 
@@ -1159,29 +887,51 @@ export default function SmallSummitPaymentPage() {
                 </span>
                 <div>
                   <strong style={{ color: '#08243B', display: 'block', marginBottom: '2px' }}>Submit Screenshot &amp; UTR</strong>
-                  <span style={{ color: '#64748B', fontSize: '12.5px' }}>After paying ₹{fee}, enter your 12-digit UTR and upload your payment screenshot on this page to secure your seat.</span>
+                  <span style={{ color: '#64748B', fontSize: '12.5px' }}>After paying ₹{fee}, tap &quot;I Have Completed Payment – Continue&quot; to submit your proof.</span>
                 </div>
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setShowDesktopModal(false)}
-              style={{
-                width: '100%',
-                height: '42px',
-                background: '#08243B',
-                color: '#FFFFFF',
-                border: 'none',
-                borderRadius: '6px',
-                fontWeight: 700,
-                fontSize: '13.5px',
-                cursor: 'pointer',
-                transition: 'background 0.2s ease',
-              }}
-            >
-              Back to Payment Page
-            </button>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowDesktopModal(false);
+                  handleContinueToSubmission();
+                }}
+                style={{
+                  flex: 1,
+                  height: '44px',
+                  background: '#138C3B',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '6px',
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  transition: 'background 0.2s ease',
+                }}
+              >
+                Continue to Submit Proof →
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDesktopModal(false)}
+                style={{
+                  height: '44px',
+                  padding: '0 16px',
+                  background: '#F1F5F9',
+                  color: '#334155',
+                  border: '1px solid #CBD5E1',
+                  borderRadius: '6px',
+                  fontWeight: 600,
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                }}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

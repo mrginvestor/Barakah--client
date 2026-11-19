@@ -8,8 +8,6 @@ import {
   Users,
   CheckCircle2,
   ArrowRight,
-  Play,
-  ExternalLink,
   ShieldCheck,
   BookOpen,
   TrendingUp,
@@ -46,7 +44,6 @@ export default function InvestorMissionLandingPage() {
     loading: true,
   });
 
-  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [isPosterModalOpen, setIsPosterModalOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
@@ -252,7 +249,6 @@ export default function InvestorMissionLandingPage() {
           <nav className="im-header-nav" aria-label="Page Sections">
             <button type="button" onClick={() => scrollToSection('about')}>Why Mission</button>
             <button type="button" onClick={() => scrollToSection('learning')}>Curriculum</button>
-            <button type="button" onClick={() => scrollToSection('webinar')}>Previous Webinar</button>
             <button type="button" onClick={() => scrollToSection('speaker')}>Speaker</button>
             <button type="button" onClick={() => scrollToSection('logistics')}>Logistics</button>
             <button type="button" onClick={() => scrollToSection('faqs')}>FAQs</button>
@@ -384,12 +380,12 @@ export default function InvestorMissionLandingPage() {
 
                 <button
                   type="button"
-                  onClick={() => setIsVideoModalOpen(true)}
+                  onClick={() => scrollToSection('learning')}
                   className="im-btn-secondary"
-                  title="Watch Previous Webinar with Abdul Basith"
+                  title="Explore Workshop Curriculum &amp; Modules"
                 >
-                  <Play size={16} fill="currentColor" />
-                  <span>PREVIOUS WEBINAR</span>
+                  <BookOpen size={16} />
+                  <span>VIEW CURRICULUM</span>
                 </button>
               </div>
 
@@ -558,91 +554,7 @@ export default function InvestorMissionLandingPage() {
           </div>
         </section>
 
-        {/* 5. PREVIOUS WEBINAR SHOWCASE (YOUTUBE RECORDING) */}
-        <section id="webinar" className="im-section im-webinar-section">
-          <div className="im-container">
-            <div className="im-webinar-wrapper">
-              <div className="im-webinar-grid">
-                {/* Left Info */}
-                <div className="im-webinar-details">
-                  <div className="im-tagline-badge" style={{ background: 'rgba(128, 223, 53, 0.15)', borderColor: '#80DF35' }}>
-                    <Sparkles size={13} className="im-tagline-spark" />
-                    <span>ONGOING EDUCATIONAL SESSIONS</span>
-                  </div>
-
-                  <h2 className="im-webinar-heading">
-                    LEARN FROM OUR PREVIOUS SESSIONS
-                  </h2>
-
-                  <p className="im-webinar-intro">
-                    Before joining us in Coimbatore, watch our full foundational webinar on <strong>Halal Investments &amp; Retirement Planning</strong> led by speaker Abdul Basith.
-                  </p>
-
-                  <div className="im-webinar-key-topics">
-                    <h4>Key Discussion Points in the Recording:</h4>
-                    <ul>
-                      <li><Check size={14} className="im-check-green" /> Shariah-compliant investing principles and screening benchmarks.</li>
-                      <li><Check size={14} className="im-check-green" /> Identifying permissible vs prohibited business operations.</li>
-                      <li><Check size={14} className="im-check-green" /> Demystifying stocks, index funds, mutual funds, and ETFs.</li>
-                      <li><Check size={14} className="im-check-green" /> Building wealth without Riba or speculative debt.</li>
-                      <li><Check size={14} className="im-check-green" /> Retirement planning without relying on interest-based schemes.</li>
-                      <li><Check size={14} className="im-check-green" /> Balancing spending, emergency savings, and annual Zakat.</li>
-                    </ul>
-                  </div>
-
-                  <div className="im-webinar-action-row">
-                    <button
-                      type="button"
-                      onClick={() => setIsVideoModalOpen(true)}
-                      className="im-btn-watch-modal"
-                    >
-                      <Play size={16} fill="currentColor" />
-                      <span>WATCH RECORDING IN POPUP</span>
-                    </button>
-
-                    <a
-                      href="https://youtu.be/dam9grDGDpY?si=MNVFsmet8grttPf0"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="im-link-youtube"
-                    >
-                      <span>Open on YouTube</span>
-                      <ExternalLink size={14} />
-                    </a>
-                  </div>
-                </div>
-
-                {/* Right Interactive Video Card */}
-                <div className="im-webinar-media">
-                  <div className="im-video-card" onClick={() => setIsVideoModalOpen(true)}>
-                    <img
-                      src="https://img.youtube.com/vi/dam9grDGDpY/maxresdefault.jpg"
-                      alt="Halal Investments and Retirement Planning with Abdul Basith"
-                      className="im-video-thumb"
-                      onError={(e) => {
-                        e.currentTarget.src = speakerPhoto;
-                      }}
-                    />
-                    <div className="im-video-overlay-tint" />
-                    <button
-                      type="button"
-                      className="im-video-play-btn"
-                      aria-label="Play Webinar Video"
-                    >
-                      <Play size={28} fill="#FFFFFF" color="#FFFFFF" style={{ marginLeft: '3px' }} />
-                    </button>
-                    <div className="im-video-caption">
-                      <strong>Halal Investments &amp; Retirement Planning</strong>
-                      <span>Keynote by Abdul Basith • Full 1-Hour Educational Session</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* 6. KEYNOTE SPEAKER PROFILE */}
+        {/* 5. KEYNOTE SPEAKER PROFILE */}
         <section id="speaker" className="im-section im-speaker-section">
           <div className="im-container">
             <div className="im-editorial-header">
@@ -675,7 +587,7 @@ export default function InvestorMissionLandingPage() {
                     <strong>Abdul Basith</strong> is a Licensed Financial Consultant who has dedicated his professional career to bridging the gap between modern financial markets and authentic Islamic jurisprudence.
                   </p>
                   <p>
-                    Through extensive consulting, workshops, and webinars, he advises salaried professionals, entrepreneurs, and families on structuring their wealth responsibly — proving that adherence to divine principles does not mean sacrificing financial security or growth.
+                    Through extensive consulting, workshops, and seminars, he advises salaried professionals, entrepreneurs, and families on structuring their wealth responsibly — proving that adherence to divine principles does not mean sacrificing financial security or growth.
                   </p>
                   <p>
                     At <strong>Investor Mission 2026</strong>, Abdul Basith will deliver direct, practical presentations and facilitate an extended open Q&amp;A session where attendees can bring their real-world investment scenarios.
@@ -960,63 +872,7 @@ export default function InvestorMissionLandingPage() {
         </div>
       </footer>
 
-      {/* 12. INTERACTIVE YOUTUBE WEBINAR MODAL */}
-      {isVideoModalOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="Previous Webinar Video Player"
-          className="im-modal-backdrop"
-          onClick={() => setIsVideoModalOpen(false)}
-        >
-          <div className="im-video-modal-dialog" onClick={(e) => e.stopPropagation()}>
-            <div className="im-modal-header">
-              <div>
-                <strong style={{ display: 'block', color: '#FFFFFF', fontSize: '15px' }}>
-                  Halal Investments &amp; Retirement Planning
-                </strong>
-                <span style={{ fontSize: '12px', color: '#80DF35' }}>
-                  Keynote by Abdul Basith (Licensed Financial Consultant)
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsVideoModalOpen(false)}
-                className="im-modal-close"
-                aria-label="Close video player"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="im-modal-video-frame">
-              <iframe
-                src="https://www.youtube-nocookie.com/embed/dam9grDGDpY?autoplay=1&rel=0"
-                title="Halal Investments and Retirement Planning – Abdul Basith"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-                className="im-iframe-player"
-              />
-            </div>
-
-            <div className="im-modal-footer">
-              <p>
-                Ready to attend the live in-person session at Siruthuli Noyyal Life Centre, Coimbatore?
-              </p>
-              <Link
-                to="/investor-mission-registration"
-                className="im-btn-modal-reg"
-                onClick={() => setIsVideoModalOpen(false)}
-              >
-                <span>Register for Dec 06 (₹500)</span>
-                <ArrowRight size={15} />
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 13. POSTER LIGHTBOX MODAL */}
+      {/* 12. POSTER LIGHTBOX MODAL */}
       {isPosterModalOpen && (
         <div
           role="dialog"

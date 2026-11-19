@@ -291,21 +291,21 @@ export default function SmallSummitRegisterPage() {
             <div className="ssp-compact-divider" aria-hidden="true" />
 
             <div className="ssp-compact-info-item">
-              <span className="ssp-compact-info-label">Event Capacity</span>
-              <strong className="ssp-compact-info-val">Limited to {capacity.maxCapacity} Participants</strong>
+              <span className="ssp-compact-info-label">Event Format</span>
+              <strong className="ssp-compact-info-val">In-Person Masterclass</strong>
             </div>
 
             <div className="ssp-compact-divider" aria-hidden="true" />
 
             <div className={`ssp-compact-info-item ${capacity.isSoldOut ? 'is-soldout' : ''}`}>
-              <span className="ssp-compact-info-label">Available Seats</span>
+              <span className="ssp-compact-info-label">Seat Status</span>
               <strong className="ssp-compact-info-val">
                 {capacity.loading ? (
                   'Checking...'
                 ) : capacity.isSoldOut ? (
-                  'Full (0 Seats Left)'
+                  'Registration Closed'
                 ) : (
-                  `${capacity.availableSeats} of ${capacity.maxCapacity} Available`
+                  'Limited Seats Available'
                 )}
               </strong>
             </div>
@@ -351,18 +351,16 @@ export default function SmallSummitRegisterPage() {
           <div className="ssp-capacity-content">
             {capacity.isSoldOut ? (
               <>
-                <strong>Investor Mission Registration Full</strong>
+                <strong>INVESTOR MISSION REGISTRATION FULL</strong>
                 <span>
-                  All {capacity.maxCapacity} seats for this exclusive gathering have been filled and confirmed.
+                  All seats for this exclusive gathering have been filled and confirmed.
                 </span>
               </>
             ) : (
               <>
-                <strong>{capacity.availableSeats} of {capacity.maxCapacity} Seats Available</strong>
+                <strong>HURRY UP! REGISTER YOUR SEAT NOW</strong>
                 <span>
-                  {capacity.loading
-                    ? 'Checking live seat availability...'
-                    : `Strictly capped at ${capacity.maxCapacity} participants. Dual admin verification of registration and payment required for seat confirmation.`}
+                  Limited seats available. Complete your registration and payment verification to secure your place at Investor Mission 2026.
                 </span>
               </>
             )}
@@ -417,7 +415,7 @@ export default function SmallSummitRegisterPage() {
               <span className="ssp-soldout-badge">Capacity Reached</span>
               <h2>Registration Closed</h2>
               <p>
-                This exclusive Investor Mission gathering is strictly capped at {capacity.maxCapacity} participants and is currently full. We thank you for your overwhelming interest.
+                This exclusive Investor Mission gathering is currently full and confirmed. We thank you for your overwhelming interest.
               </p>
               <Link to="/investor-mission" className="ssp-btn-secondary">
                 Return to Investor Mission

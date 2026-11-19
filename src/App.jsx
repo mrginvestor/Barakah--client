@@ -5,6 +5,7 @@ import MainSummitRegisterPage from './pages/MainSummitRegisterPage';
 import InvestorMissionLandingPage from './pages/InvestorMissionLandingPage';
 import SmallSummitRegisterPage from './pages/SmallSummitRegisterPage';
 import SmallSummitPaymentPage from './pages/SmallSummitPaymentPage';
+import SmallSummitPaymentSubmissionPage from './pages/SmallSummitPaymentSubmissionPage';
 import SmallSummitConfirmationPage from './pages/SmallSummitConfirmationPage';
 import MainSummitAdminDashboard from './pages/MainSummitAdminDashboard';
 import AdminDashboard from './pages/AdminDashboard';
@@ -43,6 +44,7 @@ function AppRoutes() {
     location.pathname === '/investor-mission' ||
     location.pathname === '/investor-mission-registration' ||
     location.pathname.startsWith('/investor-mission-payment') ||
+    location.pathname.startsWith('/investor-mission-submit-payment') ||
     location.pathname.startsWith('/investor-mission-confirmation') ||
     location.pathname === '/dec-summit' ||
     location.pathname === '/dec-summit-registration' ||
@@ -51,7 +53,8 @@ function AppRoutes() {
     location.pathname === '/small-summit-registration' ||
     location.pathname.startsWith('/small-summit-payment') ||
     location.pathname.startsWith('/small-summit-confirmation') ||
-    location.pathname.startsWith('/summit-payment');
+    location.pathname.startsWith('/summit-payment') ||
+    location.pathname.startsWith('/summit-payment-submission');
   const isAdminRoute = location.pathname.startsWith('/admin') || location.pathname.startsWith('/investor-mission-admin');
 
   return (
@@ -69,17 +72,22 @@ function AppRoutes() {
         <Route path="/investor-mission" element={<InvestorMissionLandingPage />} />
         <Route path="/investor-mission-registration" element={<SmallSummitRegisterPage />} />
         <Route path="/investor-mission-payment/:registrationId" element={<SmallSummitPaymentPage />} />
+        <Route path="/investor-mission-payment-submission/:registrationId" element={<SmallSummitPaymentSubmissionPage />} />
+        <Route path="/investor-mission-submit-payment/:registrationId" element={<SmallSummitPaymentSubmissionPage />} />
         <Route path="/investor-mission-confirmation/:registrationId" element={<SmallSummitConfirmationPage />} />
 
         {/* DEC Summit & Small Summit Aliases for 100% Backward Compatibility */}
         <Route path="/dec-summit" element={<Navigate to="/investor-mission" replace />} />
         <Route path="/dec-summit-registration" element={<SmallSummitRegisterPage />} />
         <Route path="/dec-summit-payment/:registrationId" element={<SmallSummitPaymentPage />} />
+        <Route path="/dec-summit-payment-submission/:registrationId" element={<SmallSummitPaymentSubmissionPage />} />
         <Route path="/dec-summit-confirmation/:registrationId" element={<SmallSummitConfirmationPage />} />
         <Route path="/small-summit-registration" element={<SmallSummitRegisterPage />} />
         <Route path="/small-summit-payment/:registrationId" element={<SmallSummitPaymentPage />} />
+        <Route path="/small-summit-payment-submission/:registrationId" element={<SmallSummitPaymentSubmissionPage />} />
         <Route path="/small-summit-confirmation/:registrationId" element={<SmallSummitConfirmationPage />} />
         <Route path="/summit-payment/:registrationId" element={<SmallSummitPaymentPage />} />
+        <Route path="/summit-payment-submission/:registrationId" element={<SmallSummitPaymentSubmissionPage />} />
 
         {/* Preserved Webinar Route */}
         <Route path="/webinar-register" element={<WebinarRegisterPage />} />
