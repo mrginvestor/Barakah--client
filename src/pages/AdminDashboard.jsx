@@ -144,14 +144,20 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
     Promise.all([
       adminApi
         .get('/api/admin/investor-mission/registrations')
-        .catch(() => adminApi.get('/api/admin/dec-summit/registrations'))
-        .catch(() => adminApi.get('/api/admin/small-summit/registrations'))
-        .catch(() => adminApi.get('/api/admin/summit/registrations')),
+        .catch(err => {
+          if (err.response?.status === 404) {
+            return adminApi.get('/api/admin/dec-summit/registrations');
+          }
+          throw err;
+        }),
       adminApi
         .get('/api/admin/investor-mission/stats')
-        .catch(() => adminApi.get('/api/admin/dec-summit/stats'))
-        .catch(() => adminApi.get('/api/admin/small-summit/stats'))
-        .catch(() => adminApi.get('/api/admin/summit/stats')),
+        .catch(err => {
+          if (err.response?.status === 404) {
+            return adminApi.get('/api/admin/dec-summit/stats');
+          }
+          throw err;
+        }),
     ])
       .then(([regRes, statRes]) => {
         if (regRes.data?.registrations) {
@@ -247,9 +253,12 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
     try {
       const res = await adminApi
         .get(`/api/admin/investor-mission/receipt/${reg.registrationId}`, { responseType: 'blob' })
-        .catch(() => adminApi.get(`/api/admin/dec-summit/receipt/${reg.registrationId}`, { responseType: 'blob' }))
-        .catch(() => adminApi.get(`/api/admin/small-summit/receipt/${reg.registrationId}`, { responseType: 'blob' }))
-        .catch(() => adminApi.get(`/api/admin/summit/receipt/${reg.registrationId}`, { responseType: 'blob' }));
+        .catch(err => {
+          if (err.response?.status === 404) {
+            return adminApi.get(`/api/admin/dec-summit/receipt/${reg.registrationId}`, { responseType: 'blob' });
+          }
+          throw err;
+        });
       const url = URL.createObjectURL(res.data);
       setReceiptBlobUrl(url);
     } catch (err) {
@@ -272,8 +281,12 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
     try {
       const res = await adminApi
         .post(`/api/admin/investor-mission/registrations/${regId}/approve-registration`)
-        .catch(() => adminApi.post(`/api/admin/dec-summit/registrations/${regId}/approve-registration`))
-        .catch(() => adminApi.post(`/api/admin/small-summit/registrations/${regId}/approve-registration`));
+        .catch(err => {
+          if (err.response?.status === 404) {
+            return adminApi.post(`/api/admin/dec-summit/registrations/${regId}/approve-registration`);
+          }
+          throw err;
+        });
       alert(res.data?.message || 'Registration details approved.');
       loadData();
     } catch (err) {
@@ -294,8 +307,12 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
     try {
       const res = await adminApi
         .post(`/api/admin/investor-mission/registrations/${regId}/reject-registration`, { reason })
-        .catch(() => adminApi.post(`/api/admin/dec-summit/registrations/${regId}/reject-registration`, { reason }))
-        .catch(() => adminApi.post(`/api/admin/small-summit/registrations/${regId}/reject-registration`, { reason }));
+        .catch(err => {
+          if (err.response?.status === 404) {
+            return adminApi.post(`/api/admin/dec-summit/registrations/${regId}/reject-registration`, { reason });
+          }
+          throw err;
+        });
       alert(res.data?.message || 'Registration rejected.');
       loadData();
     } catch (err) {
@@ -380,24 +397,18 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
           adminVerificationNotes: offlineForm.notes,
           approvePayment: offlineForm.approve,
         })
-        .catch(() =>
-          adminApi.post(`/api/admin/dec-summit/registrations/${offlineModalReg.registrationId}/record-offline-payment`, {
-            paymentAmount: Number(offlineForm.amount) || 500,
-            paymentDate: offlineForm.paymentDate,
-            offlinePaymentMethod: offlineForm.method,
-            adminVerificationNotes: offlineForm.notes,
-            approvePayment: offlineForm.approve,
-          })
-        )
-        .catch(() =>
-          adminApi.post(`/api/admin/small-summit/registrations/${offlineModalReg.registrationId}/record-offline-payment`, {
-            paymentAmount: Number(offlineForm.amount) || 500,
-            paymentDate: offlineForm.paymentDate,
-            offlinePaymentMethod: offlineForm.method,
-            adminVerificationNotes: offlineForm.notes,
-            approvePayment: offlineForm.approve,
-          })
-        );
+        .catch(err => {
+          if (err.response?.status === 404) {
+            return adminApi.post(`/api/admin/dec-summit/registrations/${offlineModalReg.registrationId}/record-offline-payment`, {
+              paymentAmount: Number(offlineForm.amount) || 500,
+              paymentDate: offlineForm.paymentDate,
+              offlinePaymentMethod: offlineForm.method,
+              adminVerificationNotes: offlineForm.notes,
+              approvePayment: offlineForm.approve,
+            });
+          }
+          throw err;
+        });
       alert(res.data?.message || 'Offline payment recorded successfully.');
       setOfflineModalReg(null);
       loadData();
@@ -423,16 +434,14 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
         .post(`/api/admin/investor-mission/registrations/${notesModalReg.registrationId}/notes`, {
           adminVerificationNotes: notesText,
         })
-        .catch(() =>
-          adminApi.post(`/api/admin/dec-summit/registrations/${notesModalReg.registrationId}/notes`, {
-            adminVerificationNotes: notesText,
-          })
-        )
-        .catch(() =>
-          adminApi.post(`/api/admin/small-summit/registrations/${notesModalReg.registrationId}/notes`, {
-            adminVerificationNotes: notesText,
-          })
-        );
+        .catch(err => {
+          if (err.response?.status === 404) {
+            return adminApi.post(`/api/admin/dec-summit/registrations/${notesModalReg.registrationId}/notes`, {
+              adminVerificationNotes: notesText,
+            });
+          }
+          throw err;
+        });
       alert(res.data?.message || 'Verification notes saved.');
       setNotesModalReg(null);
       loadData();
@@ -448,7 +457,12 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
     try {
       const res = await adminApi
         .get('/api/admin/investor-mission/attendance')
-        .catch(() => adminApi.get('/api/admin/dec-summit/attendance'));
+        .catch(err => {
+          if (err.response?.status === 404) {
+            return adminApi.get('/api/admin/dec-summit/attendance');
+          }
+          throw err;
+        });
       if (res.data?.stats) {
         setAttendanceStats(res.data.stats);
       }
@@ -473,7 +487,12 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
     try {
       const res = await adminApi
         .post('/api/admin/investor-mission/checkin', { token })
-        .catch(() => adminApi.post('/api/admin/dec-summit/checkin', { token }));
+        .catch(err => {
+          if (err.response?.status === 404) {
+            return adminApi.post('/api/admin/dec-summit/checkin', { token });
+          }
+          throw err;
+        });
       setCheckInResult({
         type: 'success',
         message: res.data.message || 'Check-in successful!',
@@ -515,12 +534,18 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
     try {
       const res = await adminApi
         .post(`/api/admin/investor-mission/registrations/${regId}/resend-confirmation`)
-        .catch(() => adminApi.post(`/api/admin/dec-summit/registrations/${regId}/resend-confirmation`));
-      alert(res.data?.message || 'Confirmation email resent successfully.');
+        .catch(err => {
+          if (err.response?.status === 404) {
+            return adminApi.post(`/api/admin/dec-summit/registrations/${regId}/resend-confirmation`);
+          }
+          throw err;
+        });
+      alert(res.data?.message || 'Confirmation email sent successfully.');
       loadData();
       if (viewMode === 'ATTENDANCE') loadAttendance();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to resend confirmation email.');
+      alert(err.response?.data?.message || 'Failed to send confirmation email. Check email provider configuration.');
+      loadData();
     } finally {
       setActionLoading(false);
     }
@@ -530,7 +555,12 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
     try {
       const res = await adminApi
         .get('/api/admin/investor-mission/attendance/export', { responseType: 'blob' })
-        .catch(() => adminApi.get('/api/admin/dec-summit/attendance/export', { responseType: 'blob' }));
+        .catch(err => {
+          if (err.response?.status === 404) {
+            return adminApi.get('/api/admin/dec-summit/attendance/export', { responseType: 'blob' });
+          }
+          throw err;
+        });
       const url = window.URL.createObjectURL(new Blob([res.data], { type: 'text/csv' }));
       const link = document.createElement('a');
       link.href = url;
