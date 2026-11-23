@@ -1112,14 +1112,74 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
                           </span>
                           <div style={{ marginTop: '5px' }}>
                             {reg.confirmationEmailStatus === 'SENT' || reg.confirmationEmailSent ? (
-                              <span style={{ fontSize: '11px', color: '#16A34A', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                                <Mail size={11} /> Email Sent
+                              <span
+                                style={{
+                                  fontSize: '10.5px',
+                                  color: '#15803D',
+                                  background: '#DCFCE7',
+                                  border: '1px solid #86EFAC',
+                                  padding: '2px 6px',
+                                  borderRadius: '4px',
+                                  fontWeight: 700,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '3px',
+                                }}
+                              >
+                                <Mail size={11} /> EMAIL SENT
+                              </span>
+                            ) : reg.confirmationEmailStatus === 'PENDING' ? (
+                              <span
+                                style={{
+                                  fontSize: '10.5px',
+                                  color: '#854D0E',
+                                  background: '#FEF9C3',
+                                  border: '1px solid #FDE047',
+                                  padding: '2px 6px',
+                                  borderRadius: '4px',
+                                  fontWeight: 700,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '3px',
+                                }}
+                              >
+                                <Clock size={11} /> EMAIL PENDING
                               </span>
                             ) : reg.confirmationEmailStatus === 'FAILED' ? (
                               <div>
-                                <span style={{ fontSize: '11px', color: '#DC2626', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                                  <AlertCircle size={11} /> Email Failed
+                                <span
+                                  style={{
+                                    fontSize: '10.5px',
+                                    color: '#DC2626',
+                                    background: '#FEE2E2',
+                                    border: '1px solid #FCA5A5',
+                                    padding: '2px 6px',
+                                    borderRadius: '4px',
+                                    fontWeight: 700,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '3px',
+                                  }}
+                                  title={reg.confirmationEmailLastError || 'Delivery failed'}
+                                >
+                                  <AlertCircle size={11} /> EMAIL FAILED
                                 </span>
+                                {reg.confirmationEmailLastError && (
+                                  <div
+                                    style={{
+                                      fontSize: '9.5px',
+                                      color: '#991B1B',
+                                      marginTop: '2px',
+                                      maxWidth: '135px',
+                                      overflow: 'hidden',
+                                      textOverflow: 'ellipsis',
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                    title={reg.confirmationEmailLastError}
+                                  >
+                                    {reg.confirmationEmailLastError}
+                                  </div>
+                                )}
                                 <div>
                                   <button
                                     type="button"
@@ -1461,33 +1521,90 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
                   {isConfirmed && (
                     <div className="im-admin-card-field">
                       <span className="im-admin-card-label">Confirmation Email</span>
-                      <div style={{ marginTop: '2px' }}>
+                      <div style={{ marginTop: '3px' }}>
                         {reg.confirmationEmailStatus === 'SENT' || reg.confirmationEmailSent ? (
-                          <span style={{ fontSize: '11.5px', color: '#16A34A', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                            <Mail size={12} /> Email Sent Successfully
+                          <span
+                            style={{
+                              fontSize: '11px',
+                              color: '#15803D',
+                              background: '#DCFCE7',
+                              border: '1px solid #86EFAC',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontWeight: 700,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                            }}
+                          >
+                            <Mail size={12} /> EMAIL SENT
+                          </span>
+                        ) : reg.confirmationEmailStatus === 'PENDING' ? (
+                          <span
+                            style={{
+                              fontSize: '11px',
+                              color: '#854D0E',
+                              background: '#FEF9C3',
+                              border: '1px solid #FDE047',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontWeight: 700,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                            }}
+                          >
+                            <Clock size={12} /> EMAIL PENDING
                           </span>
                         ) : reg.confirmationEmailStatus === 'FAILED' ? (
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: '11.5px', color: '#DC2626', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                              <AlertCircle size={12} /> Delivery Failed
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => handleResendConfirmation(reg.registrationId)}
-                              disabled={actionLoading}
-                              style={{
-                                fontSize: '11.5px',
-                                color: '#DC2626',
-                                textDecoration: 'underline',
-                                background: 'none',
-                                border: 'none',
-                                cursor: 'pointer',
-                                padding: 0,
-                                fontWeight: 700,
-                              }}
-                            >
-                              Retry Email{reg.confirmationEmailAttempts ? ` (${reg.confirmationEmailAttempts})` : ''}
-                            </button>
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                              <span
+                                style={{
+                                  fontSize: '11px',
+                                  color: '#DC2626',
+                                  background: '#FEE2E2',
+                                  border: '1px solid #FCA5A5',
+                                  padding: '2px 8px',
+                                  borderRadius: '4px',
+                                  fontWeight: 700,
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                }}
+                              >
+                                <AlertCircle size={12} /> EMAIL FAILED
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleResendConfirmation(reg.registrationId)}
+                                disabled={actionLoading}
+                                style={{
+                                  fontSize: '11.5px',
+                                  color: '#DC2626',
+                                  textDecoration: 'underline',
+                                  background: 'none',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  padding: 0,
+                                  fontWeight: 700,
+                                }}
+                              >
+                                Retry Email{reg.confirmationEmailAttempts ? ` (${reg.confirmationEmailAttempts})` : ''}
+                              </button>
+                            </div>
+                            {reg.confirmationEmailLastError && (
+                              <div
+                                style={{
+                                  fontSize: '10.5px',
+                                  color: '#991B1B',
+                                  marginTop: '3px',
+                                  wordBreak: 'break-word',
+                                }}
+                              >
+                                Error: {reg.confirmationEmailLastError}
+                              </div>
+                            )}
                           </div>
                         ) : (
                           <button
