@@ -83,6 +83,47 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
 
+  // Email Diagnostic Modal State
+  const [showDiagnosticModal, setShowDiagnosticModal] = useState(false);
+  const [diagnosticData, setDiagnosticData] = useState(null);
+  const [diagnosticLoading, setDiagnosticLoading] = useState(false);
+  const [diagnosticTestRecipient, setDiagnosticTestRecipient] = useState('');
+  const [diagnosticTestLoading, setDiagnosticTestLoading] = useState(false);
+
+  const runEmailDiagnostic = async (testRecipient = null) => {
+    if (testRecipient) {
+      setDiagnosticTestLoading(true);
+    } else {
+      setDiagnosticLoading(true);
+    }
+    try {
+      const res = await adminApi
+        .post('/api/admin/investor-mission/email-diagnostic', { testRecipient })
+        .catch(err => {
+          if (err.response?.status === 404) {
+            return adminApi.post('/api/admin/dec-summit/email-diagnostic', { testRecipient });
+          }
+          throw err;
+        });
+      setDiagnosticData(res.data);
+    } catch (err) {
+      setDiagnosticData({
+        ok: false,
+        success: false,
+        error: err.response?.data?.error || err.message,
+        provider: 'Resend HTTPS API (Port 443)',
+        resendApiConfig: 'ERROR',
+        senderConfig: 'ERROR',
+        httpsConnectivity: 'FAILED',
+        apiAuthentication: 'FAILED',
+        message: 'Failed to contact backend email diagnostic endpoint.',
+      });
+    } finally {
+      setDiagnosticLoading(false);
+      setDiagnosticTestLoading(false);
+    }
+  };
+
   const handlePasswordChange = async (e) => {
     e.preventDefault();
     setPasswordError('');
@@ -700,6 +741,29 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
           <span style={{ fontSize: '12px', background: '#E2E8F0', padding: '6px 12px', borderRadius: '6px', fontWeight: 600, color: '#0F172A' }}>
             Organizer: <strong style={{ color: '#064B36' }}>{adminDisplayName}</strong>
           </span>
+          <button
+            type="button"
+            onClick={() => {
+              setShowDiagnosticModal(true);
+              runEmailDiagnostic();
+            }}
+            style={{
+              padding: '6px 12px',
+              fontSize: '12px',
+              background: '#064B36',
+              color: '#FFFFFF',
+              border: '1px solid #064B36',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 700,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+            title="Inspect Resend HTTPS API status and connectivity"
+          >
+            <Mail size={14} /> Email Diagnostic
+          </button>
           <button
             type="button"
             onClick={() => { setShowPasswordModal(true); setPasswordError(''); setPasswordSuccess(''); }}
@@ -2464,6 +2528,181 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Email System Diagnostics Modal */}
+      {showDiagnosticModal && (
+        <div className="summit-modal-backdrop" onClick={() => setShowDiagnosticModal(false)}>
+          <div
+            className="summit-modal-box"
+            style={{ maxWidth: '560px' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="summit-modal-header" style={{ background: '#053726', color: '#FFFFFF' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Mail size={18} style={{ color: '#80DF35' }} />
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 800 }}>Email System Diagnostics</h3>
+              </div>
+              <button
+                type="button"
+                className="btn-close-modal"
+                style={{ color: '#FFFFFF' }}
+                onClick={() => setShowDiagnosticModal(false)}
+              >
+                &times;
+              </button>
+            </div>
+
+            <div className="summit-modal-body" style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '14px 16px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: 800, color: '#053726', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    Resend HTTPS API (Port 443)
+                  </span>
+                  {diagnosticLoading ? (
+                    <span style={{ fontSize: '11px', color: '#64748B' }}>Checking connection...</span>
+                  ) : (
+                    <span style={{
+                      fontSize: '11px',
+                      fontWeight: 800,
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      background: diagnosticData?.ok ? '#DCFCE7' : '#FEE2E2',
+                      color: diagnosticData?.ok ? '#166534' : '#991B1B',
+                      border: `1px solid ${diagnosticData?.ok ? '#86EFAC' : '#FCA5A5'}`,
+                    }}>
+                      {diagnosticData?.ok ? 'SYSTEM READY' : 'ATTENTION REQUIRED'}
+                    </span>
+                  )}
+                </div>
+
+                <p style={{ margin: 0, fontSize: '12px', color: '#475569', lineHeight: 1.5 }}>
+                  {diagnosticData?.message || (diagnosticLoading ? 'Querying email provider status...' : 'Diagnostic status available.')}
+                </p>
+              </div>
+
+              {/* Status Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '10px 12px' }}>
+                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Resend API Key</div>
+                  <div style={{ fontSize: '13px', fontWeight: 800, marginTop: '2px', color: diagnosticData?.resendApiConfig === 'READY' ? '#166534' : '#DC2626' }}>
+                    {diagnosticData?.resendApiConfig || '—'}
+                  </div>
+                </div>
+
+                <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '10px 12px' }}>
+                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>Sender Config</div>
+                  <div style={{ fontSize: '13px', fontWeight: 800, marginTop: '2px', color: diagnosticData?.senderConfig === 'READY' ? '#166534' : '#DC2626' }}>
+                    {diagnosticData?.senderConfig || '—'}
+                  </div>
+                </div>
+
+                <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '10px 12px' }}>
+                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>HTTPS Port 443</div>
+                  <div style={{ fontSize: '13px', fontWeight: 800, marginTop: '2px', color: diagnosticData?.httpsConnectivity === 'SUCCESS' ? '#166534' : '#DC2626' }}>
+                    {diagnosticData?.httpsConnectivity || '—'}
+                  </div>
+                </div>
+
+                <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', borderRadius: '6px', padding: '10px 12px' }}>
+                  <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600 }}>API Authentication</div>
+                  <div style={{ fontSize: '13px', fontWeight: 800, marginTop: '2px', color: diagnosticData?.apiAuthentication === 'SUCCESS' ? '#166534' : '#DC2626' }}>
+                    {diagnosticData?.apiAuthentication || '—'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Additional Metadata */}
+              <div style={{ fontSize: '12px', color: '#334155', background: '#F1F5F9', borderRadius: '6px', padding: '10px 12px', lineHeight: 1.6 }}>
+                <div><strong>Sender Address:</strong> {diagnosticData?.sender || 'info@halalwealth.finance'}</div>
+                <div><strong>Domain Status:</strong> <span style={{ fontWeight: 700, color: diagnosticData?.domainVerification === 'VERIFIED' ? '#166534' : '#B45309' }}>{diagnosticData?.domainVerification || 'NOT_CHECKED'}</span></div>
+                <div><strong>SMTP Bypassed:</strong> Outbound SMTP (ports 25, 465, 587) is disabled. Using HTTPS port 443.</div>
+                {diagnosticData?.latencyMs ? (
+                  <div><strong>API Latency:</strong> {diagnosticData.latencyMs} ms</div>
+                ) : null}
+              </div>
+
+              {/* Test Email Submission Box */}
+              <div style={{ border: '1px dashed #CBD5E1', borderRadius: '8px', padding: '14px 16px', background: '#FFFFFF' }}>
+                <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A', marginBottom: '4px' }}>
+                  Live Test Email
+                </div>
+                <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#64748B' }}>
+                  Send an isolated diagnostic verification email to an administrator address.
+                </p>
+
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="email"
+                    value={diagnosticTestRecipient}
+                    onChange={(e) => setDiagnosticTestRecipient(e.target.value)}
+                    placeholder="Enter admin test email (e.g. your email)"
+                    style={{ flex: 1, height: '36px', padding: '0 10px', fontSize: '12.5px', border: '1px solid #CBD5E1', borderRadius: '6px' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => runEmailDiagnostic(diagnosticTestRecipient)}
+                    disabled={diagnosticTestLoading || !diagnosticTestRecipient}
+                    style={{
+                      height: '36px',
+                      padding: '0 14px',
+                      background: '#053726',
+                      color: '#FFFFFF',
+                      fontSize: '12px',
+                      fontWeight: 700,
+                      borderRadius: '6px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {diagnosticTestLoading ? 'Sending...' : 'Send Test'}
+                  </button>
+                </div>
+
+                {diagnosticData?.testEmailStatus && diagnosticData.testEmailStatus !== 'NOT_REQUESTED' && (
+                  <div style={{
+                    marginTop: '10px',
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    background: diagnosticData.testEmailStatus === 'ACCEPTED' ? '#ECFDF5' : '#FEF2F2',
+                    border: `1px solid ${diagnosticData.testEmailStatus === 'ACCEPTED' ? '#A7F3D0' : '#FECACA'}`,
+                    color: diagnosticData.testEmailStatus === 'ACCEPTED' ? '#065F46' : '#991B1B',
+                  }}>
+                    <strong>Test Status:</strong> {diagnosticData.testEmailStatus}
+                    {diagnosticData.testEmailId ? (
+                      <div style={{ marginTop: '2px', fontSize: '11px' }}>
+                        Resend Message ID: <code>{diagnosticData.testEmailId}</code> (Accepted for delivery)
+                      </div>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="summit-modal-footer" style={{ justifyContent: 'space-between' }}>
+              <button
+                type="button"
+                className="btn-admin-action"
+                style={{ padding: '8px 14px', background: '#F1F5F9', color: '#334155' }}
+                onClick={() => runEmailDiagnostic()}
+                disabled={diagnosticLoading}
+              >
+                {diagnosticLoading ? 'Checking...' : 'Re-run Diagnostic'}
+              </button>
+
+              <button
+                type="button"
+                className="btn-admin-action btn-admin-approve"
+                style={{ padding: '8px 18px', fontSize: '13px' }}
+                onClick={() => setShowDiagnosticModal(false)}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
