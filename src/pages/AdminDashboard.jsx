@@ -21,6 +21,8 @@ import {
   Mail,
   QrCode,
   Search,
+  ZoomIn,
+  ZoomOut,
 } from 'lucide-react';
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import adminApi from '../config/adminApi';
@@ -54,6 +56,8 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
   const [modalRegistration, setModalRegistration] = useState(null);
   const [receiptBlobUrl, setReceiptBlobUrl] = useState('');
   const [receiptLoading, setReceiptLoading] = useState(false);
+  const [receiptError, setReceiptError] = useState(null);
+  const [receiptZoom, setReceiptZoom] = useState(1);
   const [actionLoading, setActionLoading] = useState(false);
 
   // Offline Payment Modal State
@@ -247,7 +251,10 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
   // Open secure receipt viewer modal
   const handleOpenReceipt = async (reg) => {
     setModalRegistration(reg);
+    if (receiptBlobUrl) URL.revokeObjectURL(receiptBlobUrl);
     setReceiptBlobUrl('');
+    setReceiptError(null);
+    setReceiptZoom(1);
     setReceiptLoading(true);
 
     try {
@@ -263,6 +270,20 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
       setReceiptBlobUrl(url);
     } catch (err) {
       console.error('Failed to load receipt blob:', err);
+      let errMsg = 'The payment screenshot file for this registration is no longer on the server.';
+      let errCode = '';
+      if (err.response?.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text();
+          const json = JSON.parse(text);
+          if (json.message) errMsg = json.message;
+          if (json.code) errCode = json.code;
+        } catch (_) {}
+      } else if (err.response?.data?.message) {
+        errMsg = err.response.data.message;
+        errCode = err.response.data.code;
+      }
+      setReceiptError({ message: errMsg, code: errCode });
     } finally {
       setReceiptLoading(false);
     }
@@ -272,6 +293,8 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
     if (receiptBlobUrl) URL.revokeObjectURL(receiptBlobUrl);
     setModalRegistration(null);
     setReceiptBlobUrl('');
+    setReceiptError(null);
+    setReceiptZoom(1);
   };
 
   // 1. Approve Registration Details
@@ -335,7 +358,11 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
           }
           throw err;
         });
-      alert(res.data?.message || 'Payment approved and seat confirmed.');
+      if (res.data?.emailStatus === 'FAILED' || (res.data?.emailSent === false && res.data?.emailError)) {
+        alert(`Payment approved and seat confirmed! Note: Confirmation email delivery timed out or failed (${res.data.emailError || 'Connection timeout'}). You can click "Retry Email" at any time.`);
+      } else {
+        alert(res.data?.message || 'Payment approved and seat confirmed.');
+      }
       handleCloseModal();
       loadData();
     } catch (err) {
@@ -540,7 +567,11 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
           }
           throw err;
         });
-      alert(res.data?.message || 'Confirmation email sent successfully.');
+      if (res.data?.emailStatus === 'FAILED') {
+        alert(`Email delivery attempt failed (${res.data?.emailError || 'Connection timeout'}). You can retry again.`);
+      } else {
+        alert(res.data?.message || 'Confirmation email sent successfully.');
+      }
       loadData();
       if (viewMode === 'ATTENDANCE') loadAttendance();
     } catch (err) {
@@ -884,26 +915,33 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
         </strong>
       </div>
 
-      {/* Registrations Table */}
+      {/* Registrations Table & Responsive Cards */}
       <div className="admin-section">
         <h2>Participant Records</h2>
-        <div className="admin-table-wrap">
-          <table className="admin-table">
+
+        {/* Desktop View: Consolidated 8-Column Table (No Horizontal Scroll) */}
+        <div className="im-admin-table-wrap">
+          <table className="im-admin-table">
+            <colgroup>
+              <col className="im-col-participant" />
+              <col className="im-col-contact" />
+              <col className="im-col-location" />
+              <col className="im-col-occupation" />
+              <col className="im-col-payment" />
+              <col className="im-col-seat" />
+              <col className="im-col-proof" />
+              <col className="im-col-actions" />
+            </colgroup>
             <thead>
               <tr>
-                <th>Registration ID</th>
                 <th>Participant</th>
                 <th>Contact</th>
                 <th>Location</th>
                 <th>Occupation / Org</th>
-                <th>Expectations</th>
-                <th>Payment Method</th>
-                <th>Registration Approval</th>
-                <th>Payment Approval</th>
-                <th>Seat Status</th>
+                <th>Payment</th>
+                <th>Registration & Seat</th>
                 <th>Proof / UTR</th>
                 <th>Admin Actions</th>
-                <th>Registered Date</th>
               </tr>
             </thead>
             <tbody>
@@ -922,122 +960,137 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
 
                 return (
                   <tr key={reg._id}>
+                    {/* 1. Participant */}
                     <td>
-                      <strong>{reg.registrationId}</strong>
-                    </td>
-                    <td>
+                      <div style={{ fontWeight: 700, fontSize: '13px', color: '#053726', marginBottom: '2px' }}>
+                        {reg.fullName || reg.name}
+                      </div>
                       <div>
-                        <strong>{reg.fullName || reg.name}</strong>
+                        <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F4C75', background: '#F1F5F9', padding: '1px 5px', borderRadius: '3px' }}>
+                          {reg.registrationId}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#64748B', marginTop: '3px' }}>
+                        {reg.createdAt ? new Date(reg.createdAt).toLocaleDateString() : '—'}
                       </div>
                     </td>
+
+                    {/* 2. Contact */}
                     <td>
-                      <div style={{ fontSize: '12px' }}>
-                        <div>{reg.email}</div>
-                        <div style={{ color: '#64748B' }}>
-                          {reg.countryCode || '+91'} {reg.mobileNumber || reg.phone || reg.whatsappNumber}
+                      <div style={{ fontSize: '12px', wordBreak: 'break-all', color: '#0F172A', fontWeight: 500 }}>
+                        {reg.email}
+                      </div>
+                      <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '3px' }}>
+                        {reg.countryCode || '+91'} {reg.mobileNumber || reg.phone || reg.whatsappNumber}
+                      </div>
+                    </td>
+
+                    {/* 3. Location */}
+                    <td>
+                      <div style={{ fontSize: '12px', color: '#334155' }}>
+                        {[reg.city, reg.district, reg.state].filter(Boolean).join(', ') || '—'}
+                      </div>
+                    </td>
+
+                    {/* 4. Occupation / Org */}
+                    <td>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#1E293B' }}>
+                        {reg.occupation === 'Other' && reg.otherOccupation
+                          ? `Other (${reg.otherOccupation})`
+                          : reg.occupation || reg.currentProfession || '—'}
+                      </div>
+                      {reg.organization && (
+                        <div style={{ fontSize: '11px', color: '#64748B', marginTop: '1px' }}>
+                          {reg.organization}
                         </div>
-                      </div>
-                    </td>
-                    <td>
-                      {[reg.city, reg.district, reg.state].filter(Boolean).join(', ') || '—'}
-                    </td>
-                    <td>
-                      <div style={{ fontSize: '12.5px' }}>
-                        <div>
-                          {reg.occupation === 'Other' && reg.otherOccupation
-                            ? `Other (${reg.otherOccupation})`
-                            : reg.occupation || reg.currentProfession || '—'}
+                      )}
+                      {reg.sessionExpectations && (
+                        <div
+                          style={{
+                            fontSize: '11px',
+                            color: '#475569',
+                            marginTop: '4px',
+                            fontStyle: 'italic',
+                            lineHeight: 1.3,
+                            cursor: 'help',
+                          }}
+                          title={reg.sessionExpectations}
+                        >
+                          Goal: {reg.sessionExpectations.length > 50 ? `${reg.sessionExpectations.substring(0, 50)}...` : reg.sessionExpectations}
                         </div>
-                        {reg.organization && <small style={{ color: '#64748B' }}>{reg.organization}</small>}
+                      )}
+                    </td>
+
+                    {/* 5. Payment */}
+                    <td>
+                      <div style={{ marginBottom: '4px' }}>
+                        {isOffline ? (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '3px',
+                              background: '#EDE9FE',
+                              color: '#5B21B6',
+                              border: '1px solid #DDD6FE',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              fontWeight: 700,
+                              fontSize: '10.5px',
+                            }}
+                          >
+                            <Banknote size={11} /> OFFLINE
+                          </span>
+                        ) : (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '3px',
+                              background: '#E0F2FE',
+                              color: '#0369A1',
+                              border: '1px solid #BAE6FD',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              fontWeight: 700,
+                              fontSize: '10.5px',
+                            }}
+                          >
+                            <Smartphone size={11} /> ONLINE
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#0F172A', marginBottom: '3px' }}>
+                        ₹{reg.paymentAmount || 500}
+                      </div>
+                      <div>
+                        {isPayApproved ? (
+                          <span className="admin-badge-paid">PAID</span>
+                        ) : isPayRejected ? (
+                          <span className="admin-badge-rejected">REJECTED</span>
+                        ) : reg.paymentStatus === 'PENDING_VERIFICATION' ? (
+                          <span className="admin-badge-pending-verification">NEEDS REVIEW</span>
+                        ) : isOffline ? (
+                          <span
+                            style={{
+                              background: '#F5F3FF',
+                              color: '#6D28D9',
+                              border: '1px solid #DDD6FE',
+                              padding: '2px 6px',
+                              borderRadius: '4px',
+                              fontWeight: 600,
+                              fontSize: '10.5px',
+                            }}
+                          >
+                            PENDING OFFLINE
+                          </span>
+                        ) : (
+                          <span className="admin-badge-pending">PENDING</span>
+                        )}
                       </div>
                     </td>
-                    <td>
-                      <div
-                        style={{
-                          fontSize: '12px',
-                          maxWidth: '160px',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          color: '#334155',
-                          cursor: reg.sessionExpectations ? 'help' : 'default',
-                        }}
-                        title={reg.sessionExpectations || ''}
-                      >
-                        {reg.sessionExpectations || '—'}
-                      </div>
-                    </td>
-                    <td>
-                      {isOffline ? (
-                        <span
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            background: '#EDE9FE',
-                            color: '#5B21B6',
-                            border: '1px solid #DDD6FE',
-                            padding: '2px 8px',
-                            borderRadius: '4px',
-                            fontWeight: 700,
-                            fontSize: '11px',
-                          }}
-                        >
-                          <Banknote size={12} /> OFFLINE
-                        </span>
-                      ) : (
-                        <span
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px',
-                            background: '#E0F2FE',
-                            color: '#0369A1',
-                            border: '1px solid #BAE6FD',
-                            padding: '2px 8px',
-                            borderRadius: '4px',
-                            fontWeight: 700,
-                            fontSize: '11px',
-                          }}
-                        >
-                          <Smartphone size={12} /> ONLINE
-                        </span>
-                      )}
-                    </td>
-                    <td>
-                      {isRegApproved ? (
-                        <span className="admin-badge-paid">APPROVED</span>
-                      ) : isRegRejected ? (
-                        <span className="admin-badge-rejected">REJECTED</span>
-                      ) : (
-                        <span className="admin-badge-pending">PENDING</span>
-                      )}
-                    </td>
-                    <td>
-                      {isPayApproved ? (
-                        <span className="admin-badge-paid">PAID</span>
-                      ) : isPayRejected ? (
-                        <span className="admin-badge-rejected">REJECTED</span>
-                      ) : reg.paymentStatus === 'PENDING_VERIFICATION' ? (
-                        <span className="admin-badge-pending-verification">NEEDS REVIEW</span>
-                      ) : isOffline ? (
-                        <span
-                          style={{
-                            background: '#F5F3FF',
-                            color: '#6D28D9',
-                            border: '1px solid #DDD6FE',
-                            padding: '2px 8px',
-                            borderRadius: '4px',
-                            fontWeight: 600,
-                            fontSize: '11px',
-                          }}
-                        >
-                          PENDING OFFLINE
-                        </span>
-                      ) : (
-                        <span className="admin-badge-pending">PENDING</span>
-                      )}
-                    </td>
+
+                    {/* 6. Registration & Seat */}
                     <td>
                       {isConfirmed ? (
                         <>
@@ -1057,27 +1110,52 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
                           >
                             <CheckCircle2 size={12} /> CONFIRMED
                           </span>
-                          <div style={{ marginTop: '4px' }}>
+                          <div style={{ marginTop: '5px' }}>
                             {reg.confirmationEmailStatus === 'SENT' || reg.confirmationEmailSent ? (
-                              <span style={{ fontSize: '10.5px', color: '#16A34A', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                              <span style={{ fontSize: '11px', color: '#16A34A', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
                                 <Mail size={11} /> Email Sent
                               </span>
                             ) : reg.confirmationEmailStatus === 'FAILED' ? (
-                              <span style={{ fontSize: '10.5px', color: '#DC2626', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
-                                <AlertCircle size={11} /> Failed
-                                <button
-                                  type="button"
-                                  onClick={() => handleResendConfirmation(reg.registrationId)}
-                                  style={{ textDecoration: 'underline', color: '#DC2626', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 700 }}
-                                >
-                                  Retry
-                                </button>
-                              </span>
+                              <div>
+                                <span style={{ fontSize: '11px', color: '#DC2626', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                  <AlertCircle size={11} /> Email Failed
+                                </span>
+                                <div>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleResendConfirmation(reg.registrationId)}
+                                    disabled={actionLoading}
+                                    style={{
+                                      fontSize: '11px',
+                                      color: '#DC2626',
+                                      textDecoration: 'underline',
+                                      background: 'none',
+                                      border: 'none',
+                                      cursor: 'pointer',
+                                      padding: '2px 0 0 0',
+                                      fontWeight: 700,
+                                    }}
+                                    title={reg.confirmationEmailLastError || 'Retry sending confirmation email'}
+                                  >
+                                    Retry Email{reg.confirmationEmailAttempts ? ` (${reg.confirmationEmailAttempts})` : ''}
+                                  </button>
+                                </div>
+                              </div>
                             ) : (
                               <button
                                 type="button"
                                 onClick={() => handleResendConfirmation(reg.registrationId)}
-                                style={{ fontSize: '10.5px', color: '#0369A1', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontWeight: 600 }}
+                                disabled={actionLoading}
+                                style={{
+                                  fontSize: '11px',
+                                  color: '#0369A1',
+                                  textDecoration: 'underline',
+                                  background: 'none',
+                                  border: 'none',
+                                  cursor: 'pointer',
+                                  padding: 0,
+                                  fontWeight: 600,
+                                }}
                               >
                                 Send Email
                               </button>
@@ -1095,13 +1173,16 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
                             padding: '3px 8px',
                             borderRadius: '4px',
                             fontWeight: 700,
-                            fontSize: '11.5px',
+                            fontSize: '11px',
+                            display: 'inline-block',
                           }}
                         >
-                          PENDING ({!isRegApproved && !isPayApproved ? 'Reg & Pay' : !isRegApproved ? 'Reg' : 'Pay'})
+                          PENDING {!isRegApproved && !isPayApproved ? 'REG & PAY' : !isRegApproved ? 'REG' : 'PAY'}
                         </span>
                       )}
                     </td>
+
+                    {/* 7. Proof / UTR */}
                     <td>
                       {isOffline ? (
                         <div style={{ fontSize: '11.5px', color: '#475569' }}>
@@ -1128,7 +1209,7 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
                             </button>
                           )}
                           {reg.upiTransactionId ? (
-                            <code style={{ fontSize: '11px', background: '#F1F5F9', padding: '1px 4px', borderRadius: '3px' }}>
+                            <code style={{ fontSize: '11px', background: '#F1F5F9', padding: '2px 4px', borderRadius: '3px', wordBreak: 'break-all', display: 'inline-block' }}>
                               {reg.upiTransactionId}
                             </code>
                           ) : (
@@ -1137,8 +1218,10 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
                         </div>
                       )}
                     </td>
+
+                    {/* 8. Admin Actions */}
                     <td>
-                      <div className="admin-action-btn-group" style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
                         <button
                           type="button"
                           className="btn-admin-action btn-admin-approve"
@@ -1148,12 +1231,13 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
                           style={{
                             display: 'inline-flex',
                             alignItems: 'center',
+                            justifyContent: 'center',
                             gap: '4px',
                             fontWeight: 700,
-                            padding: '6px 12px',
+                            padding: '6px 8px',
                             borderRadius: '5px',
-                            fontSize: '12px',
-                            whiteSpace: 'nowrap',
+                            fontSize: '11.5px',
+                            width: '100%',
                           }}
                         >
                           Approve Pay
@@ -1167,26 +1251,305 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
                           style={{
                             display: 'inline-flex',
                             alignItems: 'center',
+                            justifyContent: 'center',
                             gap: '4px',
                             fontWeight: 700,
-                            padding: '6px 12px',
+                            padding: '6px 8px',
                             borderRadius: '5px',
-                            fontSize: '12px',
-                            whiteSpace: 'nowrap',
+                            fontSize: '11.5px',
+                            width: '100%',
                           }}
                         >
                           Reject Pay
                         </button>
                       </div>
                     </td>
-                    <td>
-                      {reg.createdAt ? new Date(reg.createdAt).toLocaleDateString() : '—'}
-                    </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
+          {!filtered.length && !loading && (
+            <p className="admin-empty">No summit registrations match your search filters.</p>
+          )}
+        </div>
+
+        {/* Mobile View: Responsive Participant Cards (No Horizontal Scroll) */}
+        <div className="im-admin-mobile-cards">
+          {filtered.map((reg) => {
+            const isConfirmed =
+              (reg.registrationApproved && reg.paymentApproved) ||
+              (reg.registrationStatus === 'CONFIRMED' && reg.paymentStatus === 'PAID') ||
+              (reg.status === 'Confirmed' && reg.paymentStatus === 'PAID');
+
+            const isRegApproved = Boolean(reg.registrationApproved || reg.registrationStatus === 'CONFIRMED');
+            const isPayApproved = Boolean(reg.paymentApproved || reg.paymentStatus === 'PAID');
+            const isRegRejected = reg.registrationStatus === 'REJECTED';
+            const isPayRejected = reg.paymentStatus === 'REJECTED';
+            const hasReceipt = Boolean(reg.paymentScreenshot);
+            const isOffline = reg.paymentMethod === 'OFFLINE';
+
+            return (
+              <div key={reg._id} className="im-admin-card">
+                <div className="im-admin-card-header">
+                  <div>
+                    <div className="im-admin-card-name">{reg.fullName || reg.name}</div>
+                    <div className="im-admin-card-date">
+                      Registered: {reg.createdAt ? new Date(reg.createdAt).toLocaleDateString() : '—'}
+                    </div>
+                  </div>
+                  <span className="im-admin-card-id">{reg.registrationId}</span>
+                </div>
+
+                <div className="im-admin-card-badges">
+                  {isConfirmed ? (
+                    <span
+                      style={{
+                        background: '#DCFCE7',
+                        color: '#15803D',
+                        border: '1px solid #86EFAC',
+                        padding: '3px 8px',
+                        borderRadius: '4px',
+                        fontWeight: 800,
+                        fontSize: '11.5px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                    >
+                      <CheckCircle2 size={12} /> CONFIRMED
+                    </span>
+                  ) : isRegRejected || isPayRejected ? (
+                    <span className="admin-badge-rejected">REJECTED</span>
+                  ) : (
+                    <span
+                      style={{
+                        background: '#FEF9C3',
+                        color: '#854D0E',
+                        border: '1px solid #FDE047',
+                        padding: '3px 8px',
+                        borderRadius: '4px',
+                        fontWeight: 700,
+                        fontSize: '11px',
+                      }}
+                    >
+                      PENDING {!isRegApproved && !isPayApproved ? 'REG & PAY' : !isRegApproved ? 'REG' : 'PAY'}
+                    </span>
+                  )}
+
+                  {isPayApproved ? (
+                    <span className="admin-badge-paid">PAID</span>
+                  ) : isPayRejected ? (
+                    <span className="admin-badge-rejected">REJECTED</span>
+                  ) : reg.paymentStatus === 'PENDING_VERIFICATION' ? (
+                    <span className="admin-badge-pending-verification">NEEDS REVIEW</span>
+                  ) : isOffline ? (
+                    <span
+                      style={{
+                        background: '#F5F3FF',
+                        color: '#6D28D9',
+                        border: '1px solid #DDD6FE',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        fontWeight: 600,
+                        fontSize: '10.5px',
+                      }}
+                    >
+                      PENDING OFFLINE
+                    </span>
+                  ) : (
+                    <span className="admin-badge-pending">PENDING</span>
+                  )}
+
+                  {isOffline ? (
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '3px',
+                        background: '#EDE9FE',
+                        color: '#5B21B6',
+                        border: '1px solid #DDD6FE',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        fontWeight: 700,
+                        fontSize: '10.5px',
+                      }}
+                    >
+                      <Banknote size={11} /> OFFLINE
+                    </span>
+                  ) : (
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '3px',
+                        background: '#E0F2FE',
+                        color: '#0369A1',
+                        border: '1px solid #BAE6FD',
+                        padding: '2px 6px',
+                        borderRadius: '4px',
+                        fontWeight: 700,
+                        fontSize: '10.5px',
+                      }}
+                    >
+                      <Smartphone size={11} /> ONLINE
+                    </span>
+                  )}
+                </div>
+
+                <div className="im-admin-card-grid">
+                  <div className="im-admin-card-field">
+                    <span className="im-admin-card-label">Contact</span>
+                    <span className="im-admin-card-val" style={{ wordBreak: 'break-all' }}>
+                      {reg.email}
+                    </span>
+                    <span style={{ fontSize: '11.5px', color: '#64748B' }}>
+                      {reg.countryCode || '+91'} {reg.mobileNumber || reg.phone || reg.whatsappNumber}
+                    </span>
+                  </div>
+
+                  <div className="im-admin-card-field">
+                    <span className="im-admin-card-label">Location</span>
+                    <span className="im-admin-card-val">
+                      {[reg.city, reg.district, reg.state].filter(Boolean).join(', ') || '—'}
+                    </span>
+                  </div>
+
+                  <div className="im-admin-card-field">
+                    <span className="im-admin-card-label">Occupation & Organization</span>
+                    <span className="im-admin-card-val">
+                      {reg.occupation === 'Other' && reg.otherOccupation
+                        ? `Other (${reg.otherOccupation})`
+                        : reg.occupation || reg.currentProfession || '—'}
+                      {reg.organization ? ` • ${reg.organization}` : ''}
+                    </span>
+                  </div>
+
+                  {reg.sessionExpectations && (
+                    <div className="im-admin-card-field">
+                      <span className="im-admin-card-label">Expectations / Goals</span>
+                      <span className="im-admin-card-val" style={{ fontStyle: 'italic', color: '#475569' }}>
+                        {reg.sessionExpectations}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="im-admin-card-field">
+                    <span className="im-admin-card-label">Payment & Proof (₹{reg.paymentAmount || 500})</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginTop: '2px' }}>
+                      {hasReceipt && (
+                        <button
+                          type="button"
+                          className="btn-admin-action btn-admin-view-receipt"
+                          onClick={() => handleOpenReceipt(reg)}
+                        >
+                          <Eye size={12} style={{ display: 'inline', marginRight: '4px' }} />
+                          View Proof
+                        </button>
+                      )}
+                      {reg.upiTransactionId ? (
+                        <code style={{ fontSize: '11px', background: '#F1F5F9', padding: '2px 6px', borderRadius: '3px' }}>
+                          UTR: {reg.upiTransactionId}
+                        </code>
+                      ) : (
+                        <span style={{ color: '#94A3B8', fontSize: '11px' }}>No UTR</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {isConfirmed && (
+                    <div className="im-admin-card-field">
+                      <span className="im-admin-card-label">Confirmation Email</span>
+                      <div style={{ marginTop: '2px' }}>
+                        {reg.confirmationEmailStatus === 'SENT' || reg.confirmationEmailSent ? (
+                          <span style={{ fontSize: '11.5px', color: '#16A34A', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <Mail size={12} /> Email Sent Successfully
+                          </span>
+                        ) : reg.confirmationEmailStatus === 'FAILED' ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: '11.5px', color: '#DC2626', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <AlertCircle size={12} /> Delivery Failed
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleResendConfirmation(reg.registrationId)}
+                              disabled={actionLoading}
+                              style={{
+                                fontSize: '11.5px',
+                                color: '#DC2626',
+                                textDecoration: 'underline',
+                                background: 'none',
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: 0,
+                                fontWeight: 700,
+                              }}
+                            >
+                              Retry Email{reg.confirmationEmailAttempts ? ` (${reg.confirmationEmailAttempts})` : ''}
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleResendConfirmation(reg.registrationId)}
+                            disabled={actionLoading}
+                            style={{
+                              fontSize: '11.5px',
+                              color: '#0369A1',
+                              textDecoration: 'underline',
+                              background: 'none',
+                              border: 'none',
+                              cursor: 'pointer',
+                              padding: 0,
+                              fontWeight: 600,
+                            }}
+                          >
+                            Send Confirmation Email
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="im-admin-card-actions">
+                  <button
+                    type="button"
+                    className="btn-admin-action btn-admin-approve"
+                    onClick={() => handleApprovePayment(reg.registrationId)}
+                    disabled={actionLoading}
+                    title="Approve payment and officially confirm seat"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      fontWeight: 700,
+                    }}
+                  >
+                    Approve Pay
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-admin-action btn-admin-reject"
+                    onClick={() => handleRejectPayment(reg.registrationId)}
+                    disabled={actionLoading}
+                    title="Reject payment"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px',
+                      fontWeight: 700,
+                    }}
+                  >
+                    Reject Pay
+                  </button>
+                </div>
+              </div>
+            );
+          })}
           {!filtered.length && !loading && (
             <p className="admin-empty">No summit registrations match your search filters.</p>
           )}
@@ -1596,15 +1959,108 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
 
               <div className="modal-screenshot-wrap">
                 {receiptLoading ? (
-                  <div style={{ color: '#FFFFFF' }}>Loading secure screenshot...</div>
+                  <div style={{ color: '#FFFFFF', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', padding: '40px 0' }}>
+                    <div className="im-admin-spinner" />
+                    <span style={{ fontSize: '13px', fontWeight: 600 }}>Loading payment screenshot securely...</span>
+                  </div>
                 ) : receiptBlobUrl ? (
-                  <img
-                    src={receiptBlobUrl}
-                    alt="Payment receipt screenshot"
-                    className="modal-screenshot-img"
-                  />
+                  <>
+                    <div className="modal-screenshot-toolbar">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <button
+                          type="button"
+                          className="btn-admin-action"
+                          style={{ padding: '4px 8px', fontSize: '12px', background: '#334155', color: '#FFFFFF', border: '1px solid #475569' }}
+                          onClick={() => setReceiptZoom(z => Math.max(0.5, Number((z - 0.25).toFixed(2))))}
+                          title="Zoom out"
+                        >
+                          <ZoomOut size={13} style={{ display: 'inline', marginRight: '3px' }} /> -
+                        </button>
+                        <span style={{ color: '#F1F5F9', fontSize: '12px', minWidth: '45px', textAlign: 'center', fontWeight: 600 }}>
+                          {Math.round(receiptZoom * 100)}%
+                        </span>
+                        <button
+                          type="button"
+                          className="btn-admin-action"
+                          style={{ padding: '4px 8px', fontSize: '12px', background: '#334155', color: '#FFFFFF', border: '1px solid #475569' }}
+                          onClick={() => setReceiptZoom(z => Math.min(3, Number((z + 0.25).toFixed(2))))}
+                          title="Zoom in"
+                        >
+                          <ZoomIn size={13} style={{ display: 'inline', marginRight: '3px' }} /> +
+                        </button>
+                        {receiptZoom !== 1 && (
+                          <button
+                            type="button"
+                            className="btn-admin-action"
+                            style={{ padding: '4px 8px', fontSize: '11px', background: '#1E293B', color: '#94A3B8', border: '1px solid #475569' }}
+                            onClick={() => setReceiptZoom(1)}
+                          >
+                            Reset
+                          </button>
+                        )}
+                      </div>
+
+                      <div>
+                        <a
+                          href={receiptBlobUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="btn-admin-action"
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            background: '#15803D',
+                            color: '#FFFFFF',
+                            textDecoration: 'none',
+                            padding: '5px 10px',
+                            fontSize: '11.5px',
+                            borderRadius: '4px',
+                            fontWeight: 600,
+                          }}
+                          title="Open original screenshot in high-resolution in a new browser tab"
+                        >
+                          <ExternalLink size={12} /> Open in New Tab
+                        </a>
+                      </div>
+                    </div>
+
+                    <div className="modal-screenshot-scroll">
+                      <img
+                        src={receiptBlobUrl}
+                        alt="Payment receipt screenshot"
+                        className="modal-screenshot-img"
+                        style={{
+                          transform: `scale(${receiptZoom})`,
+                          transformOrigin: 'center center',
+                          cursor: receiptZoom === 1 ? 'zoom-in' : 'zoom-out',
+                        }}
+                        onClick={() => setReceiptZoom(z => z === 1 ? 1.75 : 1)}
+                        title="Click image to toggle zoom"
+                      />
+                    </div>
+                  </>
                 ) : (
-                  <div style={{ color: '#FCA5A5' }}>Failed to load screenshot from server.</div>
+                  <div style={{ background: '#FFFBEB', border: '1px solid #FCD34D', borderRadius: '8px', padding: '16px 20px', maxWidth: '540px', width: '100%', color: '#92400E', boxSizing: 'border-box' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', color: '#B45309', fontWeight: 700, fontSize: '14px' }}>
+                      <AlertCircle size={20} />
+                      <span>Payment Screenshot Unavailable on Server</span>
+                    </div>
+                    <p style={{ margin: '0 0 10px', fontSize: '12.5px', lineHeight: 1.5, color: '#78350F' }}>
+                      {receiptError?.message || 'The payment screenshot file for this registration is no longer on the server.'}
+                    </p>
+                    <div style={{ background: '#FFFFFF', border: '1px solid #FDE68A', borderRadius: '6px', padding: '10px 12px', fontSize: '12px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px 12px', color: '#1E293B', marginBottom: '10px' }}>
+                      <div><strong>UTR Reference:</strong> <code>{modalRegistration.upiTransactionId || 'None'}</code></div>
+                      <div><strong>Amount:</strong> ₹{modalRegistration.paymentAmount || 500}</div>
+                      <div><strong>Payment Status:</strong> {modalRegistration.paymentStatus}</div>
+                      <div><strong>Payment Date:</strong> {modalRegistration.paymentDate ? new Date(modalRegistration.paymentDate).toLocaleDateString() : '—'}</div>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '11.5px', color: '#92400E', fontStyle: 'italic', lineHeight: 1.4 }}>
+                      {modalRegistration.paymentStatus === 'PAID'
+                        ? 'Note: This participant\'s payment has already been verified and confirmed.'
+                        : 'If manual re-verification is required, you may ask the participant to re-upload their receipt proof.'}
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
