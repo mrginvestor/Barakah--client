@@ -258,20 +258,15 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
     setReceiptLoading(true);
 
     try {
-      const res = await adminApi
-        .get(`/api/admin/investor-mission/receipt/${reg.registrationId}`, { responseType: 'blob' })
-        .catch(err => {
-          if (err.response?.status === 404) {
-            return adminApi.get(`/api/admin/dec-summit/receipt/${reg.registrationId}`, { responseType: 'blob' });
-          }
-          throw err;
-        });
+      const res = await adminApi.get(
+        `/api/admin/investor-mission/receipt/${reg.registrationId}`,
+        { responseType: 'blob' }
+      );
       const url = URL.createObjectURL(res.data);
       setReceiptBlobUrl(url);
     } catch (err) {
-      console.error('Failed to load receipt blob:', err);
-      let errMsg = 'The payment screenshot file for this registration is no longer on the server.';
-      let errCode = '';
+      let errMsg = 'Payment screenshot file is not available on the server (it was submitted prior to persistent storage enablement). Participant details and UTR number remain preserved.';
+      let errCode = 'RECEIPT_FILE_UNAVAILABLE';
       if (err.response?.data instanceof Blob) {
         try {
           const text = await err.response.data.text();
