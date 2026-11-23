@@ -17,6 +17,7 @@ import {
   Info,
   X,
   QrCode,
+  Download,
 } from 'lucide-react';
 import API_URL from '../config/api';
 import sioCoimbatoreLogo from '../assets/sio-coimbatore-logo.png';
@@ -44,6 +45,7 @@ export default function SmallSummitPaymentPage() {
   // Copy states
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [copiedPhone, setCopiedPhone] = useState(false);
+  const [copiedAmount, setCopiedAmount] = useState(false);
 
   // Device & UPI direct payment states
   const [deviceType, setDeviceType] = useState('desktop');
@@ -106,6 +108,23 @@ export default function SmallSummitPaymentPage() {
     });
   };
 
+  const handleCopyAmount = () => {
+    const amountStr = String(regData?.registrationFee || DEC_ACCOUNT_DETAILS.fee);
+    navigator.clipboard.writeText(amountStr).then(() => {
+      setCopiedAmount(true);
+      setTimeout(() => setCopiedAmount(false), 2500);
+    });
+  };
+
+  const handleDownloadQr = () => {
+    const link = document.createElement('a');
+    link.href = phonepeQrImg;
+    link.download = 'PhonePe-QR-AnasRahmanH.jpg';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (loading) {
     return (
       <div className="summit-flow-page">
@@ -158,29 +177,32 @@ export default function SmallSummitPaymentPage() {
   const isPendingVerification = paymentStatus === 'PENDING_VERIFICATION';
   const isRejected = paymentStatus === 'REJECTED';
 
-  // Dynamic unique registration reference for the payment transaction
-  const uniquePaymentRef = String(regData?.registrationId || registrationId || 'INVESTORMISSION')
-    .trim()
-    .replace(/[^a-zA-Z0-9_-]/g, '');
-
-  // Exact parameters specified: pa, pn, am, cu, tn, tr
-  const upiQueryParams = [
+  // Clean P2P UPI parameters conforming strictly to NPCI specifications:
+  // pa: Payee UPI VPA
+  // pn: Payee Name
+  // am: Fixed Amount (fee)
+  // cu: Currency (INR)
+  // tn: Clean Transaction Note
+  // CRITICAL FIX: 'tr' (Transaction Reference) is strictly omitted for P2P personal VPAs.
+  // In NPCI guidelines, 'tr' is reserved for registered merchants. Passing 'tr' to a personal VPA
+  // triggers bank risk engines to decline the transaction with:
+  // "Your payment is declined for security reasons. Please try again..."
+  const cleanUpiParams = [
     `pa=${encodeURIComponent(DEC_ACCOUNT_DETAILS.upiId)}`,
     `pn=${encodeURIComponent(DEC_ACCOUNT_DETAILS.accountName)}`,
     `am=${encodeURIComponent(fee)}`,
     `cu=${DEC_ACCOUNT_DETAILS.currency}`,
     `tn=${encodeURIComponent('Investor Mission 2026')}`,
-    `tr=${encodeURIComponent(uniquePaymentRef)}`,
   ].join('&');
 
-  // Standard UPI URI (opens system UPI app chooser on Android, UPI handler on iOS)
-  const standardUpiDeepLink = `upi://pay?${upiQueryParams}`;
+  // Standard Universal UPI URI (opens system UPI app chooser on Android, UPI handler on iOS)
+  const standardUpiDeepLink = `upi://pay?${cleanUpiParams}`;
 
-  // App-specific Intent URIs for Android
-  const androidPhonePeIntent = `intent://pay?${upiQueryParams}#Intent;scheme=upi;package=com.phonepe.app;end`;
-  const androidGPayIntent = `intent://pay?${upiQueryParams}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`;
-  const androidPaytmIntent = `intent://pay?${upiQueryParams}#Intent;scheme=upi;package=net.one97.paytm;end`;
-  const androidBhimIntent = `intent://pay?${upiQueryParams}#Intent;scheme=upi;package=in.org.npci.upiapp;end`;
+  // Direct app intents for Android
+  const androidPhonePeIntent = `intent://pay?${cleanUpiParams}#Intent;scheme=upi;package=com.phonepe.app;end`;
+  const androidGPayIntent = `intent://pay?${cleanUpiParams}#Intent;scheme=upi;package=com.google.android.apps.nbu.paisa.user;end`;
+  const androidPaytmIntent = `intent://pay?${cleanUpiParams}#Intent;scheme=upi;package=net.one97.paytm;end`;
+  const androidBhimIntent = `intent://pay?${cleanUpiParams}#Intent;scheme=upi;package=in.org.npci.upiapp;end`;
 
   const handlePayViaUpiApp = () => {
     // 1. Desktop: Prevent broken protocol handler; open guidance modal with QR code & UPI ID instructions
@@ -526,7 +548,7 @@ export default function SmallSummitPaymentPage() {
 
             {/* Launch Status / In-App Guidance */}
             {upiLaunchStatus !== 'idle' && (
-              <div style={{ marginTop: '16px', background: '#F0FDF4', border: '1px solid #86EFAC', borderRadius: '8px', padding: '14px 18px', textAlign: 'left', maxWidth: '520px', margin: '16px auto 0' }}>
+              <div style={{ marginTop: '16px', background: '#F0FDF4', border: '1px solid #86EFAC', borderRadius: '8px', padding: '14px 18px', textAlign: 'left', maxWidth: '540px', margin: '16px auto 0' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#166534', fontWeight: 700, fontSize: '13.5px', marginBottom: '4px' }}>
                   <Clock size={16} />
                   <span>UPI Payment Requested</span>
@@ -570,6 +592,42 @@ export default function SmallSummitPaymentPage() {
                 </div>
               </div>
             )}
+
+            {/* Troubleshooting Helper for Bank Security Declines */}
+            <div
+              style={{
+                marginTop: '16px',
+                background: '#FFFBEB',
+                border: '1px solid #FDE68A',
+                borderRadius: '8px',
+                padding: '14px 18px',
+                textAlign: 'left',
+                maxWidth: '540px',
+                margin: '16px auto 0',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#92400E', fontWeight: 700, fontSize: '13px', marginBottom: '6px' }}>
+                <AlertCircle size={16} color="#D97706" style={{ flexShrink: 0 }} />
+                <span>Seeing &quot;Payment declined for security reasons&quot; in UPI app?</span>
+              </div>
+              <p style={{ margin: '0 0 8px', fontSize: '12px', color: '#78350F', lineHeight: 1.5 }}>
+                Some banks &amp; UPI apps (like HDFC, SBI, PhonePe) automatically block browser-opened links to personal UPI IDs for fraud protection. If this happens, use either 100% reliable method:
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', color: '#78350F' }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                  <span style={{ fontWeight: 800, color: '#B45309', flexShrink: 0 }}>• Method 1 (QR Code):</span>
+                  <span>
+                    Tap <strong>Save QR</strong> below (or screenshot it), open PhonePe/GPay, tap the QR scanner icon, select from gallery, and pay ₹{fee}.
+                  </span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                  <span style={{ fontWeight: 800, color: '#B45309', flexShrink: 0 }}>• Method 2 (UPI ID):</span>
+                  <span>
+                    Tap <strong>Copy UPI ID</strong>, open your UPI app, choose <strong>To UPI ID</strong>, paste <code>{DEC_ACCOUNT_DETAILS.upiId}</code>, and send ₹{fee}.
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Section B: QR Code & Manual Payment Details */}
@@ -577,7 +635,7 @@ export default function SmallSummitPaymentPage() {
             {/* Left: Original PhonePe QR Code */}
             <div style={{ textAlign: 'center', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '18px 14px' }}>
               <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase', color: '#D8AE54', display: 'block', marginBottom: '8px' }}>
-                OR SCAN VIA PHONE CAMERA / QR SCANNER
+                OFFICIAL PHONEPE QR CODE
               </span>
               <div style={{ maxWidth: '240px', margin: '0 auto', background: '#FFFFFF', padding: '10px', borderRadius: '8px', boxShadow: '0 2px 10px rgba(0,0,0,0.06)' }}>
                 <img
@@ -595,9 +653,37 @@ export default function SmallSummitPaymentPage() {
               <p style={{ margin: '10px 0 2px', fontSize: '13px', fontWeight: 700, color: '#0B2D49' }}>
                 Official PhonePe QR Code
               </p>
-              <span style={{ fontSize: '11.5px', color: '#64748B' }}>
+              <span style={{ fontSize: '11.5px', color: '#64748B', display: 'block', marginBottom: '10px' }}>
                 Amount: ₹{fee} • Payee: {DEC_ACCOUNT_DETAILS.accountName}
               </span>
+
+              {/* One-click Download QR button for mobile users */}
+              <button
+                type="button"
+                onClick={handleDownloadQr}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: '#064B36',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '7px 14px',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 6px rgba(6,75,54,0.2)',
+                  transition: 'background 0.15s ease',
+                }}
+              >
+                <Download size={14} />
+                <span>Save / Download QR Image</span>
+              </button>
+
+              <p style={{ margin: '8px 0 0', fontSize: '11px', color: '#64748B', lineHeight: 1.4 }}>
+                📱 Tip: Open PhonePe / GPay, tap the QR scanner icon, and choose &quot;Scan from Gallery&quot; to pay from this phone.
+              </p>
             </div>
 
             {/* Right: Payment Account Details Table */}
@@ -674,10 +760,34 @@ export default function SmallSummitPaymentPage() {
                 </div>
               </div>
 
-              {/* Fixed Amount */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', fontSize: '13.5px' }}>
+              {/* Fixed Amount with Copy Button */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', fontSize: '13.5px' }}>
                 <span style={{ color: '#64748B' }}>Fixed Fee:</span>
-                <strong style={{ color: '#138C3B', fontSize: '16px' }}>₹{fee} {DEC_ACCOUNT_DETAILS.currency}</strong>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <strong style={{ color: '#138C3B', fontSize: '16px' }}>₹{fee} {DEC_ACCOUNT_DETAILS.currency}</strong>
+                  <button
+                    type="button"
+                    onClick={handleCopyAmount}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                      background: copiedAmount ? '#15803D' : '#0B2D49',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '3px 8px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      transition: 'background 0.2s ease',
+                    }}
+                    title="Copy Amount"
+                  >
+                    {copiedAmount ? <Check size={11} /> : <Copy size={11} />}
+                    <span>{copiedAmount ? 'Copied' : 'Copy'}</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
