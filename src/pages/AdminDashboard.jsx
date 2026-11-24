@@ -90,6 +90,15 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
   const [diagnosticTestRecipient, setDiagnosticTestRecipient] = useState('');
   const [diagnosticTestLoading, setDiagnosticTestLoading] = useState(false);
 
+  // Expectations expansion state for long text toggle
+  const [expandedExpectations, setExpandedExpectations] = useState({});
+  const toggleExpectation = (id) => {
+    setExpandedExpectations((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
   const runEmailDiagnostic = async (testRecipient = null) => {
     if (testRecipient) {
       setDiagnosticTestLoading(true);
@@ -993,14 +1002,14 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
             </colgroup>
             <thead>
               <tr>
-                <th>Participant</th>
-                <th>Contact</th>
-                <th>Location</th>
-                <th>Occupation / Org</th>
-                <th>Payment</th>
-                <th>Registration & Seat</th>
-                <th>Proof / UTR</th>
-                <th>Admin Actions</th>
+                <th className="im-col-participant">Participant</th>
+                <th className="im-col-contact">Contact</th>
+                <th className="im-col-location">Location</th>
+                <th className="im-col-occupation">Occupation / Org</th>
+                <th className="im-col-payment">Payment</th>
+                <th className="im-col-seat">Registration &amp; Seat</th>
+                <th className="im-col-proof">Proof / UTR</th>
+                <th className="im-col-actions">Admin Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -1014,374 +1023,255 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
                 const isPayApproved = Boolean(reg.paymentApproved || reg.paymentStatus === 'PAID');
                 const isRegRejected = reg.registrationStatus === 'REJECTED';
                 const isPayRejected = reg.paymentStatus === 'REJECTED';
+                const isRejected = isRegRejected || isPayRejected || reg.status === 'Rejected';
                 const hasReceipt = Boolean(reg.paymentScreenshot);
                 const isOffline = reg.paymentMethod === 'OFFLINE';
 
                 return (
                   <tr key={reg._id}>
                     {/* 1. Participant */}
-                    <td>
-                      <div style={{ fontWeight: 700, fontSize: '13px', color: '#053726', marginBottom: '2px' }}>
+                    <td className="im-col-participant">
+                      <div className="im-participant-name">
                         {reg.fullName || reg.name}
                       </div>
-                      <div>
-                        <span style={{ fontSize: '11px', fontWeight: 700, color: '#0F4C75', background: '#F1F5F9', padding: '1px 5px', borderRadius: '3px' }}>
+                      <div className="im-participant-id-wrap">
+                        <span className="im-participant-id">
                           {reg.registrationId}
                         </span>
                       </div>
-                      <div style={{ fontSize: '11px', color: '#64748B', marginTop: '3px' }}>
-                        {reg.createdAt ? new Date(reg.createdAt).toLocaleDateString() : '—'}
+                      <div className="im-participant-date">
+                        {reg.createdAt ? new Date(reg.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—'}
                       </div>
                     </td>
 
                     {/* 2. Contact */}
-                    <td>
-                      <div style={{ fontSize: '12px', wordBreak: 'break-all', color: '#0F172A', fontWeight: 500 }}>
+                    <td className="im-col-contact">
+                      <div className="im-contact-email">
                         {reg.email}
                       </div>
-                      <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '3px' }}>
+                      <div className="im-contact-phone">
                         {reg.countryCode || '+91'} {reg.mobileNumber || reg.phone || reg.whatsappNumber}
                       </div>
                     </td>
 
                     {/* 3. Location */}
-                    <td>
-                      <div style={{ fontSize: '12px', color: '#334155' }}>
-                        {[reg.city, reg.district, reg.state].filter(Boolean).join(', ') || '—'}
+                    <td className="im-col-location">
+                      <div className="im-location-city">
+                        {reg.city || '—'}
                       </div>
+                      {(reg.district || reg.state) && (
+                        <div className="im-location-sub">
+                          {[reg.district, reg.state].filter(Boolean).join(', ')}
+                        </div>
+                      )}
                     </td>
 
                     {/* 4. Occupation / Org */}
-                    <td>
-                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#1E293B' }}>
+                    <td className="im-col-occupation">
+                      <div className="im-occupation-title">
                         {reg.occupation === 'Other' && reg.otherOccupation
                           ? `Other (${reg.otherOccupation})`
                           : reg.occupation || reg.currentProfession || '—'}
                       </div>
                       {reg.organization && (
-                        <div style={{ fontSize: '11px', color: '#64748B', marginTop: '1px' }}>
+                        <div className="im-occupation-org">
                           {reg.organization}
                         </div>
                       )}
                       {reg.sessionExpectations && (
-                        <div
-                          style={{
-                            fontSize: '11px',
-                            color: '#475569',
-                            marginTop: '4px',
-                            fontStyle: 'italic',
-                            lineHeight: 1.3,
-                            cursor: 'help',
-                          }}
-                          title={reg.sessionExpectations}
-                        >
-                          Goal: {reg.sessionExpectations.length > 50 ? `${reg.sessionExpectations.substring(0, 50)}...` : reg.sessionExpectations}
+                        <div className="im-occupation-expectations">
+                          <span className="im-expectations-text">
+                            {expandedExpectations[reg._id] || reg.sessionExpectations.length <= 55
+                              ? reg.sessionExpectations
+                              : `${reg.sessionExpectations.slice(0, 55)}... `}
+                          </span>
+                          {reg.sessionExpectations.length > 55 && (
+                            <button
+                              type="button"
+                              className="im-expectations-toggle"
+                              onClick={() => toggleExpectation(reg._id)}
+                            >
+                              {expandedExpectations[reg._id] ? 'less' : 'more'}
+                            </button>
+                          )}
                         </div>
                       )}
                     </td>
 
                     {/* 5. Payment */}
-                    <td>
-                      <div style={{ marginBottom: '4px' }}>
+                    <td className="im-col-payment">
+                      <div className="im-payment-method-wrap">
                         {isOffline ? (
-                          <span
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '3px',
-                              background: '#EDE9FE',
-                              color: '#5B21B6',
-                              border: '1px solid #DDD6FE',
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              fontWeight: 700,
-                              fontSize: '10.5px',
-                            }}
-                          >
+                          <span className="im-badge-method im-badge-offline">
                             <Banknote size={11} /> OFFLINE
                           </span>
                         ) : (
-                          <span
-                            style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '3px',
-                              background: '#E0F2FE',
-                              color: '#0369A1',
-                              border: '1px solid #BAE6FD',
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              fontWeight: 700,
-                              fontSize: '10.5px',
-                            }}
-                          >
+                          <span className="im-badge-method im-badge-online">
                             <Smartphone size={11} /> ONLINE
                           </span>
                         )}
                       </div>
-                      <div style={{ fontSize: '11.5px', fontWeight: 700, color: '#0F172A', marginBottom: '3px' }}>
+                      <div className="im-payment-amount">
                         ₹{reg.paymentAmount || 500}
                       </div>
-                      <div>
+                      <div className="im-payment-status-wrap">
                         {isPayApproved ? (
-                          <span className="admin-badge-paid">PAID</span>
+                          <span className="im-status-badge im-badge-paid">PAID</span>
                         ) : isPayRejected ? (
-                          <span className="admin-badge-rejected">REJECTED</span>
+                          <span className="im-status-badge im-badge-rejected">REJECTED</span>
                         ) : reg.paymentStatus === 'PENDING_VERIFICATION' ? (
-                          <span className="admin-badge-pending-verification">NEEDS REVIEW</span>
+                          <span className="im-status-badge im-badge-review">NEEDS REVIEW</span>
                         ) : isOffline ? (
-                          <span
-                            style={{
-                              background: '#F5F3FF',
-                              color: '#6D28D9',
-                              border: '1px solid #DDD6FE',
-                              padding: '2px 6px',
-                              borderRadius: '4px',
-                              fontWeight: 600,
-                              fontSize: '10.5px',
-                            }}
-                          >
-                            PENDING OFFLINE
-                          </span>
+                          <span className="im-status-badge im-badge-offline-pending">PENDING OFFLINE</span>
                         ) : (
-                          <span className="admin-badge-pending">PENDING</span>
+                          <span className="im-status-badge im-badge-pending">PENDING</span>
                         )}
                       </div>
                     </td>
 
                     {/* 6. Registration & Seat */}
-                    <td>
-                      {isConfirmed ? (
-                        <>
-                          <span
-                            style={{
-                              background: '#DCFCE7',
-                              color: '#15803D',
-                              border: '1px solid #86EFAC',
-                              padding: '3px 8px',
-                              borderRadius: '4px',
-                              fontWeight: 800,
-                              fontSize: '11.5px',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                            }}
-                          >
-                            <CheckCircle2 size={12} /> CONFIRMED
+                    <td className="im-col-seat">
+                      <div className="im-seat-status-wrap">
+                        {isConfirmed ? (
+                          <span className="im-status-badge im-badge-confirmed">
+                            <CheckCircle2 size={11} /> CONFIRMED
                           </span>
-                          <div style={{ marginTop: '5px' }}>
-                            {reg.confirmationEmailStatus === 'SENT' || reg.confirmationEmailSent ? (
-                              <span
-                                style={{
-                                  fontSize: '10.5px',
-                                  color: '#15803D',
-                                  background: '#DCFCE7',
-                                  border: '1px solid #86EFAC',
-                                  padding: '2px 6px',
-                                  borderRadius: '4px',
-                                  fontWeight: 700,
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '3px',
-                                }}
-                              >
-                                <Mail size={11} /> EMAIL SENT
+                        ) : isRegRejected || isPayRejected ? (
+                          <span className="im-status-badge im-badge-rejected">
+                            <XCircle size={11} /> REJECTED
+                          </span>
+                        ) : (
+                          <span className="im-status-badge im-badge-pending-reg">
+                            <Clock size={11} /> PENDING
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="im-seat-email-wrap">
+                        {isConfirmed ? (
+                          reg.confirmationEmailStatus === 'SENT' || reg.confirmationEmailSent ? (
+                            <span className="im-status-badge im-badge-email-sent" title="Confirmation email delivered">
+                              <Mail size={11} /> EMAIL SENT
+                            </span>
+                          ) : reg.confirmationEmailStatus === 'PENDING' ? (
+                            <span className="im-status-badge im-badge-email-pending" title="Email pending delivery">
+                              <Clock size={11} /> EMAIL PENDING
+                            </span>
+                          ) : reg.confirmationEmailStatus === 'FAILED' ? (
+                            <div className="im-email-failed-block">
+                              <span className="im-status-badge im-badge-email-failed" title={reg.confirmationEmailLastError || 'Email delivery failed'}>
+                                <AlertCircle size={11} /> EMAIL FAILED
                               </span>
-                            ) : reg.confirmationEmailStatus === 'PENDING' ? (
-                              <span
-                                style={{
-                                  fontSize: '10.5px',
-                                  color: '#854D0E',
-                                  background: '#FEF9C3',
-                                  border: '1px solid #FDE047',
-                                  padding: '2px 6px',
-                                  borderRadius: '4px',
-                                  fontWeight: 700,
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '3px',
-                                }}
-                              >
-                                <Clock size={11} /> EMAIL PENDING
-                              </span>
-                            ) : reg.confirmationEmailStatus === 'FAILED' ? (
-                              <div>
-                                <span
-                                  style={{
-                                    fontSize: '10.5px',
-                                    color: '#DC2626',
-                                    background: '#FEE2E2',
-                                    border: '1px solid #FCA5A5',
-                                    padding: '2px 6px',
-                                    borderRadius: '4px',
-                                    fontWeight: 700,
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '3px',
-                                  }}
-                                  title={reg.confirmationEmailLastError || 'Delivery failed'}
-                                >
-                                  <AlertCircle size={11} /> EMAIL FAILED
-                                </span>
-                                {reg.confirmationEmailLastError && (
-                                  <div
-                                    style={{
-                                      fontSize: '9.5px',
-                                      color: '#991B1B',
-                                      marginTop: '2px',
-                                      maxWidth: '135px',
-                                      overflow: 'hidden',
-                                      textOverflow: 'ellipsis',
-                                      whiteSpace: 'nowrap',
-                                    }}
-                                    title={reg.confirmationEmailLastError}
-                                  >
-                                    {reg.confirmationEmailLastError}
-                                  </div>
-                                )}
-                                <div>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleResendConfirmation(reg.registrationId)}
-                                    disabled={actionLoading}
-                                    style={{
-                                      fontSize: '11px',
-                                      color: '#DC2626',
-                                      textDecoration: 'underline',
-                                      background: 'none',
-                                      border: 'none',
-                                      cursor: 'pointer',
-                                      padding: '2px 0 0 0',
-                                      fontWeight: 700,
-                                    }}
-                                    title={reg.confirmationEmailLastError || 'Retry sending confirmation email'}
-                                  >
-                                    Retry Email{reg.confirmationEmailAttempts ? ` (${reg.confirmationEmailAttempts})` : ''}
-                                  </button>
-                                </div>
-                              </div>
-                            ) : (
                               <button
                                 type="button"
+                                className="im-btn-retry-inline"
                                 onClick={() => handleResendConfirmation(reg.registrationId)}
                                 disabled={actionLoading}
-                                style={{
-                                  fontSize: '11px',
-                                  color: '#0369A1',
-                                  textDecoration: 'underline',
-                                  background: 'none',
-                                  border: 'none',
-                                  cursor: 'pointer',
-                                  padding: 0,
-                                  fontWeight: 600,
-                                }}
+                                title={reg.confirmationEmailLastError || 'Retry sending confirmation email'}
                               >
-                                Send Email
+                                <RotateCcw size={10} /> Retry
                               </button>
-                            )}
-                          </div>
-                        </>
-                      ) : isRegRejected || isPayRejected ? (
-                        <span className="admin-badge-rejected">REJECTED</span>
-                      ) : (
-                        <span
-                          style={{
-                            background: '#FEF9C3',
-                            color: '#854D0E',
-                            border: '1px solid #FDE047',
-                            padding: '3px 8px',
-                            borderRadius: '4px',
-                            fontWeight: 700,
-                            fontSize: '11px',
-                            display: 'inline-block',
-                          }}
-                        >
-                          PENDING {!isRegApproved && !isPayApproved ? 'REG & PAY' : !isRegApproved ? 'REG' : 'PAY'}
-                        </span>
-                      )}
+                            </div>
+                          ) : (
+                            <button
+                              type="button"
+                              className="im-btn-send-email-link"
+                              onClick={() => handleResendConfirmation(reg.registrationId)}
+                              disabled={actionLoading}
+                            >
+                              Send Email
+                            </button>
+                          )
+                        ) : (
+                          <span className="im-seat-no-email">—</span>
+                        )}
+                      </div>
                     </td>
 
                     {/* 7. Proof / UTR */}
-                    <td>
+                    <td className="im-col-proof">
                       {isOffline ? (
-                        <div style={{ fontSize: '11.5px', color: '#475569' }}>
+                        <div className="im-proof-offline-wrap">
                           {reg.offlinePaymentRecorded ? (
                             <>
-                              <strong style={{ color: '#166534' }}>₹{reg.paymentAmount || 500} recorded</strong>
-                              <div>{reg.offlinePaymentMethod || 'Cash'}</div>
+                              <span className="im-proof-offline-recorded">₹{reg.paymentAmount || 500} recorded</span>
+                              <span className="im-proof-offline-method">{reg.offlinePaymentMethod || 'Cash'}</span>
                             </>
                           ) : (
-                            <span style={{ color: '#64748B' }}>Venue Payment</span>
+                            <span className="im-proof-offline-venue">Venue Payment</span>
                           )}
                         </div>
                       ) : (
-                        <div>
+                        <div className="im-proof-online-wrap">
                           {hasReceipt && (
                             <button
                               type="button"
-                              className="btn-admin-action btn-admin-view-receipt"
-                              style={{ display: 'block', marginBottom: '4px' }}
+                              className="im-btn-view-proof"
                               onClick={() => handleOpenReceipt(reg)}
                             >
-                              <Eye size={12} style={{ display: 'inline', marginRight: '4px' }} />
-                              View Proof
+                              <Eye size={12} /> View Proof
                             </button>
                           )}
-                          {reg.upiTransactionId ? (
-                            <code style={{ fontSize: '11px', background: '#F1F5F9', padding: '2px 4px', borderRadius: '3px', wordBreak: 'break-all', display: 'inline-block' }}>
-                              {reg.upiTransactionId}
-                            </code>
-                          ) : (
-                            <span style={{ color: '#94A3B8', fontSize: '11px' }}>No UTR</span>
-                          )}
+                          <div className="im-utr-wrap">
+                            {reg.upiTransactionId ? (
+                              <code className="im-utr-code" title={reg.upiTransactionId}>
+                                {reg.upiTransactionId}
+                              </code>
+                            ) : (
+                              <span className="im-utr-none">No UTR</span>
+                            )}
+                          </div>
                         </div>
                       )}
                     </td>
 
                     {/* 8. Admin Actions */}
-                    <td>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-                        <button
-                          type="button"
-                          className="btn-admin-action btn-admin-approve"
-                          onClick={() => handleApprovePayment(reg.registrationId)}
-                          disabled={actionLoading}
-                          title="Approve payment and officially confirm seat"
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '4px',
-                            fontWeight: 700,
-                            padding: '6px 8px',
-                            borderRadius: '5px',
-                            fontSize: '11.5px',
-                            width: '100%',
-                          }}
-                        >
-                          Approve Pay
-                        </button>
-                        <button
-                          type="button"
-                          className="btn-admin-action btn-admin-reject"
-                          onClick={() => handleRejectPayment(reg.registrationId)}
-                          disabled={actionLoading}
-                          title="Reject payment"
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '4px',
-                            fontWeight: 700,
-                            padding: '6px 8px',
-                            borderRadius: '5px',
-                            fontSize: '11.5px',
-                            width: '100%',
-                          }}
-                        >
-                          Reject Pay
-                        </button>
-                      </div>
+                    <td className="im-col-actions">
+                      {isConfirmed ? (
+                        <div className="im-actions-confirmed-wrap">
+                          <span className="im-badge-action-confirmed">
+                            <CheckCircle2 size={12} /> SEAT CONFIRMED
+                          </span>
+                          {reg.confirmationEmailStatus === 'FAILED' && (
+                            <button
+                              type="button"
+                              className="im-btn-retry-action"
+                              onClick={() => handleResendConfirmation(reg.registrationId)}
+                              disabled={actionLoading}
+                              title={reg.confirmationEmailLastError || 'Retry sending confirmation email'}
+                            >
+                              <RotateCcw size={11} /> Retry Email{reg.confirmationEmailAttempts ? ` (${reg.confirmationEmailAttempts})` : ''}
+                            </button>
+                          )}
+                        </div>
+                      ) : isRejected ? (
+                        <div className="im-actions-rejected-wrap">
+                          <span className="im-badge-action-rejected">
+                            <XCircle size={12} /> REJECTED
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="im-actions-pending-wrap">
+                          <button
+                            type="button"
+                            className="im-btn-action im-btn-approve"
+                            onClick={() => handleApprovePayment(reg.registrationId)}
+                            disabled={actionLoading}
+                            title="Approve payment and officially confirm seat"
+                          >
+                            <Check size={12} /> Approve Pay
+                          </button>
+                          <button
+                            type="button"
+                            className="im-btn-action im-btn-reject"
+                            onClick={() => handleRejectPayment(reg.registrationId)}
+                            disabled={actionLoading}
+                            title="Reject payment"
+                          >
+                            <X size={12} /> Reject Pay
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );
@@ -1405,6 +1295,7 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
             const isPayApproved = Boolean(reg.paymentApproved || reg.paymentStatus === 'PAID');
             const isRegRejected = reg.registrationStatus === 'REJECTED';
             const isPayRejected = reg.paymentStatus === 'REJECTED';
+            const isRejected = isRegRejected || isPayRejected || reg.status === 'Rejected';
             const hasReceipt = Boolean(reg.paymentScreenshot);
             const isOffline = reg.paymentMethod === 'OFFLINE';
 
@@ -1548,8 +1439,19 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
                   {reg.sessionExpectations && (
                     <div className="im-admin-card-field">
                       <span className="im-admin-card-label">Expectations / Goals</span>
-                      <span className="im-admin-card-val" style={{ fontStyle: 'italic', color: '#475569' }}>
-                        {reg.sessionExpectations}
+                      <span className="im-admin-card-val" style={{ fontStyle: 'italic', color: '#475569', fontSize: '12px', lineHeight: 1.35 }}>
+                        {expandedExpectations[reg._id] || reg.sessionExpectations.length <= 80
+                          ? reg.sessionExpectations
+                          : `${reg.sessionExpectations.slice(0, 80)}... `}
+                        {reg.sessionExpectations.length > 80 && (
+                          <button
+                            type="button"
+                            className="im-expectations-toggle"
+                            onClick={() => toggleExpectation(reg._id)}
+                          >
+                            {expandedExpectations[reg._id] ? 'less' : 'more'}
+                          </button>
+                        )}
                       </span>
                     </div>
                   )}
@@ -1690,38 +1592,100 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
                 </div>
 
                 <div className="im-admin-card-actions">
-                  <button
-                    type="button"
-                    className="btn-admin-action btn-admin-approve"
-                    onClick={() => handleApprovePayment(reg.registrationId)}
-                    disabled={actionLoading}
-                    title="Approve payment and officially confirm seat"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '4px',
-                      fontWeight: 700,
-                    }}
-                  >
-                    Approve Pay
-                  </button>
-                  <button
-                    type="button"
-                    className="btn-admin-action btn-admin-reject"
-                    onClick={() => handleRejectPayment(reg.registrationId)}
-                    disabled={actionLoading}
-                    title="Reject payment"
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '4px',
-                      fontWeight: 700,
-                    }}
-                  >
-                    Reject Pay
-                  </button>
+                  {isConfirmed ? (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '8px' }}>
+                      <span
+                        style={{
+                          background: '#DCFCE7',
+                          color: '#15803D',
+                          border: '1px solid #86EFAC',
+                          padding: '5px 10px',
+                          borderRadius: '5px',
+                          fontWeight: 800,
+                          fontSize: '11.5px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                        }}
+                      >
+                        <CheckCircle2 size={13} /> SEAT CONFIRMED
+                      </span>
+                      {reg.confirmationEmailStatus === 'FAILED' && (
+                        <button
+                          type="button"
+                          onClick={() => handleResendConfirmation(reg.registrationId)}
+                          disabled={actionLoading}
+                          style={{
+                            fontSize: '11.5px',
+                            color: '#DC2626',
+                            background: '#FEF2F2',
+                            border: '1px solid #FECACA',
+                            borderRadius: '4px',
+                            padding: '4px 10px',
+                            cursor: 'pointer',
+                            fontWeight: 700,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                          }}
+                        >
+                          <RotateCcw size={12} /> Retry Email{reg.confirmationEmailAttempts ? ` (${reg.confirmationEmailAttempts})` : ''}
+                        </button>
+                      )}
+                    </div>
+                  ) : isRejected ? (
+                    <span
+                      style={{
+                        background: '#FEE2E2',
+                        color: '#991B1B',
+                        border: '1px solid #FCA5A5',
+                        padding: '5px 10px',
+                        borderRadius: '5px',
+                        fontWeight: 700,
+                        fontSize: '11.5px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                    >
+                      <XCircle size={13} /> REJECTED
+                    </span>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        className="btn-admin-action btn-admin-approve"
+                        onClick={() => handleApprovePayment(reg.registrationId)}
+                        disabled={actionLoading}
+                        title="Approve payment and officially confirm seat"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px',
+                          fontWeight: 700,
+                        }}
+                      >
+                        Approve Pay
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-admin-action btn-admin-reject"
+                        onClick={() => handleRejectPayment(reg.registrationId)}
+                        disabled={actionLoading}
+                        title="Reject payment"
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '4px',
+                          fontWeight: 700,
+                        }}
+                      >
+                        Reject Pay
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             );
@@ -2251,7 +2215,41 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
                 Close
               </button>
 
-              {modalRegistration.paymentStatus !== 'PAID' && (
+              {modalRegistration.paymentStatus === 'PAID' || modalRegistration.registrationStatus === 'CONFIRMED' ? (
+                <span
+                  style={{
+                    background: '#DCFCE7',
+                    color: '#15803D',
+                    border: '1px solid #86EFAC',
+                    padding: '6px 12px',
+                    borderRadius: '5px',
+                    fontWeight: 800,
+                    fontSize: '12px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                  }}
+                >
+                  <CheckCircle2 size={14} /> SEAT CONFIRMED
+                </span>
+              ) : modalRegistration.paymentStatus === 'REJECTED' || modalRegistration.registrationStatus === 'REJECTED' ? (
+                <span
+                  style={{
+                    background: '#FEE2E2',
+                    color: '#991B1B',
+                    border: '1px solid #FCA5A5',
+                    padding: '6px 12px',
+                    borderRadius: '5px',
+                    fontWeight: 700,
+                    fontSize: '12px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                  }}
+                >
+                  <XCircle size={14} /> REJECTED
+                </span>
+              ) : (
                 <>
                   <button
                     type="button"
