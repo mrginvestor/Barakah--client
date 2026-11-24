@@ -136,7 +136,7 @@ export default function MainSummitAdminDashboard() {
             fontSize: '13px',
           }}
         >
-          Investor Mission 2026 (₹500 / 50 Seats) &rarr;
+          Investor Mission 2026 (₹500 / 80 Seats) &rarr;
         </Link>
         <Link
           to="/admin/dashboard"

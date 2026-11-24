@@ -31,7 +31,7 @@ const DEC_ACCOUNT_DETAILS = {
   phone: '6380413253',
   fee: 500,
   currency: 'INR',
-  maxCapacity: 50,
+  maxCapacity: 80,
 };
 
 export default function SmallSummitPaymentPage() {
@@ -852,7 +852,7 @@ export default function SmallSummitPaymentPage() {
           <div>
             <strong style={{ color: '#08243B', display: 'block', marginBottom: '2px' }}>Important Policy Notice</strong>
             <span>
-              Opening a UPI app or deep link initiates a payment transaction but does not guarantee completion. Payment status remains pending until our administrative team verifies the official 12-digit UTR and payment screenshot against bank records. Confirmed passes are issued strictly up to the 50-participant limit.
+              Opening a UPI app or deep link initiates a payment transaction but does not guarantee completion. Payment status remains pending until our administrative team verifies the official 12-digit UTR and payment screenshot against bank records. Confirmed passes are issued strictly up to the 80-participant limit.
             </span>
           </div>
         </div>

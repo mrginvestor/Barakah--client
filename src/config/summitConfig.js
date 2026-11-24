@@ -6,8 +6,8 @@
 
 export const SUMMIT_CONFIG = {
   eventName: 'Halal Wealth Summit',
-  subtitle: 'Register now to reserve your seat. Limited to 50 participants.',
-  maxCapacity: 50,
+  subtitle: 'Register now to reserve your seat. Limited to 80 participants.',
+  maxCapacity: 80,
   registrationFee: 500,
   currency: 'INR',
   currencySymbol: '₹',

@@ -37,9 +37,9 @@ import './InvestorMissionLandingPage.css';
 
 export default function InvestorMissionLandingPage() {
   const [capacity, setCapacity] = useState({
-    maxCapacity: 50,
+    maxCapacity: 80,
     registrationFee: 500,
-    availableSeats: 50,
+    availableSeats: 80,
     isSoldOut: false,
     loading: true,
   });
@@ -58,9 +58,9 @@ export default function InvestorMissionLandingPage() {
       .then((res) => {
         if (isMounted && res.data?.success) {
           setCapacity({
-            maxCapacity: res.data.maxCapacity || 50,
+            maxCapacity: res.data.maxCapacity || 80,
             registrationFee: res.data.registrationFee || 500,
-            availableSeats: res.data.availableSeats ?? 50,
+            availableSeats: res.data.availableSeats ?? 80,
             isSoldOut: Boolean(res.data.isSoldOut) || (res.data.availableSeats !== undefined && res.data.availableSeats <= 0),
             loading: false,
           });
@@ -211,8 +211,8 @@ export default function InvestorMissionLandingPage() {
       a: 'The event takes place on Sunday, 06 December 2026 at Siruthuli Noyyal Life Centre, Ukkadam Sungam Bypass Rd, Shanmuga Nagar, Ramanathapuram, Coimbatore, Tamil Nadu 641023, India.',
     },
     {
-      q: 'Why is attendance limited to only 50 participants?',
-      a: 'To maintain a high-touch, workshop-style editorial atmosphere where every attendee can interact directly with speaker Abdul Basith, ask detailed portfolio questions, and engage in real case studies, seats are strictly capped at 50 confirmed attendees.',
+      q: 'Why is attendance limited to only 80 participants?',
+      a: 'To maintain a high-touch, workshop-style editorial atmosphere where every attendee can interact directly with speaker Abdul Basith, ask detailed portfolio questions, and engage in real case studies, seats are strictly capped at 80 confirmed attendees.',
     },
     {
       q: 'How does the ₹500 registration fee work?',
@@ -359,9 +359,9 @@ export default function InvestorMissionLandingPage() {
                 <div className="im-meta-divider" />
 
                 <div className="im-meta-seat-counter">
-                  <span className="im-meta-label">CONFIRMED CAPACITY</span>
+                  <span className="im-meta-label">SEAT RESERVATION</span>
                   <strong className="im-meta-seat-val">
-                    {capacity.loading ? '50 Seats' : capacity.isSoldOut ? 'Event Full' : `${capacity.availableSeats} of 50 Left`}
+                    {capacity.isSoldOut ? 'Event Full' : 'HURRY UP! REGISTER YOUR SEAT NOW'}
                   </strong>
                   <span className="im-meta-seat-note">Siruthuli Noyyal Life Centre</span>
                 </div>
@@ -785,7 +785,7 @@ export default function InvestorMissionLandingPage() {
             <div className="im-cta-inner">
               <div className="im-tagline-badge" style={{ background: 'rgba(128, 223, 53, 0.2)', borderColor: '#80DF35' }}>
                 <Sparkles size={13} className="im-tagline-spark" />
-                <span>LIMITED 50-SEAT WORKSHOP</span>
+                <span>LIMITED 80-SEAT WORKSHOP</span>
               </div>
 
               <h2 className="im-cta-heading">
@@ -793,7 +793,7 @@ export default function InvestorMissionLandingPage() {
               </h2>
 
               <p className="im-cta-desc">
-                Be part of an authentic, in-depth educational gathering focused on Islamic finance, Shariah screening, and responsible wealth creation. Reserve your seat early before the 50-seat threshold is reached.
+                Be part of an authentic, in-depth educational gathering focused on Islamic finance, Shariah screening, and responsible wealth creation. Reserve your seat early before the 80-seat threshold is reached.
               </p>
 
               <div className="im-cta-fee-pill">

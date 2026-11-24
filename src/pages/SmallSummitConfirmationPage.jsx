@@ -467,7 +467,7 @@ export default function SmallSummitConfirmationPage() {
                   lineHeight: 1.5,
                 }}
               >
-                <strong>Note:</strong> Seat confirmation is subject to admin approval and payment verification. Seats are capped at 50 participants.
+                <strong>Note:</strong> Seat confirmation is subject to admin approval and payment verification. Seats are capped at 80 participants.
               </div>
             </div>
 

@@ -44,8 +44,8 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
     onlineCount: 0,
     offlineCount: 0,
     pendingTotal: 0,
-    availableSeats: 50,
-    maxCapacity: 50,
+    availableSeats: 80,
+    maxCapacity: 80,
   });
 
   const [query, setQuery] = useState('');
@@ -811,10 +811,10 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
       {/* Heading */}
       <div className="admin-heading">
         <div>
-          <p className="eyebrow">INVESTOR MISSION 2026 • SIRUTHULI NOYYAL LIFE CENTRE, COIMBATORE • 50 SEATS • ₹500</p>
+          <p className="eyebrow">INVESTOR MISSION 2026 • SIRUTHULI NOYYAL LIFE CENTRE, COIMBATORE • 80 SEATS • ₹500</p>
           <h1>Investor Mission 2026 Registrations &amp; Seat Management</h1>
           <p>
-            Manage two-step verification (Registration &amp; Payment), review online UPI proofs, record offline payments, and maintain strict 50-seat event capacity.
+            Manage two-step verification (Registration &amp; Payment), review online UPI proofs, record offline payments, and maintain strict 80-seat event capacity.
           </p>
         </div>
         <div>
@@ -883,7 +883,7 @@ export default function AdminDashboard({ isInvestorMissionAdminOnly = false }) {
         <div className="summit-admin-kpi-card kpi-confirmed">
           <span className="kpi-label">Confirmed Seats</span>
           <span className="kpi-number" style={{ color: '#166534' }}>
-            {stats.confirmedPayments} / {stats.maxCapacity || 50}
+            {stats.confirmedPayments} / {stats.maxCapacity || 80}
           </span>
         </div>
 

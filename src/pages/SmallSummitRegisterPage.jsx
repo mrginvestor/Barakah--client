@@ -65,9 +65,9 @@ export default function SmallSummitRegisterPage() {
   const navigate = useNavigate();
 
   const [capacity, setCapacity] = useState({
-    maxCapacity: 50,
+    maxCapacity: 80,
     registrationFee: 500,
-    availableSeats: 50,
+    availableSeats: 80,
     isSoldOut: false,
     loading: true,
   });
@@ -103,9 +103,9 @@ export default function SmallSummitRegisterPage() {
       .then((res) => {
         if (isMounted && res.data?.success) {
           setCapacity({
-            maxCapacity: res.data.maxCapacity || 50,
+            maxCapacity: res.data.maxCapacity || 80,
             registrationFee: res.data.registrationFee || 500,
-            availableSeats: res.data.availableSeats ?? 50,
+            availableSeats: res.data.availableSeats ?? 80,
             isSoldOut: Boolean(res.data.isSoldOut) || (res.data.availableSeats !== undefined && res.data.availableSeats <= 0),
             loading: false,
           });
