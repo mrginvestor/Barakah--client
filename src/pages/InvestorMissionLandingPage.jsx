@@ -216,7 +216,7 @@ export default function InvestorMissionLandingPage() {
     },
     {
       q: 'How does the ₹500 registration fee work?',
-      a: 'The ₹500 fee covers admission, event materials, and refreshments. You can pay online via PhonePe QR / UPI deep link (to ANAS RAHMAN H, 6380413253@ybl) and upload your payment proof and UTR transaction ID.',
+      a: 'Under our Special Registration Offer, the registration fee is discounted from ₹15,000 to ₹500 ONLY (saving ₹14,500). It covers admission, event materials, and refreshments. You can pay online via PhonePe QR / UPI deep link (to ANAS RAHMAN H, 6380413253@ybl) and upload your payment proof and UTR transaction ID.',
     },
     {
       q: 'What language will the session be conducted in?',
@@ -267,7 +267,10 @@ export default function InvestorMissionLandingPage() {
 
             <Link to="/investor-mission-registration" className="im-btn-header">
               <span>REGISTER NOW</span>
-              <span className="im-btn-header-badge">₹500</span>
+              <span className="im-btn-header-badge">
+                <del className="im-btn-header-orig">₹15,000</del>
+                <strong>₹{capacity.registrationFee}</strong>
+              </span>
             </Link>
           </div>
         </div>
@@ -367,6 +370,22 @@ export default function InvestorMissionLandingPage() {
                 </div>
               </div>
 
+              {/* Special Registration Offer Box */}
+              <div className="im-hero-offer-card" aria-label="Special Registration Offer">
+                <div className="im-hero-offer-top">
+                  <span className="im-hero-offer-eyebrow">SPECIAL REGISTRATION OFFER</span>
+                  <span className="im-hero-offer-save">Save ₹14,500!</span>
+                </div>
+                <div className="im-hero-offer-prices">
+                  <del className="im-hero-offer-original">₹15,000</del>
+                  <span className="im-hero-offer-arrow" aria-hidden="true">&rarr;</span>
+                  <div className="im-hero-offer-discounted">
+                    <strong className="im-hero-offer-amount">₹{capacity.registrationFee}</strong>
+                    <span className="im-hero-offer-only">ONLY</span>
+                  </div>
+                </div>
+              </div>
+
               {/* Hero Action Buttons */}
               <div className="im-hero-actions">
                 <Link
@@ -429,13 +448,16 @@ export default function InvestorMissionLandingPage() {
                 <div className="im-poster-footer-card">
                   <div className="im-poster-footer-text">
                     <strong>Siruthuli Noyyal Life Centre, Coimbatore</strong>
-                    <span>Sunday, 06 Dec • ₹500 • Strict 50 Seats Limit</span>
+                    <span>
+                      Sunday, 06 Dec • <del className="im-poster-strike">₹15,000</del>{' '}
+                      <strong className="im-poster-price-now">₹{capacity.registrationFee} ONLY</strong> • Strict 50 Seats Limit
+                    </span>
                   </div>
                   <Link
                     to="/investor-mission-registration"
                     className="im-poster-quick-btn"
                   >
-                    Register
+                    REGISTER NOW – ₹{capacity.registrationFee}
                   </Link>
                 </div>
               </div>
@@ -699,9 +721,16 @@ export default function InvestorMissionLandingPage() {
                 <div className="im-logistic-item">
                   <DollarSign size={22} className="im-log-icon" />
                   <div>
-                    <span className="im-log-label">Registration Fee</span>
-                    <strong className="im-log-val">₹500 / Participant</strong>
-                    <small>All-inclusive • Online UPI or Venue Payment</small>
+                    <div className="im-log-label-row">
+                      <span className="im-log-label">Registration Fee</span>
+                      <span className="im-discount-badge">SPECIAL DISCOUNT</span>
+                    </div>
+                    <div className="im-log-price-row">
+                      <del className="im-log-price-orig">₹15,000</del>
+                      <strong className="im-log-price-now">₹{capacity.registrationFee}</strong>
+                      <span className="im-log-price-only">ONLY</span>
+                    </div>
+                    <small>Save ₹14,500 • All-inclusive • Online UPI Payment</small>
                   </div>
                 </div>
 
@@ -797,9 +826,10 @@ export default function InvestorMissionLandingPage() {
               </p>
 
               <div className="im-cta-fee-pill">
-                <span>Registration Fee:</span>
-                <strong>₹{capacity.registrationFee}</strong>
-                <small>(All Inclusive)</small>
+                <span className="im-cta-offer-tag">SPECIAL DISCOUNT</span>
+                <del className="im-cta-fee-orig">₹15,000</del>
+                <strong>₹{capacity.registrationFee} ONLY</strong>
+                <small>(Save ₹14,500 • All Inclusive)</small>
               </div>
 
               <div className="im-cta-btn-wrap">
@@ -808,7 +838,7 @@ export default function InvestorMissionLandingPage() {
                   className="im-btn-cta"
                   title="Register for Investor Mission 2026"
                 >
-                  <span>RESERVE YOUR SEAT TODAY</span>
+                  <span>REGISTER NOW – ₹{capacity.registrationFee}</span>
                   <ArrowRight size={20} />
                 </Link>
               </div>
@@ -854,7 +884,7 @@ export default function InvestorMissionLandingPage() {
               <Mail size={14} style={{ color: '#D8AE54' }} />
               <span>info@halalwealth.finance</span>
             </a>
-            <span className="im-footer-subtext">UPI: 6380413253@ybl • ₹500 Registration Fee</span>
+            <span className="im-footer-subtext">UPI: 6380413253@ybl • Discounted Fee: ₹{capacity.registrationFee} ONLY (Original ₹15,000)</span>
           </div>
 
           <div className="im-footer-legal">
@@ -907,7 +937,7 @@ export default function InvestorMissionLandingPage() {
                 className="im-btn-modal-reg"
                 onClick={() => setIsPosterModalOpen(false)}
               >
-                <span>Register Now (₹500)</span>
+                <span>REGISTER NOW – ₹{capacity.registrationFee}</span>
                 <ArrowRight size={15} />
               </Link>
             </div>

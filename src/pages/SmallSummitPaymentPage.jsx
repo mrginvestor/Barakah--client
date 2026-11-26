@@ -389,9 +389,47 @@ export default function SmallSummitPaymentPage() {
           <h1 style={{ fontSize: '28px', fontWeight: 800, color: '#064B36', margin: '0 0 8px', letterSpacing: '-0.02em' }}>
             Investor Mission 2026 Payment
           </h1>
-          <p style={{ fontSize: '15px', color: '#475569', margin: 0 }}>
-            Registration Fee: <strong style={{ color: '#064B36', fontSize: '17px' }}>₹{fee}</strong> (INR) • Limited to {DEC_ACCOUNT_DETAILS.maxCapacity} Participants
+          <p style={{ fontSize: '14.5px', color: '#475569', margin: '0 0 14px' }}>
+            Limited to {DEC_ACCOUNT_DETAILS.maxCapacity} Participants • Pay exactly ₹{fee} via UPI
           </p>
+
+          {/* Discounted Registration Offer Summary */}
+          <div
+            style={{
+              display: 'inline-flex',
+              flexDirection: 'column',
+              gap: '6px',
+              background: 'linear-gradient(135deg, #F0FDF4 0%, #FFFFFF 100%)',
+              border: '1.5px solid #86EFAC',
+              borderRadius: '10px',
+              padding: '12px 22px',
+              marginBottom: '6px',
+              boxShadow: '0 2px 10px rgba(6, 75, 54, 0.06)',
+              maxWidth: '100%',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span style={{ background: '#053726', color: '#80DF35', fontSize: '10.5px', fontWeight: 800, letterSpacing: '1px', padding: '2px 8px', borderRadius: '4px' }}>
+                SPECIAL DISCOUNT
+              </span>
+              <span style={{ fontSize: '12px', fontWeight: 800, color: '#053726', background: 'rgba(216, 174, 84, 0.25)', border: '1px solid rgba(216, 174, 84, 0.6)', padding: '2px 9px', borderRadius: '999px' }}>
+                Save ₹14,500!
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', flexWrap: 'wrap', fontSize: '14px', color: '#334155' }}>
+              <span>
+                Original Fee:{' '}
+                <del style={{ color: '#64748B', fontWeight: 700, textDecorationThickness: '1.8px' }}>₹15,000</del>
+              </span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                Discounted Registration Fee:{' '}
+                <strong style={{ color: '#138C3B', fontSize: '20px', fontWeight: 900 }}>₹{fee}</strong>
+                <span style={{ background: '#80DF35', color: '#053726', fontSize: '10.5px', fontWeight: 900, padding: '1px 6px', borderRadius: '4px', letterSpacing: '0.6px' }}>
+                  ONLY
+                </span>
+              </span>
+            </div>
+          </div>
 
           {/* Participant Details Badge */}
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '16px', marginTop: '16px', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '8px', padding: '10px 20px', flexWrap: 'wrap', justifyContent: 'center', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
@@ -761,10 +799,15 @@ export default function SmallSummitPaymentPage() {
               </div>
 
               {/* Fixed Amount with Copy Button */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', fontSize: '13.5px' }}>
-                <span style={{ color: '#64748B' }}>Fixed Fee:</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', fontSize: '13.5px', gap: '8px', flexWrap: 'wrap' }}>
+                <div>
+                  <span style={{ color: '#64748B', display: 'block' }}>Discounted Registration Fee:</span>
+                  <span style={{ fontSize: '11.5px', color: '#64748B' }}>
+                    Original Fee: <del style={{ textDecorationThickness: '1.5px' }}>₹15,000</del>
+                  </span>
+                </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <strong style={{ color: '#138C3B', fontSize: '16px' }}>₹{fee} {DEC_ACCOUNT_DETAILS.currency}</strong>
+                  <strong style={{ color: '#138C3B', fontSize: '17px', fontWeight: 900 }}>₹{fee} {DEC_ACCOUNT_DETAILS.currency}</strong>
                   <button
                     type="button"
                     onClick={handleCopyAmount}

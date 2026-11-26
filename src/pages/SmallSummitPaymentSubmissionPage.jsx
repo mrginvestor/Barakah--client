@@ -456,9 +456,18 @@ export default function SmallSummitPaymentSubmissionPage() {
 
             <div>
               <span style={{ display: 'block', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.8px', color: '#64748B', fontWeight: 600 }}>
-                Registration Fee
+                Discounted Registration Fee
               </span>
-              <strong style={{ fontSize: '18px', color: '#138C3B' }}>₹{fee}</strong>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
+                <del style={{ fontSize: '13px', color: '#64748B', fontWeight: 600, textDecorationThickness: '1.5px' }}>₹15,000</del>
+                <strong style={{ fontSize: '19px', fontWeight: 900, color: '#138C3B' }}>₹{fee}</strong>
+                <span style={{ background: '#80DF35', color: '#053726', fontSize: '10px', fontWeight: 900, padding: '1px 5px', borderRadius: '4px' }}>
+                  ONLY
+                </span>
+              </div>
+              <span style={{ display: 'block', fontSize: '11px', color: '#64748B', marginTop: '2px' }}>
+                Original Fee: <del>₹15,000</del> • Save ₹14,500
+              </span>
             </div>
           </div>
         </div>

@@ -80,8 +80,11 @@ export default function SmallSummitConfirmationPage() {
 
           <div className="ssp-header-badges" aria-label="Event Badges">
             <div className="ssp-badge ssp-badge--fee">
-              <span className="ssp-badge-label">Registration Fee</span>
-              <span className="ssp-badge-value">₹500</span>
+              <span className="ssp-badge-label">Special Discount Fee</span>
+              <span className="ssp-badge-value">
+                <del style={{ opacity: 0.65, fontSize: '12px', marginRight: '6px' }}>₹15,000</del>
+                <span style={{ color: '#80DF35', fontWeight: 900 }}>₹{regData?.registrationFee || 500} ONLY</span>
+              </span>
             </div>
             <div className="ssp-badge ssp-badge--capacity">
               <span className="ssp-badge-label">Attendance Mode</span>
@@ -398,9 +401,20 @@ export default function SmallSummitConfirmationPage() {
 
                 <div>
                   <span style={{ fontSize: '12px', color: '#64748B', display: 'block', marginBottom: '4px' }}>
-                    Registration Fee
+                    Discounted Registration Fee
                   </span>
-                  <strong style={{ fontSize: '15px', color: '#08243B' }}>₹500</strong>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', flexWrap: 'wrap' }}>
+                    <del style={{ fontSize: '13px', color: '#64748B', fontWeight: 600 }}>₹15,000</del>
+                    <strong style={{ fontSize: '17px', fontWeight: 900, color: '#138C3B' }}>
+                      ₹{regData?.registrationFee || 500}
+                    </strong>
+                    <span style={{ background: '#80DF35', color: '#053726', fontSize: '10px', fontWeight: 900, padding: '1px 5px', borderRadius: '4px' }}>
+                      ONLY
+                    </span>
+                  </div>
+                  <span style={{ fontSize: '11.5px', color: '#64748B', display: 'block', marginTop: '2px' }}>
+                    Original Fee: <del>₹15,000</del>
+                  </span>
                 </div>
 
                 <div>

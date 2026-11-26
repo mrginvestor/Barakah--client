@@ -313,6 +313,17 @@ export default function SmallSummitRegisterPage() {
             <div className="ssp-compact-divider" aria-hidden="true" />
 
             <div className="ssp-compact-info-item">
+              <span className="ssp-compact-info-label">Registration Fee</span>
+              <strong className="ssp-compact-info-val ssp-compact-fee-val">
+                <del className="ssp-compact-strike">₹15,000</del>
+                <span className="ssp-compact-price-now">₹{capacity.registrationFee}</span>
+                <span className="ssp-compact-only">ONLY</span>
+              </strong>
+            </div>
+
+            <div className="ssp-compact-divider" aria-hidden="true" />
+
+            <div className="ssp-compact-info-item">
               <span className="ssp-compact-info-label">Official Venue</span>
               <a
                 href="https://maps.app.goo.gl/4hwJsFTMujiSVDMEA"
@@ -401,6 +412,26 @@ export default function SmallSummitRegisterPage() {
             <p className="ssp-intro-guidance">
               Please provide accurate participant details to register for the Investor Mission 2026 gathering.
             </p>
+
+            {/* Discounted Fee Offer Summary */}
+            <div className="ssp-fee-offer-box" aria-label="Special Registration Offer">
+              <div className="ssp-fee-offer-header">
+                <span className="ssp-fee-offer-badge">SPECIAL DISCOUNT</span>
+                <span className="ssp-fee-offer-savings">Save ₹14,500!</span>
+              </div>
+              <div className="ssp-fee-offer-rows">
+                <div className="ssp-fee-offer-row">
+                  <span className="ssp-fee-offer-label">Original Fee:</span>
+                  <del className="ssp-fee-offer-orig">₹15,000</del>
+                </div>
+                <div className="ssp-fee-offer-row">
+                  <span className="ssp-fee-offer-label">Discounted Registration Fee:</span>
+                  <strong className="ssp-fee-offer-final">
+                    ₹{capacity.registrationFee} <span className="ssp-fee-offer-only">ONLY</span>
+                  </strong>
+                </div>
+              </div>
+            </div>
           </div>
 
           {formError && (
@@ -776,7 +807,7 @@ export default function SmallSummitRegisterPage() {
                   ) : capacity.isSoldOut ? (
                     'Investor Mission Registration Full'
                   ) : (
-                    <span>SUBMIT REGISTRATION →</span>
+                    <span>REGISTER NOW – ₹{capacity.registrationFee} →</span>
                   )}
                 </button>
               </div>
